@@ -1,4 +1,4 @@
-package instantsnap.logic;
+package com.github.rebi0395.instantsnap.logic;
 
 import java.awt.AWTException;
 import java.awt.Dimension;
@@ -13,7 +13,7 @@ import java.time.format.DateTimeFormatter;
 
 import javax.imageio.ImageIO;
 
-import instantsnap.core.Option;
+import com.github.rebi0395.instantsnap.core.Option;
 
 public class ScreenShotExecutor {
 	

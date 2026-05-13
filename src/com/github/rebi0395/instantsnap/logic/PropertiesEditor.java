@@ -1,6 +1,6 @@
-package instantsnap.logic;
+package com.github.rebi0395.instantsnap.logic;
 
-import static instantsnap.util.AppConstant.*;
+import static com.github.rebi0395.instantsnap.util.AppConstant.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -10,7 +10,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
-import instantsnap.core.Option;
+import com.github.rebi0395.instantsnap.core.Option;
 
 public class PropertiesEditor {
  	

@@ -1,8 +1,8 @@
-package instantsnap;
+package com.github.rebi0395.instantsnap;
 
-import instantsnap.core.Option;
-import instantsnap.logic.KeyManager;
-import instantsnap.logic.PropertiesEditor;
+import com.github.rebi0395.instantsnap.core.Option;
+import com.github.rebi0395.instantsnap.logic.KeyManager;
+import com.github.rebi0395.instantsnap.logic.PropertiesEditor;
 
 /**
  * 起動クラス

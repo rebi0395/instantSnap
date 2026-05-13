@@ -1,13 +1,12 @@
-package instantsnap.logic;
+package com.github.rebi0395.instantsnap.logic;
 
-import static instantsnap.util.AppConstant.*;
+import static com.github.rebi0395.instantsnap.util.AppConstant.*;
 
 import com.github.kwhat.jnativehook.GlobalScreen;
 import com.github.kwhat.jnativehook.NativeHookException;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
-
-import instantsnap.core.Option;
+import com.github.rebi0395.instantsnap.core.Option;
 
 /**
  * ホットキーを監視し、撮影処理を呼び出すクラス。
