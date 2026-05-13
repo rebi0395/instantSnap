@@ -1,4 +1,4 @@
-package instantsnap.util;
+package com.github.rebi0395.instantsnap.util;
 
 /**
  * 定数管理クラス

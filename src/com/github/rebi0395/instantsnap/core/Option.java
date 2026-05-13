@@ -1,6 +1,6 @@
-package instantsnap.core;
+package com.github.rebi0395.instantsnap.core;
 
-import static instantsnap.util.AppConstant.*;
+import static com.github.rebi0395.instantsnap.util.AppConstant.*;
 
 /**
  * 設定値保管クラス
