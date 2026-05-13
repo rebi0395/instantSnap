@@ -9,10 +9,11 @@ import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
 import com.github.rebi0395.instantsnap.core.Option;
 
 /**
- * ホットキーを監視し、撮影処理を呼び出すクラス。
+ * スクリーンショット撮影のトリガーとなるキーを監視し、
+ * 撮影処理を呼び出すクラス。
  * JNativeHookライブラリを使用。
  */
-public class KeyManager implements NativeKeyListener {
+public class TriggerKeyManager implements NativeKeyListener {
 
     private Option option;
     private ScreenShotExecutor executor;
@@ -21,7 +22,7 @@ public class KeyManager implements NativeKeyListener {
      * コンストラクタ
      * @param option ユーザー設定値
      */
-    public KeyManager(Option option) {
+    public TriggerKeyManager(Option option) {
         this.option = option;
         this.executor = new ScreenShotExecutor();
         activate();
