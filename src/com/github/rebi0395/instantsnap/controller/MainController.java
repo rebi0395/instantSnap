@@ -1,21 +1,64 @@
 package com.github.rebi0395.instantsnap.controller;
 
 import com.github.rebi0395.instantsnap.core.Option;
-import com.github.rebi0395.instantsnap.logic.PropertiesEditor;
-import com.github.rebi0395.instantsnap.logic.TriggerKeyManager;
+import com.github.rebi0395.instantsnap.exception.ServiceException;
+import com.github.rebi0395.instantsnap.service.KeyEventListener;
+import com.github.rebi0395.instantsnap.service.PropertiesEditor;
+import com.github.rebi0395.instantsnap.service.TakeSnapService;
+import com.github.rebi0395.instantsnap.service.TriggerKeyManager;
 
-public class MainController {
+public class MainController implements KeyEventListener {
 	
 	private Option option;
-//	private PropertiesEditor editor;
-//	private TriggerKeyManager manager;
+	private PropertiesEditor editor;
+	private TriggerKeyManager manager;
 	
 	public MainController(){
 	}
 	
 	public void init() {
-		this.option = new Option();
-		new PropertiesEditor(option);
-		new TriggerKeyManager(option); 
+		try {
+			this.option = new Option();
+			this.editor = new PropertiesEditor();
+			this.editor.readProperties(option);
+			this.manager = new TriggerKeyManager(option, this);
+			this.manager.activate();
+
+		// チェック済例外
+		} catch (ServiceException e) {
+			e.printStackTrace();
+		// 非チェック例外
+		} catch (Exception e) {
+			
+		}
+	}
+
+	/**
+	 * 撮影トリガーが押されたとき、撮影処理を呼び出す
+	 */
+	@Override
+	public void requestSnap() {
+		// 別スレッド立ち上げ
+		new Thread(() -> {
+			TakeSnapService snap = new TakeSnapService();
+    		try {
+    			// 撮影処理
+				snap.execute(option);
+			} catch (ServiceException e) {
+				e.printStackTrace();
+			}
+		}).start();
+	}
+
+	/**
+	 * pauseキーが押されたとき、キー監視を終了する
+	 */
+	@Override
+	public void requestExit() {
+		try {
+			manager.deactivate();
+		} catch (ServiceException e) {
+			e.printStackTrace();
+		}
 	}
 }
