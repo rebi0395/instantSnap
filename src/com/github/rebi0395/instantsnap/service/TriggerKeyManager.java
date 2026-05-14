@@ -1,4 +1,4 @@
-package com.github.rebi0395.instantsnap.logic;
+package com.github.rebi0395.instantsnap.service;
 
 import static com.github.rebi0395.instantsnap.util.AppConstant.*;
 
@@ -7,6 +7,7 @@ import com.github.kwhat.jnativehook.NativeHookException;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
 import com.github.rebi0395.instantsnap.core.Option;
+import com.github.rebi0395.instantsnap.exception.ServiceException;
 
 /**
  * スクリーンショット撮影のトリガーとなるキーを監視し、
@@ -16,45 +17,47 @@ import com.github.rebi0395.instantsnap.core.Option;
 public class TriggerKeyManager implements NativeKeyListener {
 
     private Option option;
-    private ScreenShotExecutor executor;
+    private KeyEventListener listener;
 
     /**
      * コンストラクタ
      * @param option ユーザー設定値
+     * @param listener イベントの通知先
      */
-    public TriggerKeyManager(Option option) {
+    public TriggerKeyManager(Option option, KeyEventListener listener) {
         this.option = option;
-        this.executor = new ScreenShotExecutor();
-        activate();
+        this.listener = listener;
     }
 
     /**
      * キー監視を開始する
+     * @throws ServiceException 
      */
-    public void activate() {
+    public void activate() throws ServiceException {
         try {
             GlobalScreen.registerNativeHook();
             GlobalScreen.addNativeKeyListener(this);
             System.out.println("キー監視開始");
-        } catch (NativeHookException e) {
-            System.err.println("Could not register native hook: " + e.getMessage());
+        } catch (NativeHookException ne) {
+        	throw new ServiceException("キー監視の開始に失敗しました", ne);
         }
     }
 
     /**
      * キー監視を停止する
+     * @throws ServiceException 
      */
-    public void deactivate() {
+    public void deactivate() throws ServiceException {
         try {
             GlobalScreen.unregisterNativeHook();
-        } catch (NativeHookException e) {
-            e.printStackTrace();
+            System.out.println("キー監視停止");
+        } catch (NativeHookException nhe) {
+        	throw new ServiceException("キー監視の停止に失敗しました", nhe);
         }
     }
 
     /**
-     * キーが押下されたときのイベントメソッド
-     * 設定したトリガーキーを押下で、撮影処理を呼び出す
+     * 設定したトリガーキーの押下をイベントリスナーに通知する
      */
     @Override
     public void nativeKeyPressed(NativeKeyEvent e) {
@@ -65,13 +68,13 @@ public class TriggerKeyManager implements NativeKeyListener {
         	// shiftキーが押されているかで撮影可否を判定する
         	if ((PRINTSCREEN.equals(option.getTrigger()) && !isShiftPressed) || 
         		(SHIFT_PRINTSCREEN.equals(option.getTrigger()) && isShiftPressed)) {
-        		// 別スレッドで撮影実行
-	    		new Thread(() -> {
-	    		    executor.execute(option);
-	    		    System.out.println("撮影に成功しました");
-	    		    deactivate();
-	    		}).start();
+        		// 撮影トリガーが入力されたことを通知する
+        		listener.requestSnap();
         	}
+        }
+        // pauseキー押下時
+        if (e.getKeyCode() == NativeKeyEvent.VC_PAUSE) {
+        	listener.requestExit();;
         }
     }
 }
