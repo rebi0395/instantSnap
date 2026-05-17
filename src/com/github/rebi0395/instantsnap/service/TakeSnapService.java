@@ -3,10 +3,8 @@ package com.github.rebi0395.instantsnap.service;
 import static com.github.rebi0395.instantsnap.util.AppConstant.*;
 
 import java.awt.AWTException;
-import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.Robot;
-import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -33,13 +31,12 @@ public class TakeSnapService {
 	public void execute(Option option) throws ServiceException {
 		try {
 			// 1.画面サイズを取得
-			Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
-			Rectangle screenSize = new Rectangle(d);
-
-			// 2.撮影
-			Robot robot = new Robot();
+//			Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
+//			Rectangle screenSize = new Rectangle(d);
 			SnapAreaResolver areaResolver = new SnapAreaResolver();
 			Rectangle snapSize = areaResolver.resolve(option.getSnapMode()); // サイズを取得
+			// 2.撮影
+			Robot robot = new Robot();
 			BufferedImage snap = robot.createScreenCapture(snapSize);
 
 			// 3.ファイル名作成(yyyyMMdd_HHmmss)
