@@ -10,8 +10,8 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
-import com.github.rebi0395.instantsnap.core.Option;
 import com.github.rebi0395.instantsnap.exception.ServiceException;
+import com.github.rebi0395.instantsnap.model.Option;
 
 public class PropertiesEditor {
  	
@@ -40,10 +40,18 @@ public class PropertiesEditor {
 			properties.load(reader);
 			
 			// プロパティから読み込み
+			boolean isChangeDefault;
+			
 			option.setSavePath(properties.getProperty(SAVE_PATH));
-			option.setFormat(properties.getProperty(FORMAT));
+			isChangeDefault = option.applySnapMode(properties.getProperty(SNAP_MODE));
+			if (isChangeDefault){
+				System.out.println("プロパティファイルの記載が不正なため、撮影モードをデフォルトに設定しました");
+			}
+			isChangeDefault = option.applyFormat(properties.getProperty(FORMAT));
+			if (isChangeDefault){
+				System.out.println("プロパティファイルの記載が不正なため、拡張子をデフォルトに設定しました");
+			}
 			option.setTrigger(properties.getProperty(TRIGGER));
-			option.setOpenMode(properties.getProperty(OPENMODE));
 
 		} catch (IOException ie) {
 			throw new ServiceException("プロパティファイルの読み込みに失敗しました", ie);

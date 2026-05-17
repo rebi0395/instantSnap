@@ -1,4 +1,4 @@
-package com.github.rebi0395.instantsnap.core;
+package com.github.rebi0395.instantsnap.model;
 
 /**
  * キーイベント保持クラス

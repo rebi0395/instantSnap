@@ -1,7 +1,7 @@
 package com.github.rebi0395.instantsnap.controller;
 
-import com.github.rebi0395.instantsnap.core.Option;
 import com.github.rebi0395.instantsnap.exception.ServiceException;
+import com.github.rebi0395.instantsnap.model.Option;
 import com.github.rebi0395.instantsnap.service.KeyEventListener;
 import com.github.rebi0395.instantsnap.service.PropertiesEditor;
 import com.github.rebi0395.instantsnap.service.TakeSnapService;

@@ -17,8 +17,8 @@ import java.time.format.DateTimeFormatter;
 
 import javax.imageio.ImageIO;
 
-import com.github.rebi0395.instantsnap.core.Option;
 import com.github.rebi0395.instantsnap.exception.ServiceException;
+import com.github.rebi0395.instantsnap.model.Option;
 
 /**
  * 画面の撮影処理を行うクラス
@@ -35,11 +35,13 @@ public class TakeSnapService {
 			// 1.画面サイズを取得
 			Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
 			Rectangle screenSize = new Rectangle(d);
-			
+
 			// 2.撮影
 			Robot robot = new Robot();
-			BufferedImage snap = robot.createScreenCapture(screenSize);
-			
+			SnapAreaResolver areaResolver = new SnapAreaResolver();
+			Rectangle snapSize = areaResolver.resolve(option.getSnapMode()); // サイズを取得
+			BufferedImage snap = robot.createScreenCapture(snapSize);
+
 			// 3.ファイル名作成(yyyyMMdd_HHmmss)
 			LocalDateTime now = LocalDateTime.now();
 			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd.HHmmss.SSS");
@@ -57,7 +59,7 @@ public class TakeSnapService {
 				System.out.println("画像保存先が不正のため、画像保存先を初期化しました");
 			}
 			Path target = dir.resolve(fileName);
-			ImageIO.write(snap, option.getFormat(), target.toFile());		
+			ImageIO.write(snap, option.getFormat().toString(), target.toFile());		
 			
 			// 5.ログ出力
 			System.out.println("スクリーンショットの撮影処理に成功しました");
