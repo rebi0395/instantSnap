@@ -1,6 +1,6 @@
-package com.github.rebi0395.instantsnap.service;
+package com.github.rebi0395.instantsnap.repository;
 
-import static com.github.rebi0395.instantsnap.util.AppConstant.*;
+import static com.github.rebi0395.instantsnap.common.AppConstant.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -11,19 +11,23 @@ import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 import com.github.rebi0395.instantsnap.exception.ServiceException;
-import com.github.rebi0395.instantsnap.model.Option;
+import com.github.rebi0395.instantsnap.model.bean.Option;
 
-public class PropertiesEditor {
+/**
+ * プロパティファイルの読み取り、書き込みを行い、
+ * ユーザー設定の永続化を担保するクラスです
+ */
+public class PropertiesRepository {
  	
 	/**
 	 * コンストラクタ
 	 */
-	public PropertiesEditor() {
+	public PropertiesRepository() {
 	}
 
 	/**
-	 * プロパティファイルの読み取りメソッド
-	 * @param option
+	 * プロパティファイルの読み取りを行います
+	 * @param option 設定保持クラス
 	 * @throws ServiceException 
 	 */
 	public void readProperties(Option option) throws ServiceException {
@@ -59,8 +63,8 @@ public class PropertiesEditor {
 	}
 	
 	/**
-	 * プロパティファイルの更新メソッド
+	 * プロパティファイルの書き込みを行います
 	 */
-	public void saveProperties() {
+	public void saveProperties(Option option) {
 	}
 }

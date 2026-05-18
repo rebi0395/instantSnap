@@ -1,6 +1,6 @@
 package com.github.rebi0395.instantsnap.service;
 
-import static com.github.rebi0395.instantsnap.util.AppConstant.*;
+import static com.github.rebi0395.instantsnap.common.AppConstant.*;
 
 import java.awt.AWTException;
 import java.awt.Rectangle;
@@ -16,7 +16,7 @@ import java.time.format.DateTimeFormatter;
 import javax.imageio.ImageIO;
 
 import com.github.rebi0395.instantsnap.exception.ServiceException;
-import com.github.rebi0395.instantsnap.model.Option;
+import com.github.rebi0395.instantsnap.model.bean.Option;
 
 /**
  * 画面の撮影処理を行うクラス
@@ -31,28 +31,34 @@ public class TakeSnapService {
 	public void execute(Option option) throws ServiceException {
 		try {
 			// 1.画面サイズを取得
-//			Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
-//			Rectangle screenSize = new Rectangle(d);
 			SnapAreaResolver areaResolver = new SnapAreaResolver();
-			Rectangle snapSize = areaResolver.resolve(option.getSnapMode()); // サイズを取得
+			Rectangle snapSize = areaResolver.getSnapArea(option.getSnapMode());
 			// 2.撮影
 			Robot robot = new Robot();
 			BufferedImage snap = robot.createScreenCapture(snapSize);
-
+			
 			// 3.ファイル名作成(yyyyMMdd_HHmmss)
 			LocalDateTime now = LocalDateTime.now();
 			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd.HHmmss.SSS");
 			String systemTime = now.format(dtf);
 			String fileName = systemTime + "." + option.getFormat();
-					
+			
 			// 4.保存
 			Path dir = Paths.get(option.getSavePath());
 			// 実在チェック、ディレクトリチェック
-			if (!Files.exists(dir) || !(Files.isDirectory(dir))) {
-				// 保存先フォルダがフォルダでない場合、デフォルト値を設定する
-				option.setSavePath(DEFAULT_SAVE_PATH);
-				dir = Paths.get(option.getSavePath());
-				Files.createDirectories(dir); // 念押しで再生成
+			if (Files.exists(dir)){
+				if (!Files.isDirectory(dir)) {
+					// 保存先フォルダがフォルダでない場合、デフォルト値を設定する
+					option.setSavePath(DEFAULT_SAVE_PATH);
+					dir = Paths.get(option.getSavePath());
+					Files.createDirectories(dir); // 念押しで再生成する
+					//TODO ログを出力
+					System.out.println("画像保存先が不正のため、画像保存先を初期化しました");
+				}
+			} else {
+				// ファイルがない場合、自動で作成する
+				Files.createDirectories(dir);
+				//TODO ログを出力
 				System.out.println("画像保存先が不正のため、画像保存先を初期化しました");
 			}
 			Path target = dir.resolve(fileName);

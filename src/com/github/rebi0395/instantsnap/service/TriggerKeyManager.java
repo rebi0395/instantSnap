@@ -1,17 +1,17 @@
 package com.github.rebi0395.instantsnap.service;
 
-import static com.github.rebi0395.instantsnap.util.AppConstant.*;
+import static com.github.rebi0395.instantsnap.common.AppConstant.*;
 
 import com.github.kwhat.jnativehook.GlobalScreen;
 import com.github.kwhat.jnativehook.NativeHookException;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
 import com.github.rebi0395.instantsnap.exception.ServiceException;
-import com.github.rebi0395.instantsnap.model.Option;
+import com.github.rebi0395.instantsnap.model.bean.Option;
 
 /**
  * スクリーンショット撮影のトリガーとなるキーを監視し、
- * 撮影処理を呼び出すクラス。
+ * 撮影処理を呼び出すクラス
  * JNativeHookライブラリを使用。
  */
 public class TriggerKeyManager implements NativeKeyListener {
@@ -72,7 +72,7 @@ public class TriggerKeyManager implements NativeKeyListener {
         		listener.requestSnap();
         	}
         }
-        // pauseキー押下時
+        // pauseキー押下時、アプリを終了する
         if (e.getKeyCode() == NativeKeyEvent.VC_PAUSE) {
         	listener.requestExit();;
         }
