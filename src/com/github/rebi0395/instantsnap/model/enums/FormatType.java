@@ -1,7 +1,7 @@
-package com.github.rebi0395.instantsnap.model;
+package com.github.rebi0395.instantsnap.model.enums;
 
 /**
- * 画像の拡張子を定義します
+ * 画像の拡張子を列挙するクラス
  */
 public enum FormatType {
 	PNG("png"),
@@ -16,7 +16,7 @@ public enum FormatType {
 	}
 
 	/**
-	 * 拡張子の正式名称を文字列型で返却する。
+	 * 拡張子の正式名称を文字列型で取得する
 	 */
 	 @Override
 	public String toString() {
@@ -24,8 +24,8 @@ public enum FormatType {
 	}
 
 	/**
-	 * プロパティファイルの記載を元に、拡張子を返却します
-	 * 入力値が不正の場合、デフォルトの拡張子pngを返し、適応したことを通知します
+	 * プロパティファイルの記載を元に、拡張子を取得する
+	 * 入力値が不正の場合、nullを返却する
 	 * @param value プロパティファイルの記載
 	 * @return type
 	 */

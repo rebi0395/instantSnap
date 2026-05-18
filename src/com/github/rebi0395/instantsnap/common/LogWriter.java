@@ -1,4 +1,4 @@
-package com.github.rebi0395.instantsnap.util;
+package com.github.rebi0395.instantsnap.common;
 
 import java.io.File;
 import java.time.format.DateTimeFormatter;

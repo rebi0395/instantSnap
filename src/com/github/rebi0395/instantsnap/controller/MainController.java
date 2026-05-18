@@ -1,25 +1,31 @@
 package com.github.rebi0395.instantsnap.controller;
 
 import com.github.rebi0395.instantsnap.exception.ServiceException;
-import com.github.rebi0395.instantsnap.model.Option;
+import com.github.rebi0395.instantsnap.model.bean.Option;
+import com.github.rebi0395.instantsnap.repository.PropertiesRepository;
 import com.github.rebi0395.instantsnap.service.KeyEventListener;
-import com.github.rebi0395.instantsnap.service.PropertiesEditor;
 import com.github.rebi0395.instantsnap.service.TakeSnapService;
 import com.github.rebi0395.instantsnap.service.TriggerKeyManager;
 
+/**
+ * アプリ全体を司るコントローラークラス
+ */
 public class MainController implements KeyEventListener {
 	
 	private Option option;
-	private PropertiesEditor editor;
+	private PropertiesRepository editor;
 	private TriggerKeyManager manager;
 	
 	public MainController(){
 	}
 	
+	/**
+	 * アプリ起動時の初期化処理を行います
+	 */
 	public void init() {
 		try {
 			this.option = new Option();
-			this.editor = new PropertiesEditor();
+			this.editor = new PropertiesRepository();
 			this.editor.readProperties(option);
 			this.manager = new TriggerKeyManager(option, this);
 			this.manager.activate();

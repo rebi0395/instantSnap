@@ -1,7 +1,10 @@
-package com.github.rebi0395.instantsnap.model;
+package com.github.rebi0395.instantsnap.model.bean;
 
 
-import static com.github.rebi0395.instantsnap.util.AppConstant.*;
+import static com.github.rebi0395.instantsnap.common.AppConstant.*;
+
+import com.github.rebi0395.instantsnap.model.enums.FormatType;
+import com.github.rebi0395.instantsnap.model.enums.SnapMode;
 
 /**
  * 設定値保管クラス

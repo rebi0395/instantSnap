@@ -1,5 +1,6 @@
 package com.github.rebi0395.instantsnap;
 
+import com.github.rebi0395.instantsnap.common.DpiUtil;
 import com.github.rebi0395.instantsnap.controller.MainController;
 
 /**
@@ -12,6 +13,7 @@ public class Main {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		DpiUtil.enablePerMonitorV2();
 		MainController controller = new MainController();
 		controller.init();
     }
