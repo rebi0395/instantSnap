@@ -1,5 +1,8 @@
 package com.github.rebi0395.instantsnap.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.github.rebi0395.instantsnap.exception.ServiceException;
 import com.github.rebi0395.instantsnap.model.bean.Option;
 import com.github.rebi0395.instantsnap.repository.PropertiesRepository;
@@ -15,6 +18,8 @@ public class MainController implements KeyEventListener {
 	private Option option;
 	private PropertiesRepository editor;
 	private TriggerKeyManager manager;
+	/** ロガー */
+	private static final Logger log = LoggerFactory.getLogger(MainController.class);
 	
 	public MainController(){
 	}
@@ -32,10 +37,10 @@ public class MainController implements KeyEventListener {
 
 		// チェック済例外
 		} catch (ServiceException e) {
-			e.printStackTrace();
+			// ダイアログ処理など
 		// 非チェック例外
 		} catch (Exception e) {
-			
+			log.error("想定外のエラーが発生しました");
 		}
 	}
 
@@ -51,7 +56,7 @@ public class MainController implements KeyEventListener {
     			// 撮影処理
 				snap.execute(option);
 			} catch (ServiceException e) {
-				e.printStackTrace();
+				// ダイアログ等
 			}
 		}).start();
 	}
@@ -64,7 +69,7 @@ public class MainController implements KeyEventListener {
 		try {
 			manager.deactivate();
 		} catch (ServiceException e) {
-			e.printStackTrace();
+			// ダイアログ等
 		}
 	}
 }

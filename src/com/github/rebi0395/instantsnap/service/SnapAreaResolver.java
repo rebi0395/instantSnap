@@ -6,6 +6,9 @@ import java.awt.MouseInfo;
 import java.awt.PointerInfo;
 import java.awt.Rectangle;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.github.rebi0395.instantsnap.model.enums.SnapMode;
 import com.sun.jna.platform.win32.User32;
 import com.sun.jna.platform.win32.WinDef.HWND;
@@ -19,8 +22,11 @@ import com.sun.jna.platform.win32.WinUser.MONITORINFOEX;
  */
 public class SnapAreaResolver {
 
-	// WindowsのUser32 APIにアクセスするためのJNA定数
+	/** WindowsのUser32 APIにアクセスするためのJNA定数 */
  	private static final User32 USER32 = User32.INSTANCE;
+ 	
+ 	/** ロガー */
+	private static final Logger log = LoggerFactory.getLogger(SnapAreaResolver.class);
  	
     /**
      * ユーザーの設定に応じた、撮影範囲を取得する
@@ -51,11 +57,13 @@ public class SnapAreaResolver {
 		String os = System.getProperty("os.name").toLowerCase();
 		// Windows以外はデフォルト挙動を行う
 		if (!os.contains("win")) {
+			log.info("osがwindowsではありません");
 			return getDefaultScreenArea();
 		}
 		// アクティブウィンドウの識別番号を取得する
 		HWND hwnd = USER32.GetForegroundWindow();
 		if (hwnd == null) {
+			log.warn("アクティブウィンドウの識別番号の取得に失敗しました");
 			return getDefaultScreenArea();
 		}
 
@@ -118,7 +126,7 @@ public class SnapAreaResolver {
 				return ge.getScreenDevices()[0];
 			}
 		} catch (Exception e) {
-			// 取得失敗
+			log.warn("アクティブウィンドウの属するモニターの特定に失敗しました");
 		}
 		return null;
 	}
@@ -164,6 +172,7 @@ public class SnapAreaResolver {
 			return finalResult.intersection(deviceBounds); // 画面外の黒領域をカットする
 			
 		} catch (Throwable t) {
+			log.warn("Windowsの物理座標を、Javaの仮想画面座標系へスケーリング変換処理が失敗しました");
 			return physRect; // 失敗時は物理座標のまま返却する
 		}
 	}
@@ -209,8 +218,7 @@ public class SnapAreaResolver {
 	 * @return アクティブモニターの撮影範囲
 	 */
 	private Rectangle getDefaultScreenArea() {
-		System.out.println("撮影範囲をデフォルト値で設定しました");
-		//TODO ログでwarnとプロパティファイルの書き込み処理を依頼
+		log.info("撮影範囲をデフォルト値で設定しました");
 		return getActiveScreenArea();
 	}
 }

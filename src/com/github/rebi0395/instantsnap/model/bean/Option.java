@@ -4,6 +4,9 @@ import static com.github.rebi0395.instantsnap.common.AppConstant.*;
 
 import java.util.function.Function;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.github.rebi0395.instantsnap.model.enums.FormatType;
 import com.github.rebi0395.instantsnap.model.enums.SnapMode;
 
@@ -15,43 +18,47 @@ public class Option {
 	private SnapMode snapMode;
 	private FormatType format;
 	private String trigger;
-//	private String openMode;
+	//	private String openMode;
+
+	/** ロガー */
+	private static final Logger log = LoggerFactory.getLogger(Option.class);
 
 	/**
 	 * コンストラクタ。デフォルト値を設定する
 	 */
-	public Option(){
+	public Option() {
 		this.savePath = DEFAULT_SAVE_PATH;
 		this.snapMode = SnapMode.ACTIVE_WINDOW;
 		this.format = FormatType.PNG;
 		this.trigger = SHIFT_PRINTSCREEN;
 	}
-	
+
 	/**
-     * 設定値を検証し、不正な値の場合はデフォルト値を適用して警告ログを出すセッターヘルパー
-     * 
-     * @param <T> プロパティの型（EnumやIntegerなど）
-     * @param value プロパティファイルから読み込んだ文字列
-     * @param parser 文字列を目的の型に変換するロジック
-     * @param configName ログに出力する設定項目名
-     * @param defaultValue 想定外の値だった場合に返すデフォルト値
-     * @return 解析に成功した値、またはデフォルト値
-     */
-    private <T> T validateAndConvert(String value, Function<String, T> parser, String configName, T defaultValue) {
-        try {
-        	// パース処理を試みる
-        	T parsedValue = parser.apply(value);
-        	
-        	// パース結果がnullでなければそれを採用
-        	if (parsedValue != null) {
-        		return parsedValue;
-        	}
-        } catch (RuntimeException e) {
-        	// 変換中に例外が発生した場合、そのままデフォルトを返却
-        	}
-        //TODO ログを出力 
-        return defaultValue;
-    }
+	 * 設定値を検証し、不正な値の場合はデフォルト値を適用して警告ログを出すセッターヘルパー
+	 * 
+	 * @param <T> プロパティの型（EnumやIntegerなど）
+	 * @param value プロパティファイルから読み込んだ文字列
+	 * @param parser 文字列を目的の型に変換するロジック
+	 * @param configName ログに出力する設定項目名
+	 * @param defaultValue 想定外の値だった場合に返すデフォルト値
+	 * @return 解析に成功した値、またはデフォルト値
+	 */
+	private <T> T validateAndConvert(String value, Function<String, T> parser, String configName, T defaultValue) {
+		try {
+			// パース処理を試みる
+			T parsedValue = parser.apply(value);
+
+			// パース結果がnullでなければそれを採用
+			if (parsedValue != null) {
+				return parsedValue;
+			}
+		} catch (RuntimeException e) {
+			log.error("パース処理に失敗しました");
+		}
+		log.warn("設定項目：「"+ configName + "」の値が不正のため、"
+				+ "デフォルト値：" + defaultValue + "を適用します");
+		return defaultValue;
+	}
 
 	/**
 	 * スクショの保存先パスを取得する。
@@ -101,7 +108,6 @@ public class Option {
 		return format;
 	}
 
-
 	/**
 	 * プロパティファイルの記載を元に、拡張子をセットする
 	 * 想定外の値のとき、デフォルト値を設定し、ログで通知する
@@ -109,8 +115,8 @@ public class Option {
 	 */
 	public void setFormat(String value) {
 		this.format = validateAndConvert(
-				value, 
-				FormatType::fromString, 
+				value,
+				FormatType::fromString,
 				FORMAT,
 				FormatType.PNG);
 	}
@@ -121,7 +127,7 @@ public class Option {
 	public String getTrigger() {
 		return trigger;
 	}
-	
+
 	/**
 	 * nullチェックを行い、起動キーを適用する
 	 * 想定外の値やnull時には、shift + printscreenをセットする。
@@ -137,27 +143,27 @@ public class Option {
 		}
 	}
 
-//	/**
-//	 * @return openMode
-//	 */
-//	public String getOpenMode() {
-//		return openMode;
-//	}
+	//	/**
+	//	 * @return openMode
+	//	 */
+	//	public String getOpenMode() {
+	//		return openMode;
+	//	}
 
-//	/**
-//	 * nullチェックを行い、撮影後の画像/フォルダ展開有無を適用する
-//	 * 想定外の値やnull時には、撮影後フォルダを開かない。
-//	 * @param openMode 撮影後の自動展開設定
-//	 */
-//	public void setOpenMode(String openMode) {
-//		if (openMode == null) {
-//			this.openMode = DISOPEN;
-//		} else if (AUTO_OPEN_IMAGE.equals(openMode)) {
-//			this.openMode = AUTO_OPEN_IMAGE;
-//		} else if (AUTO_OPEN_FOLDER.equals(openMode)){
-//			this.openMode = AUTO_OPEN_FOLDER;
-//		} else {
-//			this.openMode = DISOPEN;
-//		}
-//	}
+	//	/**
+	//	 * nullチェックを行い、撮影後の画像/フォルダ展開有無を適用する
+	//	 * 想定外の値やnull時には、撮影後フォルダを開かない。
+	//	 * @param openMode 撮影後の自動展開設定
+	//	 */
+	//	public void setOpenMode(String openMode) {
+	//		if (openMode == null) {
+	//			this.openMode = DISOPEN;
+	//		} else if (AUTO_OPEN_IMAGE.equals(openMode)) {
+	//			this.openMode = AUTO_OPEN_IMAGE;
+	//		} else if (AUTO_OPEN_FOLDER.equals(openMode)){
+	//			this.openMode = AUTO_OPEN_FOLDER;
+	//		} else {
+	//			this.openMode = DISOPEN;
+	//		}
+	//	}
 }
