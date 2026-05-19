@@ -18,7 +18,10 @@ import com.github.rebi0395.instantsnap.model.bean.Option;
  * ユーザー設定の永続化を担保するクラスです
  */
 public class PropertiesRepository {
- 	
+	
+	// プロパティのファイルパス
+	private static final Path PROPERTIES_PATH = Paths.get("config.properties");
+	
 	/**
 	 * コンストラクタ
 	 */
@@ -32,18 +35,14 @@ public class PropertiesRepository {
 	 */
 	public void read(Option option) throws ServiceException {
 		Properties properties = new Properties();
-		Path propetiesPath = Paths.get(PROPERTIES_PASS);
 		
-		//File file = new File(PROPERTIES_PASS);
-		
-		// プロパティファイルの実在チェックを行い、ない場合は生成
-		if (!Files.exists(propetiesPath)) {
-			System.out.println("プロパティファイルが存在しません。"
-					+ "初期化したプロパティファイルを生成しました");
+		// プロパティファイルの実在チェックを行い、ない場合はプロパティファイルを生成
+		if (!Files.exists(PROPERTIES_PATH)) {
+			reset();
 		}
 
 		// UTF-8を明示的に指定し、プロパティをセット
-		try (BufferedReader reader = Files.newBufferedReader(propetiesPath, StandardCharsets.UTF_8)){
+		try (BufferedReader reader = Files.newBufferedReader(PROPERTIES_PATH, StandardCharsets.UTF_8)){
 			properties.load(reader);
 			
 			// プロパティから読み取った情報をセット
@@ -63,8 +62,45 @@ public class PropertiesRepository {
 	public void save(Option option) {
 	}
 	
-	
-	
-	
-	
+	/**
+	 * プロパティファイルの初期化を行います
+	 * @throws ServiceException 初期化失敗時
+	 */
+	public synchronized void reset() throws ServiceException {
+		// osごとの最適な改行コードで統一する
+		String content = DEFAULT_CONTENT.replace("\r\n", "\n").replace("\n", System.lineSeparator());
+		try {
+			// プロパティファイルがなければ作成、あれば文章を上書きする (追記しない)
+			Files.writeString(PROPERTIES_PATH, content, StandardCharsets.UTF_8);
+			//TODO ログを出力
+			System.out.println("プロパティファイルを初期化しました");
+
+		} catch (IOException ie) {
+			throw new ServiceException("プロパティファイルの初期化に失敗しました", ie);
+		}
+	}
+
+	// 初期化時の文章をソース側で保持 改行コードを統一
+	private static final String DEFAULT_CONTENT = """
+			#Setting
+			#保存先パスを絶対パスで指定してください
+			savePath=C:/Instantsnap画像保存先/
+
+			#撮影範囲の選択
+			#1 -> アクティブウィンドウ(デフォルト), 2 -> アクティブモニター
+			#3 -> メインモニター, 4 -> 全てのモニター
+			snapMode=1
+			
+			#拡張子の選択 png、jpg、bmp、gifのいずれかを記載してください
+			format=png
+			
+			#スクショ発動キーの選択
+			#1 -> shift + printscreen(推奨), 2 -> printscreen
+			trigger=1
+			
+			#撮影後、フォルダ、画像を自動で開く設定です
+			#1 -> フォルダ, 2 -> 画像, それ以外 -> 開かない
+			openMode=0
+			
+			""";
 }
