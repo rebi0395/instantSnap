@@ -2,6 +2,9 @@ package com.github.rebi0395.instantsnap.service;
 
 import static com.github.rebi0395.instantsnap.common.AppConstant.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.github.kwhat.jnativehook.GlobalScreen;
 import com.github.kwhat.jnativehook.NativeHookException;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
@@ -16,8 +19,12 @@ import com.github.rebi0395.instantsnap.model.bean.Option;
  */
 public class TriggerKeyManager implements NativeKeyListener {
 
+	/** ユーザー設定値 */
     private Option option;
+    /** キー押下をコントローラーに通知するインターフェース */
     private KeyEventListener listener;
+    /** ロガー */
+	private static final Logger log = LoggerFactory.getLogger(TriggerKeyManager.class);
 
     /**
      * コンストラクタ
@@ -37,7 +44,7 @@ public class TriggerKeyManager implements NativeKeyListener {
         try {
             GlobalScreen.registerNativeHook();
             GlobalScreen.addNativeKeyListener(this);
-            System.out.println("キー監視開始");
+            log.info("キー監視開始");
         } catch (NativeHookException ne) {
         	throw new ServiceException("キー監視の開始に失敗しました", ne);
         }
@@ -50,7 +57,7 @@ public class TriggerKeyManager implements NativeKeyListener {
     public void deactivate() throws ServiceException {
         try {
             GlobalScreen.unregisterNativeHook();
-            System.out.println("キー監視停止");
+            log.info("キー監視停止");
         } catch (NativeHookException nhe) {
         	throw new ServiceException("キー監視の停止に失敗しました", nhe);
         }

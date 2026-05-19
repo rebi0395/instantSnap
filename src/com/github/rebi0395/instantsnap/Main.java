@@ -7,7 +7,7 @@ import com.github.rebi0395.instantsnap.controller.MainController;
  * 起動クラス
  */
 public class Main {
-	
+
 	/**
 	 * 起動メソッド
 	 * @param args
@@ -16,5 +16,5 @@ public class Main {
 		DpiUtil.enablePerMonitorV2();
 		MainController controller = new MainController();
 		controller.init();
-    }
+	}
 }

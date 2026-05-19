@@ -9,5 +9,8 @@
 	<classpathentry kind="lib" path="lib/jnativehook-2.2.2.jar"/>
 	<classpathentry kind="lib" path="lib/jna-5.18.1.jar"/>
 	<classpathentry kind="lib" path="lib/jna-platform-5.18.1.jar"/>
+	<classpathentry kind="lib" path="lib/logback-classic-1.4.14.jar"/>
+	<classpathentry kind="lib" path="lib/logback-core-1.4.14.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-api-2.0.13.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

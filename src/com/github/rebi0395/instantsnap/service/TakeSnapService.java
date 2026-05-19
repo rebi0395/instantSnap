@@ -15,6 +15,9 @@ import java.time.format.DateTimeFormatter;
 
 import javax.imageio.ImageIO;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.github.rebi0395.instantsnap.exception.ServiceException;
 import com.github.rebi0395.instantsnap.model.bean.Option;
 
@@ -22,6 +25,9 @@ import com.github.rebi0395.instantsnap.model.bean.Option;
  * 画面の撮影処理を行うクラス
  */
 public class TakeSnapService {
+	
+	/** ロガー */
+	private static final Logger log = LoggerFactory.getLogger(TakeSnapService.class);
 	
 	/**
 	 * 実行メソッド
@@ -53,20 +59,18 @@ public class TakeSnapService {
 					option.setSavePath(DEFAULT_SAVE_PATH);
 					dir = Paths.get(option.getSavePath());
 					Files.createDirectories(dir); // 念押しで再生成する
-					//TODO ログを出力
-					System.out.println("画像保存先が不正のため、画像保存先を初期化しました");
+					log.warn("画像保存先が不正のため、画像保存先をデフォルト（" + DEFAULT_SAVE_PATH + "）に設定しました");
 				}
 			} else {
 				// ファイルがない場合、自動で作成する
 				Files.createDirectories(dir);
-				//TODO ログを出力
-				System.out.println("画像保存先が不正のため、画像保存先を初期化しました");
+				log.warn("画像保存先パスが見つからないため、ファルダを自動生成しました");
 			}
 			Path target = dir.resolve(fileName);
 			ImageIO.write(snap, option.getFormat().toString(), target.toFile());		
 			
 			// 5.ログ出力
-			System.out.println("スクリーンショットの撮影処理に成功しました");
+			log.info("スクリーンショットの撮影に成功しました");
 			
 		} catch (AWTException | IOException e) {
 			throw new ServiceException("スクリーンショットの撮影に失敗しました", e);
