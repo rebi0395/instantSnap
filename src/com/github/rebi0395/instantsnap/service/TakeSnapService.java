@@ -33,6 +33,7 @@ public class TakeSnapService {
 			// 1.画面サイズを取得
 			SnapAreaResolver areaResolver = new SnapAreaResolver();
 			Rectangle snapSize = areaResolver.getSnapArea(option.getSnapMode());
+			
 			// 2.撮影
 			Robot robot = new Robot();
 			BufferedImage snap = robot.createScreenCapture(snapSize);
