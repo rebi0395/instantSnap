@@ -27,20 +27,24 @@ public class Option {
 	}
 
 	/**
-	 * @return savePath
+	 * スクショの保存先パスを取得する
+	 * @return savePath スクショの保存先パス
 	 */
 	public String getSavePath() {
+		if (this.savePath != null) {
+			return this.savePath.strip().replace("\\", "/");
+		}
 		return savePath;
 	}
 
 	/**
-	 * nullチェック、前後トリム処理を行い、savePathを適用する
-	 * 想定外の値やnull時には、デフォルトパスをセットする。
+	 * \の置換処理、前後トリム処理を行い、savePathを適用する
+	 * 想定外の値やnull時には、デフォルトパスをセットする
 	 * @param savePath スクショの保存先パス
 	 */
 	public void setSavePath(String savePath) {
 		if (savePath != null) {
-			this.savePath = savePath.strip();
+			this.savePath = savePath.strip().replace("\\", "/");
 		} else {
 			this.savePath = DEFAULT_SAVE_PATH;
 		}
