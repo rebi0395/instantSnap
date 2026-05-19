@@ -1,6 +1,5 @@
 package com.github.rebi0395.instantsnap.model.bean;
 
-
 import static com.github.rebi0395.instantsnap.common.AppConstant.*;
 
 import java.util.function.Function;
@@ -40,16 +39,16 @@ public class Option {
      */
     private <T> T validateAndConvert(String value, Function<String, T> parser, String configName, T defaultValue) {
         try {
-            // パース処理を試みる
-            T parsedValue = parser.apply(value);
-            
-            // パース結果がnullでなければそれを採用
-            if (parsedValue != null) {
-                return parsedValue;
-            }
+        	// パース処理を試みる
+        	T parsedValue = parser.apply(value);
+        	
+        	// パース結果がnullでなければそれを採用
+        	if (parsedValue != null) {
+        		return parsedValue;
+        	}
         } catch (RuntimeException e) {
         	// 変換中に例外が発生した場合、そのままデフォルトを返却
-        }
+        	}
         //TODO ログを出力 
         return defaultValue;
     }
