@@ -26,7 +26,7 @@ public class MainController implements KeyEventListener {
 		try {
 			this.option = new Option();
 			this.editor = new PropertiesRepository();
-			this.editor.readProperties(option);
+			this.editor.read(option);
 			this.manager = new TriggerKeyManager(option, this);
 			this.manager.activate();
 
