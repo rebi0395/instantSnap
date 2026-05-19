@@ -8,8 +8,6 @@ public final class AppConstant {
 	// インスタンス化しない
 	private AppConstant(){}
 	
-	// プロパティファイルのパス
-	public static final String PROPERTIES_PASS = "config.properties";
 	// プロパティの項目名 
 	public static final String SAVE_PATH = "savePath";
 	public static final String SNAP_MODE = "snapMode";
