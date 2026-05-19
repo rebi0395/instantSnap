@@ -27,7 +27,8 @@ public class Option {
 	}
 
 	/**
-	 * スクショの保存先パスを取得する
+	 * スクショの保存先パスを取得する。
+	 * パスは"\"を/に置換し、左右トリム処理を行う
 	 * @return savePath スクショの保存先パス
 	 */
 	public String getSavePath() {
@@ -58,18 +59,15 @@ public class Option {
 	}
 
 	/**
-	 * プロパティファイルの記載を元に、撮影範囲を適応します
-	 * @param code プロパティファイルの記載
-	 * @return デフォルトを適応した場合true、適応していない場合false
+	 * プロパティファイルの記載を元に、撮影モードをセットする
+	 * @param value プロパティファイルの記載
 	 */
-	public boolean applySnapMode(String code) {
-		SnapMode mode = SnapMode.fromCode(code);
+	public void setSnapMode(String value) {
+		SnapMode mode = SnapMode.fromCode(value);
 		if (mode != null) {
 			this.snapMode = mode;
-			return false;
 		} else {
 			this.snapMode = SnapMode.ACTIVE_WINDOW; // デフォルト値
-			return true;
 		}
 	}
 
@@ -82,18 +80,15 @@ public class Option {
 
 
 	/**
-	 * プロパティファイルの記載を元に、拡張子を適応します
-	 * @param propertyValue
-	 * @return デフォルトを適応した場合true、適応していない場合false
+	 * プロパティファイルの記載を元に、拡張子をセットする
+	 * @param value プロパティファイルの記載
 	 */
-	public boolean applyFormat(String propertyValue) {
-		FormatType type = FormatType.fromString(propertyValue);
+	public void setFormat(String value) {
+		FormatType type = FormatType.fromString(value);
 		if (type != null) {
 			this.format = type;
-			return false;
 		} else {
 			this.format = FormatType.PNG; // デフォルト値
-			return true;
 		}
 	}
 
