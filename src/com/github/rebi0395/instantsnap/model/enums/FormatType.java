@@ -3,44 +3,48 @@ package com.github.rebi0395.instantsnap.model.enums;
 /**
  * 画像の拡張子を列挙するクラス
  */
-public enum FormatType {
-	PNG("png"),
-	JPG("jpg", "jpeg"),
-	BMP("bmp"),
-	GIF("gif");
+public enum FormatType implements BaseEnum {
 
-	private final String[] formats; 
-	
-	FormatType(String... format) {
-		this.formats = format;
+	PNG("png", "png"),
+	JPG("jpg", "jpg"),
+	BMP("bmp", "bmp"),
+	GIF("gif", "gif");
+
+	/** プロパティファイルと紐つく値 */
+	private final String value;
+	/** 表示名 */
+	private final String displayName;
+
+	/** コンストラクタ */
+	FormatType(String value, String displayName) {
+		this.value = value;
+		this.displayName = displayName;
 	}
 
 	/**
-	 * 拡張子の正式名称を文字列型で取得する
+	 * @return value プロパティファイルと紐つく値
 	 */
-	 @Override
-	public String toString() {
-		return formats[0];
+	@Override
+	public String getValue() {
+		return value;
 	}
 
 	/**
-	 * プロパティファイルの記載を元に、拡張子を取得する
-	 * 入力値が不正の場合、nullを返却する
-	 * @param value プロパティファイルの記載
-	 * @return type
+	 * @return displayName 表示名
 	 */
-	public static FormatType fromString(String value) {
-		if (value != null && !value.isBlank()) {
-			String trimValue = value.strip(); // 左右空白除去
-		    for (FormatType type : values()) {
-		    	for (String formats : type.formats) {
-			    	// 大文字、小文字は区別しないで判定
-			        if (formats.equalsIgnoreCase(trimValue)) {
-			            return type;
-			        }
-		    	}
-		    }
-		}
-	    return null; // 不正値
+	@Override
+	public String getDisplayName() {
+		return displayName;
+	}
+
+	/**
+	 * プロパティファイルの値から対応する FormatType を取得する。
+	 * 不正な値が指定された場合は null を返す。
+	 *
+	 * @param value プロパティファイルと紐つく値
+	 * @return 対応する FormatType、または不正値の場合は null
+	 */
+	public static FormatType fromValue(String value) {
+		return BaseEnum.fromValue(FormatType.class, value);
 	}
 }

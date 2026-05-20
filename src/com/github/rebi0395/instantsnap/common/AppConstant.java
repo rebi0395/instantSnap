@@ -10,7 +10,7 @@ public final class AppConstant {
 	
 	// プロパティの項目名 
 	public static final String SAVE_PATH = "savePath";
-	public static final String SNAP_MODE = "snapMode";
+	public static final String SNAP_AREA = "snapArea";
 	public static final String FORMAT = "format";
 	public static final String TRIGGER = "trigger";
 	public static final String OPENMODE = "openMode";

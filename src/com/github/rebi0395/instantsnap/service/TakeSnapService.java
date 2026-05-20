@@ -48,7 +48,7 @@ public class TakeSnapService {
 			LocalDateTime now = LocalDateTime.now();
 			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd.HHmmss.SSS");
 			String systemTime = now.format(dtf);
-			String fileName = systemTime + "." + option.getFormat();
+			String fileName = systemTime + "." + option.getFormat().getValue();
 			
 			// 4.保存
 			Path dir = Paths.get(option.getSavePath());
