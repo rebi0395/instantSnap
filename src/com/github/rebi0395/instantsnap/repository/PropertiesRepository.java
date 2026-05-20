@@ -58,6 +58,7 @@ public class PropertiesRepository {
 			option.setSnapMode(properties.getProperty(SNAP_AREA));
 			option.setFormat(properties.getProperty(FORMAT));
 			option.setTrigger(properties.getProperty(TRIGGER));
+			option.setSnapAfter(properties.getProperty(SNAP_AFTER));
 
 		} catch (IOException ie) {
 			throw new ServiceException("プロパティファイルの読み込みに失敗しました", ie);

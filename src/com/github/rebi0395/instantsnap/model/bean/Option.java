@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.rebi0395.instantsnap.model.enums.FormatType;
+import com.github.rebi0395.instantsnap.model.enums.SnapAfter;
 import com.github.rebi0395.instantsnap.model.enums.SnapArea;
 
 /**
@@ -16,7 +17,7 @@ public class Option {
 	private SnapArea snapArea;
 	private FormatType format;
 	private String trigger;
-//	private SnapAfter snapAfter;
+	private SnapAfter snapAfter;
 
 	/** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(Option.class);
@@ -29,6 +30,7 @@ public class Option {
 		this.snapArea = SnapArea.ACTIVE_WINDOW;
 		this.format = FormatType.PNG;
 		this.trigger = SHIFT_PRINTSCREEN;
+		this.snapAfter = SnapAfter.NOTHING;
 	}
 
 	/**
@@ -140,27 +142,20 @@ public class Option {
 		}
 	}
 
-	//	/**
-	//	 * @return openMode
-	//	 */
-	//	public String getOpenMode() {
-	//		return openMode;
-	//	}
+	/**
+	 * @return snapAfter
+	 */
+	public SnapAfter getSnapAfter() {
+		return snapAfter;
+	}
 
-	//	/**
-	//	 * nullチェックを行い、撮影後の画像/フォルダ展開有無を適用する
-	//	 * 想定外の値やnull時には、撮影後フォルダを開かない。
-	//	 * @param openMode 撮影後の自動展開設定
-	//	 */
-	//	public void setOpenMode(String openMode) {
-	//		if (openMode == null) {
-	//			this.openMode = DISOPEN;
-	//		} else if (AUTO_OPEN_IMAGE.equals(openMode)) {
-	//			this.openMode = AUTO_OPEN_IMAGE;
-	//		} else if (AUTO_OPEN_FOLDER.equals(openMode)){
-	//			this.openMode = AUTO_OPEN_FOLDER;
-	//		} else {
-	//			this.openMode = DISOPEN;
-	//		}
-	//	}
+	/**
+	 * プロパティファイルの記載を元に、撮影後設定をセットする
+	 * 想定外の値のとき、デフォルト値を設定し、ログで通知する
+	 * @param value プロパティファイルの記載
+	 */
+	public void setSnapAfter(String value) {
+		SnapAfter after = SnapAfter.fromValue(value);
+		this.snapAfter = validateAndConvert(after, SnapAfter.NOTHING, SNAP_AFTER, value);
+	}
 }

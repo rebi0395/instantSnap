@@ -72,6 +72,9 @@ public class TakeSnapService {
 			// 5.ログ出力
 			log.info("スクリーンショットの撮影に成功しました");
 			
+			// 6.後処理
+			option.getSnapAfter().afterAction(target);
+			
 		} catch (AWTException | IOException e) {
 			throw new ServiceException("スクリーンショットの撮影に失敗しました", e);
 		}

@@ -126,7 +126,7 @@ public class SnapAreaResolver {
 				return ge.getScreenDevices()[0];
 			}
 		} catch (Exception e) {
-			log.warn("アクティブウィンドウの属するモニターの特定に失敗しました");
+			log.warn("アクティブウィンドウの属するモニターの特定に失敗しました", e);
 		}
 		return null;
 	}
@@ -172,7 +172,7 @@ public class SnapAreaResolver {
 			return finalResult.intersection(deviceBounds); // 画面外の黒領域をカットする
 			
 		} catch (Throwable t) {
-			log.warn("Windowsの物理座標を、Javaの仮想画面座標系へスケーリング変換処理が失敗しました");
+			log.warn("Windowsの物理座標を、Javaの仮想画面座標系へスケーリング変換処理が失敗しました", t);
 			return physRect; // 失敗時は物理座標のまま返却する
 		}
 	}
