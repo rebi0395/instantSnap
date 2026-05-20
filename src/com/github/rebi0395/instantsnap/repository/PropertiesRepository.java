@@ -55,7 +55,7 @@ public class PropertiesRepository {
 
 			// プロパティから読み取った情報をセット
 			option.setSavePath(properties.getProperty(SAVE_PATH));
-			option.setSnapMode(properties.getProperty(SNAP_MODE));
+			option.setSnapMode(properties.getProperty(SNAP_AREA));
 			option.setFormat(properties.getProperty(FORMAT));
 			option.setTrigger(properties.getProperty(TRIGGER));
 
@@ -96,7 +96,7 @@ public class PropertiesRepository {
 			#撮影範囲の選択
 			#1 -> アクティブウィンドウ(デフォルト), 2 -> アクティブモニター
 			#3 -> メインモニター, 4 -> 全てのモニター
-			snapMode=1
+			snapArea=1
 
 			#拡張子の選択 png、jpg、bmp、gifのいずれかを記載してください
 			format=png

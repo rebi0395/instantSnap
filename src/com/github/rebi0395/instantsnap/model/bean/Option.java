@@ -2,23 +2,21 @@ package com.github.rebi0395.instantsnap.model.bean;
 
 import static com.github.rebi0395.instantsnap.common.AppConstant.*;
 
-import java.util.function.Function;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.rebi0395.instantsnap.model.enums.FormatType;
-import com.github.rebi0395.instantsnap.model.enums.SnapMode;
+import com.github.rebi0395.instantsnap.model.enums.SnapArea;
 
 /**
  * 設定値保管クラス。セット時に値の安全性も保証する
  */
 public class Option {
 	private String savePath;
-	private SnapMode snapMode;
+	private SnapArea snapArea;
 	private FormatType format;
 	private String trigger;
-	//	private String openMode;
+//	private SnapAfter snapAfter;
 
 	/** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(Option.class);
@@ -28,35 +26,40 @@ public class Option {
 	 */
 	public Option() {
 		this.savePath = DEFAULT_SAVE_PATH;
-		this.snapMode = SnapMode.ACTIVE_WINDOW;
+		this.snapArea = SnapArea.ACTIVE_WINDOW;
 		this.format = FormatType.PNG;
 		this.trigger = SHIFT_PRINTSCREEN;
 	}
 
 	/**
-	 * 設定値を検証し、不正な値の場合はデフォルト値を適用して警告ログを出すセッターヘルパー
+	 * 設定値を検証し、不正な値の場合はデフォルト値を適用して警告ログを出す
 	 * 
 	 * @param <T> プロパティの型（EnumやIntegerなど）
-	 * @param value プロパティファイルから読み込んだ文字列
-	 * @param parser 文字列を目的の型に変換するロジック
-	 * @param configName ログに出力する設定項目名
+	 * @param value 検索対象
 	 * @param defaultValue 想定外の値だった場合に返すデフォルト値
+	 * @param configName 設定項目名（ログ出力用）
+	 * @param raw プロパティファイルから読み込んだ生の文字列（ログ出力用）
 	 * @return 解析に成功した値、またはデフォルト値
 	 */
-	private <T> T validateAndConvert(String value, Function<String, T> parser, String configName, T defaultValue) {
-		try {
-			// パース処理を試みる
-			T parsedValue = parser.apply(value);
+	@SuppressWarnings("unchecked")
+	private <T> T validateAndConvert(T value, T defaultValue, String configName, String raw) {
 
-			// パース結果がnullでなければそれを採用
-			if (parsedValue != null) {
-				return parsedValue;
+		// String型の場合、空チェックを実施する
+		if (value instanceof String str) {
+			if (!str.strip().isBlank()){
+				return (T) str.strip(); // 空白除去し、返却
+			} else {
+				value = null; // 不正値扱いにする
 			}
-		} catch (RuntimeException e) {
-			log.error("パース処理に失敗しました");
 		}
-		log.warn("設定項目：「"+ configName + "」の値が不正のため、"
-				+ "デフォルト値：" + defaultValue + "を適用します");
+
+		// nullでなければ採用する
+		if (value != null) {
+			return value;
+		} 
+
+		log.warn("設定項目「{}」の値({})が不正のため、デフォルト値 {} を適用します", 
+				configName, raw, defaultValue);
 		return defaultValue;
 	}
 
@@ -84,8 +87,8 @@ public class Option {
 	/**
 	 * @return snapMode
 	 */
-	public SnapMode getSnapMode() {
-		return snapMode;
+	public SnapArea getSnapMode() {
+		return snapArea;
 	}
 
 	/**
@@ -94,11 +97,8 @@ public class Option {
 	 * @param value プロパティファイルの記載
 	 */
 	public void setSnapMode(String value) {
-		this.snapMode = validateAndConvert(
-				value,
-				SnapMode::fromCode,
-				SNAP_MODE,
-				SnapMode.ACTIVE_WINDOW);
+		SnapArea mode = SnapArea.fromValue(value);
+		this.snapArea = validateAndConvert(mode, SnapArea.ACTIVE_WINDOW, SNAP_AREA, value);
 	}
 
 	/**
@@ -114,11 +114,8 @@ public class Option {
 	 * @param value プロパティファイルの記載
 	 */
 	public void setFormat(String value) {
-		this.format = validateAndConvert(
-				value,
-				FormatType::fromString,
-				FORMAT,
-				FormatType.PNG);
+		FormatType type = FormatType.fromValue(value);
+		this.format = validateAndConvert(type, FormatType.PNG, FORMAT, value);
 	}
 
 	/**
