@@ -37,10 +37,10 @@ public class MainController implements KeyEventListener {
 
 		// チェック済例外
 		} catch (ServiceException e) {
-			// ダイアログ処理など
+			log.error("アプリの初期化に失敗しました", e);
 		// 非チェック例外
 		} catch (Exception e) {
-			log.error("想定外のエラーが発生しました");
+			log.error("想定外のエラーが発生しました", e);
 		}
 	}
 
@@ -55,8 +55,9 @@ public class MainController implements KeyEventListener {
     		try {
     			// 撮影処理
 				snap.execute(option);
+				
 			} catch (ServiceException e) {
-				// ダイアログ等
+				log.error("スクリーンショットの撮影または保存に失敗しました", e);
 			}
 		}).start();
 	}
@@ -69,7 +70,7 @@ public class MainController implements KeyEventListener {
 		try {
 			manager.deactivate();
 		} catch (ServiceException e) {
-			// ダイアログ等
+			log.error("キー監視の終了処理に失敗しました", e);
 		}
 	}
 }

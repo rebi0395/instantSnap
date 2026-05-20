@@ -34,7 +34,7 @@ public class DpiUtil {
 					.invoke(new Object[] { DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 });
 			log.info("DPI Awareness: Per-Monitor V2 enabled");
 		} catch (Throwable t) {
-			log.warn("DPI Awareness setting failed: " + t.getMessage());
+			log.warn("DPI Awareness setting failed: ", t);
 		}
 	}
 }
