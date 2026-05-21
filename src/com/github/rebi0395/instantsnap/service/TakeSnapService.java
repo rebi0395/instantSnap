@@ -5,6 +5,7 @@ import static com.github.rebi0395.instantsnap.common.AppConstant.*;
 import java.awt.AWTException;
 import java.awt.Rectangle;
 import java.awt.Robot;
+import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -18,6 +19,7 @@ import javax.imageio.ImageIO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.rebi0395.instantsnap.common.ImageTransferable;
 import com.github.rebi0395.instantsnap.exception.ServiceException;
 import com.github.rebi0395.instantsnap.model.bean.Option;
 
@@ -44,7 +46,7 @@ public class TakeSnapService {
 			Robot robot = new Robot();
 			BufferedImage snap = robot.createScreenCapture(snapSize);
 			
-			// 3.ファイル名作成(yyyyMMdd_HHmmss)
+			// 3.ファイル名作成(yyyyMMdd_HHmmss.SSS)
 			LocalDateTime now = LocalDateTime.now();
 			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd.HHmmss.SSS");
 			String systemTime = now.format(dtf);
@@ -67,12 +69,11 @@ public class TakeSnapService {
 				log.warn("画像保存先パスが見つからないため、ファルダを自動生成しました");
 			}
 			Path target = dir.resolve(fileName);
-			ImageIO.write(snap, option.getFormatType().toString(), target.toFile());		
-			
-			// 5.ログ出力
+			ImageIO.write(snap, option.getFormatType().toString(), target.toFile());
 			log.info("スクリーンショットの撮影に成功しました");
 			
-			// 6.後処理
+			// クリップボードに画像を保存する
+			Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new ImageTransferable(snap),null);
 			
 		} catch (AWTException | IOException e) {
 			throw new ServiceException("スクリーンショットの撮影に失敗しました", e);

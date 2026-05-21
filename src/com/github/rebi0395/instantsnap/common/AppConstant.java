@@ -6,7 +6,7 @@ package com.github.rebi0395.instantsnap.common;
 public final class AppConstant {
 	
 	// インスタンス化しない
-	private AppConstant(){}
+	private AppConstant() {}
 	
 	// プロパティの項目名 
 	public static final String SAVE_PATH = "savePath";
