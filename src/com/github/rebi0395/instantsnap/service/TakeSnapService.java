@@ -38,7 +38,7 @@ public class TakeSnapService {
 		try {
 			// 1.画面サイズを取得
 			SnapAreaResolver areaResolver = new SnapAreaResolver();
-			Rectangle snapSize = areaResolver.getSnapArea(option.getSnapMode());
+			Rectangle snapSize = areaResolver.getSnapArea(option.getSnapArea());
 			
 			// 2.撮影
 			Robot robot = new Robot();
@@ -48,7 +48,7 @@ public class TakeSnapService {
 			LocalDateTime now = LocalDateTime.now();
 			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd.HHmmss.SSS");
 			String systemTime = now.format(dtf);
-			String fileName = systemTime + "." + option.getFormat().getValue();
+			String fileName = systemTime + "." + option.getFormatType().getValue();
 			
 			// 4.保存
 			Path dir = Paths.get(option.getSavePath());
@@ -67,13 +67,12 @@ public class TakeSnapService {
 				log.warn("画像保存先パスが見つからないため、ファルダを自動生成しました");
 			}
 			Path target = dir.resolve(fileName);
-			ImageIO.write(snap, option.getFormat().toString(), target.toFile());		
+			ImageIO.write(snap, option.getFormatType().toString(), target.toFile());		
 			
 			// 5.ログ出力
 			log.info("スクリーンショットの撮影に成功しました");
 			
 			// 6.後処理
-			option.getSnapAfter().afterAction(target);
 			
 		} catch (AWTException | IOException e) {
 			throw new ServiceException("スクリーンショットの撮影に失敗しました", e);

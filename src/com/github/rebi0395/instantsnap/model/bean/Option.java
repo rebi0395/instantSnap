@@ -89,35 +89,31 @@ public class Option {
 	/**
 	 * @return snapMode
 	 */
-	public SnapArea getSnapMode() {
+	public SnapArea getSnapArea() {
 		return snapArea;
 	}
 
 	/**
-	 * プロパティファイルの記載を元に、撮影モードをセットする
-	 * 想定外の値のとき、デフォルト値を設定し、ログで通知する
-	 * @param value プロパティファイルの記載
+	 * 撮影モードをセットする
+	 * @param area 撮影モード
 	 */
-	public void setSnapMode(String value) {
-		SnapArea mode = SnapArea.fromValue(value);
-		this.snapArea = validateAndConvert(mode, SnapArea.ACTIVE_WINDOW, SNAP_AREA, value);
+	public void setSnapArea(SnapArea area) {
+		this.snapArea = area;
 	}
 
 	/**
 	 * @return format
 	 */
-	public FormatType getFormat() {
+	public FormatType getFormatType() {
 		return format;
 	}
 
 	/**
-	 * プロパティファイルの記載を元に、拡張子をセットする
-	 * 想定外の値のとき、デフォルト値を設定し、ログで通知する
-	 * @param value プロパティファイルの記載
+	 * 拡張子をセットする
+	 * @param format 拡張子
 	 */
-	public void setFormat(String value) {
-		FormatType type = FormatType.fromValue(value);
-		this.format = validateAndConvert(type, FormatType.PNG, FORMAT, value);
+	public void setFormatType(FormatType format) {
+		this.format = format;
 	}
 
 	/**
@@ -150,12 +146,10 @@ public class Option {
 	}
 
 	/**
-	 * プロパティファイルの記載を元に、撮影後設定をセットする
-	 * 想定外の値のとき、デフォルト値を設定し、ログで通知する
-	 * @param value プロパティファイルの記載
+	 * 撮影後設定をセットする
+	 * @param snapAfter 撮影後設定
 	 */
-	public void setSnapAfter(String value) {
-		SnapAfter after = SnapAfter.fromValue(value);
-		this.snapAfter = validateAndConvert(after, SnapAfter.NOTHING, SNAP_AFTER, value);
+	public void setSnapAfter(SnapAfter snapAfter) {
+		this.snapAfter = snapAfter;
 	}
 }
