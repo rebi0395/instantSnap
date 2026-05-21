@@ -1,5 +1,7 @@
 package com.github.rebi0395.instantsnap.model.enums;
 
+import static com.github.rebi0395.instantsnap.common.AppConstant.*;
+
 /**
  * 撮影モードを指定するクラス
  */
@@ -45,10 +47,20 @@ public enum SnapArea implements BaseEnum {
 	 * プロパティファイルの値から対応する SnapArea を取得する。
 	 * 不正な値が指定された場合は null を返す。
 	 *
-	 * @param value プロパティファイルと紐つく値
+	 * @param raw プロパティファイルと紐つく値
 	 * @return 対応する SnapArea、または不正値の場合は null
 	 */
-	public static SnapArea fromValue(String value) {
-		return BaseEnum.fromValue(SnapArea.class, value);
+	public static SnapArea parseValue(String raw) {
+	    return BaseEnum.parseValue(SnapArea.class, raw);
+	}
+
+	/**
+	 * プロパティファイルの値から対応する SnapArea を取得する。
+	 * 不正な値が指定された場合は デフォルト値を返し、ログを出力する。
+	 * @param raw プロパティファイルと紐つく値
+	 * @return 対応する SnapArea、またはデフォルトの SnapArea
+	 */
+	public static SnapArea parseOrDefault(String raw) {
+	    return BaseEnum.parseOrDefault(SnapArea.class, raw, ACTIVE_WINDOW, SNAP_AREA);
 	}
 }

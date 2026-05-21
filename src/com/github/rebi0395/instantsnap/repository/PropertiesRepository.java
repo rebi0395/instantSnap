@@ -15,6 +15,9 @@ import org.slf4j.LoggerFactory;
 
 import com.github.rebi0395.instantsnap.exception.ServiceException;
 import com.github.rebi0395.instantsnap.model.bean.Option;
+import com.github.rebi0395.instantsnap.model.enums.FormatType;
+import com.github.rebi0395.instantsnap.model.enums.SnapAfter;
+import com.github.rebi0395.instantsnap.model.enums.SnapArea;
 
 /**
  * プロパティファイルの読み取り、書き込みを行い、
@@ -55,10 +58,10 @@ public class PropertiesRepository {
 
 			// プロパティから読み取った情報をセット
 			option.setSavePath(properties.getProperty(SAVE_PATH));
-			option.setSnapMode(properties.getProperty(SNAP_AREA));
-			option.setFormat(properties.getProperty(FORMAT));
+			option.setSnapArea(SnapArea.parseOrDefault(properties.getProperty(SNAP_AREA)));
+			option.setFormatType(FormatType.parseOrDefault(properties.getProperty(FORMAT)));
 			option.setTrigger(properties.getProperty(TRIGGER));
-			option.setSnapAfter(properties.getProperty(SNAP_AFTER));
+			option.setSnapAfter(SnapAfter.parseOrDefault(properties.getProperty(SNAP_AFTER)));
 
 		} catch (IOException ie) {
 			throw new ServiceException("プロパティファイルの読み込みに失敗しました", ie);
