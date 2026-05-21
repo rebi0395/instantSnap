@@ -11,12 +11,15 @@ import com.sun.jna.Pointer;
  */
 public class DpiUtil {
 
-	// モニターごとに異なるDPI（拡大率）をプロセス全体に強制適用する設定値
+	/** モニターごとに異なるDPI（拡大率）をプロセス全体に強制適用する設定値 */
 	private static final Pointer DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 = new Pointer(-4);
-	// 初期化有無の変数
+	/** 初期化有無の変数 */
 	private static boolean initialized = false;
-	// ロガー
+	/** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(DpiUtil.class);
+
+	//インスタンス化しない
+	private DpiUtil() {}
 
 	/**
 	 * アプリ起動時に呼び出し、モニターごとに異なるDPI（拡大率）を
