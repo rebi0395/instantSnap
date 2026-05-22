@@ -1,9 +1,7 @@
 package com.github.rebi0395.instantsnap.model.bean;
 
 import static com.github.rebi0395.instantsnap.common.AppConstant.*;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static com.github.rebi0395.instantsnap.common.StrCheckUtil.*;
 
 import com.github.rebi0395.instantsnap.model.enums.FormatType;
 import com.github.rebi0395.instantsnap.model.enums.SnapAfter;
@@ -13,14 +11,19 @@ import com.github.rebi0395.instantsnap.model.enums.SnapArea;
  * 設定値保管クラス。セット時に値の安全性も保証する
  */
 public class Option {
-	private String savePath;
-	private SnapArea snapArea;
-	private FormatType format;
-	private String trigger;
-	private SnapAfter snapAfter;
 
-	/** ロガー */
-	private static final Logger log = LoggerFactory.getLogger(Option.class);
+	/** 画像の保存パス */
+	private String savePath;
+	/** 撮影範囲 */
+	private SnapArea snapArea;
+	/** 拡張子 */
+	private FormatType formatType;
+	/** 撮影キー */
+	private String trigger;
+	/** 撮影後設定 */
+	private SnapAfter snapAfter;
+	/** クリップボードに画像に保存する (trueで保存する) */
+	private boolean isCopyToClipboard = true;
 
 	/**
 	 * コンストラクタ。デフォルト値を設定する
@@ -28,41 +31,9 @@ public class Option {
 	public Option() {
 		this.savePath = DEFAULT_SAVE_PATH;
 		this.snapArea = SnapArea.ACTIVE_WINDOW;
-		this.format = FormatType.PNG;
+		this.formatType = FormatType.PNG;
 		this.trigger = SHIFT_PRINTSCREEN;
 		this.snapAfter = SnapAfter.NOTHING;
-	}
-
-	/**
-	 * 設定値を検証し、不正な値の場合はデフォルト値を適用して警告ログを出す
-	 * 
-	 * @param <T> プロパティの型（EnumやIntegerなど）
-	 * @param value 検索対象
-	 * @param defaultValue 想定外の値だった場合に返すデフォルト値
-	 * @param configName 設定項目名（ログ出力用）
-	 * @param raw プロパティファイルから読み込んだ生の文字列（ログ出力用）
-	 * @return 解析に成功した値、またはデフォルト値
-	 */
-	@SuppressWarnings("unchecked")
-	private <T> T validateAndConvert(T value, T defaultValue, String configName, String raw) {
-
-		// String型の場合、空チェックを実施する
-		if (value instanceof String str) {
-			if (!str.strip().isBlank()){
-				return (T) str.strip(); // 空白除去し、返却
-			} else {
-				value = null; // 不正値扱いにする
-			}
-		}
-
-		// nullでなければ採用する
-		if (value != null) {
-			return value;
-		} 
-
-		log.warn("設定項目「{}」の値({})が不正のため、デフォルト値 {} を適用します", 
-				configName, raw, defaultValue);
-		return defaultValue;
 	}
 
 	/**
@@ -79,14 +50,15 @@ public class Option {
 	 * @param savePath スクショの保存先パス
 	 */
 	public void setSavePath(String savePath) {
-		if (savePath != null && !savePath.isBlank()) {
-			this.savePath = savePath.strip().replace("\\", "/");
-		} else {
+		if (isBlankSafe(savePath)) {
 			this.savePath = DEFAULT_SAVE_PATH;
+		} else {
+			this.savePath = savePath.strip().replace("\\", "/");
 		}
 	}
 
 	/**
+	 * 撮影範囲を取得する
 	 * @return snapMode
 	 */
 	public SnapArea getSnapArea() {
@@ -94,18 +66,19 @@ public class Option {
 	}
 
 	/**
-	 * 撮影モードをセットする
-	 * @param area 撮影モード
+	 * 撮影範囲をセットする
+	 * @param area 撮影範囲
 	 */
 	public void setSnapArea(SnapArea area) {
 		this.snapArea = area;
 	}
 
 	/**
-	 * @return format
+	 * 拡張子を取得する
+	 * @return format 拡張子
 	 */
 	public FormatType getFormatType() {
-		return format;
+		return formatType;
 	}
 
 	/**
@@ -113,7 +86,7 @@ public class Option {
 	 * @param format 拡張子
 	 */
 	public void setFormatType(FormatType format) {
-		this.format = format;
+		this.formatType = format;
 	}
 
 	/**
@@ -139,7 +112,8 @@ public class Option {
 	}
 
 	/**
-	 * @return snapAfter
+	 * 撮影後設定を取得する
+	 * @return snapAfter 撮影後設定
 	 */
 	public SnapAfter getSnapAfter() {
 		return snapAfter;
@@ -151,5 +125,21 @@ public class Option {
 	 */
 	public void setSnapAfter(SnapAfter snapAfter) {
 		this.snapAfter = snapAfter;
+	}
+
+	/**
+	 * 撮影後、クリップボードに保存するかの設定を返します
+	 * @return isCopyToClipboard
+	 */
+	public boolean getIsCopyToClipboard() {
+		return isCopyToClipboard;
+	}
+
+	/**
+	 * 撮影後、クリップボードに保存するかの設定をセットします
+	 * @param isCopyToClipboard セットする isClipboard
+	 */
+	public void setIsCopyToClipboard(boolean isCopyToClipboard) {
+		this.isCopyToClipboard = isCopyToClipboard;
 	}
 }
