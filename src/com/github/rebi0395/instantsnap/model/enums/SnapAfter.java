@@ -6,12 +6,12 @@ import static com.github.rebi0395.instantsnap.common.AppConstant.*;
  */
 public enum SnapAfter implements BaseEnum {
 
-	/** 何もしない(デフォルト値) */
-	NOTHING("1", "Nothing"),
 	/** 保存先フォルダを開く */
-	OPEN_DIR("2", "OpenDirectory"),
+	OPEN_DIR("1", "OpenDirectory"),
 	/** 保存した画像ファイルを開く */
-	OPEN_IMAGE("3", "OpenFile");
+	OPEN_IMAGE("2", "OpenFile"),
+	/** 何もしない(デフォルト値) */
+	NOTHING("0", "Nothing");
 
 	/** プロパティファイルと紐つく値 */
 	private final String value;

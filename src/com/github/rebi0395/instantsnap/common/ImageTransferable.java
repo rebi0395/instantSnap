@@ -12,13 +12,13 @@ public class ImageTransferable implements Transferable {
 	/** 転送する画像 */
 	private Image image;
 
-	/** 画像を受け取るコンストラクタ */
+	/** 画像を登録するコンストラクタ */
 	public ImageTransferable(Image image) {
 		this.image = image;
 	}
 
 	/**
-	 * 転送可能なデータフレーバーを取得する
+	 * 転送可能な画像型データフレーバーを取得する
 	 */
 	@Override
 	public DataFlavor[] getTransferDataFlavors() {
@@ -39,7 +39,8 @@ public class ImageTransferable implements Transferable {
 	@Override
 	public Object getTransferData(DataFlavor flavor) {
 		if (!DataFlavor.imageFlavor.equals(flavor)) {
-			AppLogger.error("getTransferDataFlavors");
+			AppLogger.error("getTransferDataFlavors InValid DataFlavor");
+			return null;
 		}
 		return image;
 	}

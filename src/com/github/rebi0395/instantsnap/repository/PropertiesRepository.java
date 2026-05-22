@@ -1,6 +1,7 @@
 package com.github.rebi0395.instantsnap.repository;
 
 import static com.github.rebi0395.instantsnap.common.AppConstant.*;
+import static com.github.rebi0395.instantsnap.common.StrCheckUtil.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -62,6 +63,7 @@ public class PropertiesRepository {
 			option.setFormatType(FormatType.parseOrDefault(properties.getProperty(FORMAT)));
 			option.setTrigger(properties.getProperty(TRIGGER));
 			option.setSnapAfter(SnapAfter.parseOrDefault(properties.getProperty(SNAP_AFTER)));
+			option.setIsCopyToClipboard(isStrTrue(properties.getProperty(COPY_TO_CLIPBOARD)));
 
 		} catch (IOException ie) {
 			throw new ServiceException("プロパティファイルの読み込みに失敗しました", ie);

@@ -1,5 +1,7 @@
 package com.github.rebi0395.instantsnap.model.enums;
 
+import static com.github.rebi0395.instantsnap.common.StrCheckUtil.*;
+
 import com.github.rebi0395.instantsnap.common.AppLogger;
 
 /**
@@ -37,7 +39,9 @@ public interface BaseEnum {
 	        String configName
 	) {
 	    E value = parseValue(type, raw);
-	    if (value != null) return value;
+	    if (value != null) {
+	    	return value;
+	    }
 
 	    AppLogger.warn("設定項目「{}」の値({})が不正のため、デフォルト値 {} を適用します",
 	            configName, raw, defaultValue.getDisplayName());
@@ -51,15 +55,15 @@ public interface BaseEnum {
 	 * @return 設定項目
 	 */
 	static <E extends Enum<?> & BaseEnum> E parseValue(Class<E> enums, String value) {
-		if (value != null && !value.isBlank()) {
-			value = value.strip(); // 左右空白除去
+		if (!isBlankSafe(value)) {
+			String sValue = value.strip(); // 左右空白除去
 			for (E mode : enums.getEnumConstants()) {
 				// アルファベットの大文字、小文字の差異は無視する
-				if (mode.getValue().equalsIgnoreCase(value)) {
+				if (mode.getValue().equalsIgnoreCase(sValue)) {
 					return mode;
 				}
 			}
 		}
-		return null; // 不正値
+		return null;
 	}
 }

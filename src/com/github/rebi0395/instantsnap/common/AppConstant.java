@@ -14,6 +14,7 @@ public final class AppConstant {
 	public static final String FORMAT = "format";
 	public static final String TRIGGER = "trigger";
 	public static final String SNAP_AFTER = "snapAfter";
+	public static final String COPY_TO_CLIPBOARD = "copyToClipboard";
 	// デフォルト値
 	public static final String DEFAULT_SAVE_PATH = "./screenshots/";
 	// 撮影トリガーキー
