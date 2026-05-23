@@ -101,7 +101,9 @@ public class TakeSnapService {
 			retry++;
 			try {
 				clipboard.setContents(transferable, null); // ownerは不要のためnull
-				return; // 成功時、メソッドを終了する
+				// 保存成功時の処理
+				log.info("クリップボードに画像を保存しました");
+				return; // メソッドを終了する
 			} catch (Exception e) {
 				stackTrace = e; // スタックトレースを保存
 				try {
