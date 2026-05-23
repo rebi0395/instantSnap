@@ -7,7 +7,7 @@ import static com.github.rebi0395.instantsnap.common.AppConstant.*;
 public enum SnapAfter implements BaseEnum {
 
 	/** 保存先フォルダを開く */
-	OPEN_DIR("1", "OpenDirectory"),
+	NOTICE("1", "notice"),
 	/** 保存した画像ファイルを開く */
 	OPEN_IMAGE("2", "OpenFile"),
 	/** 何もしない(デフォルト値) */
