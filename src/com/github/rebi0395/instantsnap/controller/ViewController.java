@@ -2,6 +2,12 @@ package com.github.rebi0395.instantsnap.controller;
 
 import java.io.File;
 
+import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
+import com.github.rebi0395.instantsnap.model.enums.FormatType;
+import com.github.rebi0395.instantsnap.model.enums.SnapAfter;
+import com.github.rebi0395.instantsnap.model.enums.SnapArea;
+import com.github.rebi0395.instantsnap.service.ServiceFacade;
+
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
@@ -14,6 +20,9 @@ import javafx.stage.Stage;
 
 public class ViewController {
 
+	/** サービスクラスの司令塔クラス */
+	private ServiceFacade facade;
+	
 	@FXML private Label statusLabel;
 	
 	@FXML private RadioButton mode1;
@@ -25,20 +34,41 @@ public class ViewController {
 	@FXML private TextField opt2;
 	@FXML private TextField opt3;
 
+	/** 保存先のフォルダを表示するテキストフィールド */
 	@FXML private TextField filePath;
 	
 	// String型のまま紐付け
-	@FXML private ComboBox<String> rangeBox;
-	@FXML private ComboBox<String> extBox;
+	@FXML private ComboBox<String> snapAreaBox;
+	@FXML private ComboBox<String> formatBox;
 	@FXML private ComboBox<String> afterBox;
 	@FXML private CheckBox checkOption;
 
 	@FXML
 	public void initialize() {
-		// コンボボックスの初期選択（FXMLの1番上の項目が選ばれます）
-		rangeBox.getSelectionModel().selectFirst();
-		extBox.getSelectionModel().selectFirst();
-		afterBox.getSelectionModel().selectFirst();
+		
+		ConfigBean config = facade.getConfigBean();
+		
+		// 保存先のフォルダをテキストフィールドにセット
+		config.getSavePath();
+		filePath.setText(config.getSavePath());
+		
+		// 撮影範囲のリストをセット
+		for (SnapArea area : SnapArea.values()) {
+			snapAreaBox.getItems().add(area.getDisplayName());
+		}
+		snapAreaBox.setValue(config.getSnapArea().getDisplayName()); // 初期選択
+		// 拡張子のリストをセット
+		for (FormatType type : FormatType.values()) {
+			formatBox.getItems().add(type.getDisplayName());
+		}
+		formatBox.setValue(config.getFormatType().getDisplayName()); // 初期選択
+		// 撮影後設定のリストをセット
+		for (SnapAfter after : SnapAfter.values()) {
+			afterBox.getItems().add(after.getDisplayName());
+		}
+		afterBox.setValue(config.getSnapAfter().getDisplayName()); // 初期選択
+		// クリップボードに画像をするかのチェックボックスをセット
+		checkOption.setSelected(config.getIsCopyToClipboard());
 
 		// ToggleGroup をコード側で作る
 		ToggleGroup group = new ToggleGroup();
@@ -65,7 +95,7 @@ public class ViewController {
 		dc.setTitle("保存先フォルダを選択");
 		File folder = dc.showDialog(new Stage());
 		if (folder != null) {
-			filePath.setText(folder.getAbsolutePath());
+			filePath.setText(folder.getAbsolutePath().replace("\\", "/")); // パス文字を置換する
 		}
 	}
 
@@ -75,7 +105,7 @@ public class ViewController {
 	@FXML
 	public void onApplyConfig() {
 		String folderPath = filePath.getText();
-		String selectedExt = extBox.getValue(); // そのまま String で取得
+		String selectedExt = formatBox.getValue(); // そのまま String で取得
 		boolean isOptionEnabled = checkOption.isSelected();
 		
 		if (folderPath == null || folderPath.isEmpty()) {
@@ -101,12 +131,28 @@ public class ViewController {
 		filePath.clear();         // フォルダパスを空に
 		
 		// 各コンボボックスを一番上にリセット
-		rangeBox.getSelectionModel().selectFirst();
-		extBox.getSelectionModel().selectFirst();
+		snapAreaBox.getSelectionModel().selectFirst();
+		formatBox.getSelectionModel().selectFirst();
 		afterBox.getSelectionModel().selectFirst();
 		
 		checkOption.setSelected(false); // チェック解除
 		
 		statusLabel.setText("ステータス: 設定を初期化しました。");
+	}
+	
+	/**
+	 * サービスクラスの司令塔クラスを取得する
+	 * @return facade
+	 */
+	public ServiceFacade getFacade() {
+		return facade;
+	}
+
+	/**
+	 * サービスクラスの司令塔クラスをセットする
+	 * @param facade セットする facade
+	 */
+	public void setFacade(ServiceFacade facade) {
+		this.facade = facade;
 	}
 }

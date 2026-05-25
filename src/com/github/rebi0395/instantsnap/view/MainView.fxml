@@ -6,98 +6,77 @@
 <?import javafx.collections.FXCollections?>
 <?import java.lang.String?>
 
-<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.github.rebi0395.instantsnap.controller.ViewController">
+<?import java.lang.String?>
 
-    <top>
-        <Label fx:id="statusLabel" text="起動中..." />
-    </top>
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" stylesheets="@../view/main.css">
 
-    <center>
-        <VBox spacing="20">
-            <padding>
-                <Insets top="20" right="20" bottom="20" left="20"/>
-            </padding>
-            
-            <VBox spacing="10">
-                <Label text="① モード選択" styleClass="section-title"/>
-                <HBox spacing="15">
-                    <RadioButton fx:id="mode1" text="モード1"/>
-                    <RadioButton fx:id="mode2" text="モード2"/>
-                    <RadioButton fx:id="mode3" text="モード3"/>
-                    <RadioButton fx:id="modeOther" text="その他"/>
-                </HBox>
-                <HBox spacing="10">
-                    <TextField fx:id="opt1" promptText="オプション1" disable="true"/>
-                    <TextField fx:id="opt2" promptText="オプション2" disable="true"/>
-                    <TextField fx:id="opt3" promptText="オプション3" disable="true"/>
-                </HBox>
-            </VBox>
+	<top>
+		<Label fx:id="statusLabel" text="起動中..." />
+	</top>
 
-            <VBox spacing="10">
-                <Label text="② 保存先フォルダ選択" styleClass="section-title"/>
-                <HBox spacing="10">
-                    <Button text="選択..." onAction="#onSelectFile"/>
-                    <TextField fx:id="filePath" promptText="選択されたフォルダ" editable="false"/>
-                </HBox>
-            </VBox>
+	<center>
+		<VBox spacing="20">
+			<padding>
+				<Insets top="20" right="20" bottom="20" left="20"/>
+			</padding>
+			
+			<VBox spacing="10">
+				<Label text="① モード選択" styleClass="section-title"/>
+				<HBox spacing="15">
+					<RadioButton fx:id="mode1" text="モード1"/>
+					<RadioButton fx:id="mode2" text="モード2"/>
+					<RadioButton fx:id="mode3" text="モード3"/>
+					<RadioButton fx:id="modeOther" text="その他"/>
+				</HBox>
+				<HBox spacing="10">
+					<TextField fx:id="opt1" promptText="オプション1" disable="true"/>
+					<TextField fx:id="opt2" promptText="オプション2" disable="true"/>
+					<TextField fx:id="opt3" promptText="オプション3" disable="true"/>
+				</HBox>
+			</VBox>
 
-            <VBox spacing="10">
-                <Label text="③ 撮影範囲" styleClass="section-title"/>
-                <ComboBox fx:id="rangeBox">
-                    <items>
-                        <FXCollections fx:factory="observableArrayList">
-                            <String fx:value="全画面"/>
-                            <String fx:value="ウィンドウ"/>
-                            <String fx:value="選択範囲"/>
-                        </FXCollections>
-                    </items>
-                </ComboBox>
-            </VBox>
+			<VBox spacing="10">
+				<Label text="② 保存先フォルダ選択" styleClass="section-title"/>
+				<HBox spacing="10">
+					<Button text="選択..." onAction="#onSelectFile"/>
+					<TextField fx:id="filePath" promptText="選択されたフォルダ" editable="false"/>
+				</HBox>
+			</VBox>
+			<VBox spacing="10">
+				<Label text="③ 撮影範囲" styleClass="section-title"/>
+				<ComboBox fx:id="snapAreaBox">
+				</ComboBox>
+			</VBox>
+			<VBox spacing="10">
+				<Label text="④ 拡張子" styleClass="section-title"/>
+				<ComboBox fx:id="formatBox">
+				</ComboBox>
+			</VBox>
 
-            <VBox spacing="10">
-                <Label text="④ 拡張子" styleClass="section-title"/>
-                <ComboBox fx:id="extBox">
-                    <items>
-                        <FXCollections fx:factory="observableArrayList">
-                            <String fx:value="png"/>
-                            <String fx:value="jpg"/>
-                            <String fx:value="bmp"/>
-                        </FXCollections>
-                    </items>
-                </ComboBox>
-            </VBox>
+			<VBox spacing="10">
+				<Label text="⑤ 撮影後の動作" styleClass="section-title"/>
+				<ComboBox fx:id="afterBox">
+				</ComboBox>
+			</VBox>
 
-            <VBox spacing="10">
-                <Label text="⑤ 撮影後の動作" styleClass="section-title"/>
-                <ComboBox fx:id="afterBox">
-                    <items>
-                        <FXCollections fx:factory="observableArrayList">
-                            <String fx:value="何もしない"/>
-                            <String fx:value="保存フォルダを開く"/>
-                            <String fx:value="画像ビューアで開く"/>
-                        </FXCollections>
-                    </items>
-                </ComboBox>
-            </VBox>
+			<VBox spacing="10">
+				<Label text="⑥ クリップボードに画像を保存する" styleClass="section-title"/>
+				<CheckBox fx:id="checkOption" text="有効にする"/>
+			</VBox>
 
-            <VBox spacing="10">
-                <Label text="⑥ オプション" styleClass="section-title"/>
-                <CheckBox fx:id="checkOption" text="追加オプションを有効にする"/>
-            </VBox>
+		</VBox>
+	</center>
 
-        </VBox>
-    </center>
-    <bottom>
-        <HBox spacing="20" alignment="CENTER">
-            <padding>
-                <Insets top="10" right="20" bottom="20" left="20"/>
-            </padding>
-            <children>
-                <Button text="設定を初期化" onAction="#onResetConfig" style="-fx-min-width: 100;"/>
-                <Button text="設定を反映" onAction="#onApplyConfig" prefWidth="120" style="-fx-base: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;"/>
-            </children>
-        </HBox>
-    </bottom>
+	<bottom>
+		<HBox spacing="20" alignment="CENTER">
+			<padding>
+				<Insets top="10" right="20" bottom="20" left="20"/>
+			</padding>
+			<children>
+				<Button text="設定を初期化" onAction="#onResetConfig" style="-fx-min-width: 100;"/>
+				<Button text="設定を反映" onAction="#onApplyConfig" prefWidth="120" style="-fx-base: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;"/>
+			</children>
+		</HBox>
+	</bottom>
 
 </BorderPane>

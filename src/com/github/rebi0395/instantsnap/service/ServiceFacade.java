@@ -1,28 +1,28 @@
-package com.github.rebi0395.instantsnap.controller;
+package com.github.rebi0395.instantsnap.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.rebi0395.instantsnap.exception.ServiceException;
-import com.github.rebi0395.instantsnap.model.bean.Option;
+import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.repository.PropertiesRepository;
-import com.github.rebi0395.instantsnap.service.KeyEventListener;
-import com.github.rebi0395.instantsnap.service.TakeSnapService;
-import com.github.rebi0395.instantsnap.service.TriggerKeyManager;
 
 /**
- * アプリ全体を司るコントローラークラス
+ * 対応するサービスクラスに処理を振り分ける、司令塔クラス
  */
-public class MainController implements KeyEventListener {
+public class ServiceFacade implements KeyEventListener {
 	
-	private Option option;
+	/** ユーザーの設定値 */
+	private ConfigBean configBean;
+	/** プロパティファイルのリポジトリ */
 	private PropertiesRepository editor;
+	/** 撮影トリガーの管理クラス */
 	private TriggerKeyManager manager;
 	
 	/** ロガー */
-	private static final Logger log = LoggerFactory.getLogger(MainController.class);
+	private static final Logger log = LoggerFactory.getLogger(ServiceFacade.class);
 	
-	public MainController(){
+	public ServiceFacade(){
 	}
 	
 	/**
@@ -30,10 +30,10 @@ public class MainController implements KeyEventListener {
 	 */
 	public void init() {
 		try {
-			this.option = new Option();
+			this.configBean = new ConfigBean();
 			this.editor = new PropertiesRepository();
-			this.editor.read(option);
-			this.manager = new TriggerKeyManager(option, this);
+			this.editor.read(configBean);
+			this.manager = new TriggerKeyManager(configBean, this);
 			this.manager.activate();
 
 		// チェック済例外
@@ -55,7 +55,7 @@ public class MainController implements KeyEventListener {
 			TakeSnapService snap = new TakeSnapService();
     		try {
     			// 撮影処理
-				snap.execute(option);
+				snap.execute(configBean);
 				
 			} catch (ServiceException e) {
 				log.error("スクリーンショットの撮影または保存に失敗しました", e);
@@ -73,5 +73,21 @@ public class MainController implements KeyEventListener {
 		} catch (ServiceException e) {
 			log.error("キー監視の終了処理に失敗しました", e);
 		}
+	}
+
+	/**
+	 * ユーザーの設定値を取得する
+	 * @return configBean
+	 */
+	public ConfigBean getConfigBean() {
+		return configBean;
+	}
+
+	/**
+	 * ユーザーの設定値インスタンスをセットする
+	 * @param configBean セットする
+	 */
+	public void setConfigBean(ConfigBean configBean) {
+		this.configBean = configBean;
 	}
 }

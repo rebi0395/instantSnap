@@ -10,7 +10,7 @@ import com.github.kwhat.jnativehook.NativeHookException;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
 import com.github.rebi0395.instantsnap.exception.ServiceException;
-import com.github.rebi0395.instantsnap.model.bean.Option;
+import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 
 /**
  * スクリーンショット撮影のトリガーとなるキーを監視し、
@@ -20,7 +20,7 @@ import com.github.rebi0395.instantsnap.model.bean.Option;
 public class TriggerKeyManager implements NativeKeyListener {
 
 	/** ユーザー設定値 */
-    private Option option;
+    private ConfigBean configBean;
     /** キー押下をコントローラーに通知するインターフェース */
     private KeyEventListener listener;
     /** ロガー */
@@ -28,11 +28,11 @@ public class TriggerKeyManager implements NativeKeyListener {
 
     /**
      * コンストラクタ
-     * @param option ユーザー設定値
+     * @param configBean ユーザー設定値
      * @param listener イベントの通知先
      */
-    public TriggerKeyManager(Option option, KeyEventListener listener) {
-        this.option = option;
+    public TriggerKeyManager(ConfigBean configBean, KeyEventListener listener) {
+        this.configBean = configBean;
         this.listener = listener;
     }
 
@@ -73,8 +73,8 @@ public class TriggerKeyManager implements NativeKeyListener {
         	// ビット演算でshiftキーの状態ビットだけを抜き出し判定する
         	boolean isShiftPressed = (e.getModifiers() & NativeKeyEvent.SHIFT_MASK) != 0;
         	// shiftキーが押されているかで撮影可否を判定する
-        	if ((PRINTSCREEN.equals(option.getTrigger()) && !isShiftPressed) || 
-        		(SHIFT_PRINTSCREEN.equals(option.getTrigger()) && isShiftPressed)) {
+        	if ((PRINTSCREEN.equals(configBean.getTrigger()) && !isShiftPressed) || 
+        		(SHIFT_PRINTSCREEN.equals(configBean.getTrigger()) && isShiftPressed)) {
         		// 撮影トリガーが入力されたことを通知する
         		listener.requestSnap();
         	}
