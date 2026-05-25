@@ -2,6 +2,8 @@ package com.github.rebi0395.instantsnap.model.enums;
 
 import static com.github.rebi0395.instantsnap.common.AppConstant.*;
 
+import javafx.util.StringConverter;
+
 /**
  * 撮影モードを指定するクラス
  */
@@ -62,5 +64,13 @@ public enum SnapArea implements BaseEnum {
 	 */
 	public static SnapArea parseOrDefault(String raw) {
 	    return BaseEnum.parseOrDefault(SnapArea.class, raw, ACTIVE_WINDOW, SNAP_AREA);
+	}
+	
+	/**
+	 * 列挙型と文字列を相互変換する	JavaFXコンバーターを取得する
+	 * @return SnapArea と文字列を交互変換するJavaFXコンバーター
+	 */
+	public static StringConverter<SnapArea> toConverter() {
+		return BaseEnum.toConverter(SnapArea.class, ACTIVE_WINDOW);
 	}
 }

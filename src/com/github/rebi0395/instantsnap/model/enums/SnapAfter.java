@@ -1,12 +1,14 @@
 package com.github.rebi0395.instantsnap.model.enums;
 import static com.github.rebi0395.instantsnap.common.AppConstant.*;
 
+import javafx.util.StringConverter;
+
 /**
  * 撮影後の挙動パターンを定義するクラス
  */
 public enum SnapAfter implements BaseEnum {
 
-	/** 保存先フォルダを開く */
+	/** 撮影後、通知を送付する */
 	NOTICE("1", "notice"),
 	/** 保存した画像ファイルを開く */
 	OPEN_IMAGE("2", "OpenFile"),
@@ -59,5 +61,13 @@ public enum SnapAfter implements BaseEnum {
 	 */
 	public static SnapAfter parseOrDefault(String raw) {
 		return BaseEnum.parseOrDefault(SnapAfter.class, raw, NOTHING, SNAP_AFTER);
+	}
+	
+	/**
+	 * 列挙型と文字列を相互変換する	JavaFXコンバーターを取得する
+	 * @return SnapAfter と文字列を交互変換するJavaFXコンバーター
+	 */
+	public static StringConverter<SnapAfter> toConverter() {
+		return BaseEnum.toConverter(SnapAfter.class, NOTHING);
 	}
 }
