@@ -10,7 +10,7 @@ import com.github.rebi0395.instantsnap.model.enums.SnapArea;
 /**
  * 設定値保管クラス。セット時に値の安全性も保証する
  */
-public class Option {
+public class ConfigBean {
 
 	/** 画像の保存パス */
 	private String savePath;
@@ -28,7 +28,7 @@ public class Option {
 	/**
 	 * コンストラクタ。デフォルト値を設定する
 	 */
-	public Option() {
+	public ConfigBean() {
 		this.savePath = DEFAULT_SAVE_PATH;
 		this.snapArea = SnapArea.ACTIVE_WINDOW;
 		this.formatType = FormatType.PNG;

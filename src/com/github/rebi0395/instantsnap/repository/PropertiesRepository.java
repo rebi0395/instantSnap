@@ -15,7 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.rebi0395.instantsnap.exception.ServiceException;
-import com.github.rebi0395.instantsnap.model.bean.Option;
+import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.model.enums.FormatType;
 import com.github.rebi0395.instantsnap.model.enums.SnapAfter;
 import com.github.rebi0395.instantsnap.model.enums.SnapArea;
@@ -40,10 +40,10 @@ public class PropertiesRepository {
 
 	/**
 	 * プロパティファイルの読み取りを行います
-	 * @param option 設定保持クラス
+	 * @param configBean 設定保持クラス
 	 * @throws ServiceException 
 	 */
-	public void read(Option option) throws ServiceException {
+	public void read(ConfigBean configBean) throws ServiceException {
 		Properties properties = new Properties();
 
 		// プロパティファイルの実在チェックを行い、ない場合はプロパティファイルを生成
@@ -58,12 +58,12 @@ public class PropertiesRepository {
 			properties.load(reader);
 
 			// プロパティから読み取った情報をセット
-			option.setSavePath(properties.getProperty(SAVE_PATH));
-			option.setSnapArea(SnapArea.parseOrDefault(properties.getProperty(SNAP_AREA)));
-			option.setFormatType(FormatType.parseOrDefault(properties.getProperty(FORMAT)));
-			option.setTrigger(properties.getProperty(TRIGGER));
-			option.setSnapAfter(SnapAfter.parseOrDefault(properties.getProperty(SNAP_AFTER)));
-			option.setIsCopyToClipboard(isStrTrue(properties.getProperty(COPY_TO_CLIPBOARD)));
+			configBean.setSavePath(properties.getProperty(SAVE_PATH));
+			configBean.setSnapArea(SnapArea.parseOrDefault(properties.getProperty(SNAP_AREA)));
+			configBean.setFormatType(FormatType.parseOrDefault(properties.getProperty(FORMAT)));
+			configBean.setTrigger(properties.getProperty(TRIGGER));
+			configBean.setSnapAfter(SnapAfter.parseOrDefault(properties.getProperty(SNAP_AFTER)));
+			configBean.setIsCopyToClipboard(isStrTrue(properties.getProperty(COPY_TO_CLIPBOARD)));
 
 		} catch (IOException ie) {
 			throw new ServiceException("プロパティファイルの読み込みに失敗しました", ie);
@@ -73,7 +73,7 @@ public class PropertiesRepository {
 	/**
 	 * プロパティファイルの書き込みを行います
 	 */
-	public void save(Option option) {
+	public void save(ConfigBean configBean) {
 	}
 
 	/**
