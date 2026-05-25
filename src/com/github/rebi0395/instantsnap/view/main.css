@@ -1,0 +1,16 @@
+.section-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.text-field, .combo-box, .button {
+    -fx-pref-width: 200px;
+}
+
+VBox {
+    -fx-background-color: #f8f8f8;
+    -fx-padding: 15;
+    -fx-border-color: #ddd;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+}

@@ -18,6 +18,7 @@ public class MainController implements KeyEventListener {
 	private Option option;
 	private PropertiesRepository editor;
 	private TriggerKeyManager manager;
+	
 	/** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(MainController.class);
 	
