@@ -12,5 +12,9 @@
 	<classpathentry kind="lib" path="lib/logback-classic-1.4.14.jar"/>
 	<classpathentry kind="lib" path="lib/logback-core-1.4.14.jar"/>
 	<classpathentry kind="lib" path="lib/slf4j-api-2.0.13.jar"/>
+	<classpathentry kind="lib" path="lib/javafx.base.jar"/>
+	<classpathentry kind="lib" path="lib/javafx.controls.jar"/>
+	<classpathentry kind="lib" path="lib/javafx.fxml.jar"/>
+	<classpathentry kind="lib" path="lib/javafx.graphics.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
