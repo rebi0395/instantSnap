@@ -37,12 +37,18 @@ public class ViewController {
 	/** 保存先のフォルダを表示するテキストフィールド */
 	@FXML private TextField filePath;
 	
-	// String型のまま紐付け
-	@FXML private ComboBox<String> snapAreaBox;
-	@FXML private ComboBox<String> formatBox;
+	/** 撮影範囲を選択するコンボボックス */
+	@FXML private ComboBox<SnapArea> snapAreaBox;
+	/** 拡張子を選択するコンボボックス */
+	@FXML private ComboBox<FormatType> formatBox;
+	/** 撮影後設定を選択するコンボボックス */
 	@FXML private ComboBox<String> afterBox;
+	/** クリップボードに画像を保存するチェックボックス */
 	@FXML private CheckBox checkOption;
 
+	/**
+	 * 初期化処理。FXMLファイルの要素を取り込んだ後に呼び出す
+	 */
 	@FXML
 	public void initialize() {
 		
@@ -53,15 +59,15 @@ public class ViewController {
 		filePath.setText(config.getSavePath());
 		
 		// 撮影範囲のリストをセット
-		for (SnapArea area : SnapArea.values()) {
-			snapAreaBox.getItems().add(area.getDisplayName());
-		}
-		snapAreaBox.setValue(config.getSnapArea().getDisplayName()); // 初期選択
+		snapAreaBox.getItems().addAll(SnapArea.values());
+		snapAreaBox.setConverter(SnapArea.toConverter()); // コンバーターにより	Enumsをdisplaynameで変換が可能になる
+		snapAreaBox.setValue(config.getSnapArea());
+		
 		// 拡張子のリストをセット
-		for (FormatType type : FormatType.values()) {
-			formatBox.getItems().add(type.getDisplayName());
-		}
-		formatBox.setValue(config.getFormatType().getDisplayName()); // 初期選択
+		formatBox.getItems().addAll(FormatType.values());
+		formatBox.setConverter(FormatType.toConverter());
+		formatBox.setValue(config.getFormatType());
+
 		// 撮影後設定のリストをセット
 		for (SnapAfter after : SnapAfter.values()) {
 			afterBox.getItems().add(after.getDisplayName());
@@ -105,7 +111,6 @@ public class ViewController {
 	@FXML
 	public void onApplyConfig() {
 		String folderPath = filePath.getText();
-		String selectedExt = formatBox.getValue(); // そのまま String で取得
 		boolean isOptionEnabled = checkOption.isSelected();
 		
 		if (folderPath == null || folderPath.isEmpty()) {
@@ -116,7 +121,7 @@ public class ViewController {
 		// 反映された値をコンソールで確認
 		System.out.println("--- 設定を反映しました ---");
 		System.out.println("フォルダパス: " + folderPath);
-		System.out.println("選択された拡張子: " + selectedExt);
+		System.out.println("選択された拡張子:");
 		System.out.println("オプション: " + isOptionEnabled);
 
 		statusLabel.setText("ステータス: 設定を反映しました。");

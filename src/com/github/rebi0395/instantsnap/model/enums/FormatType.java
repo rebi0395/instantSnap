@@ -1,6 +1,8 @@
 package com.github.rebi0395.instantsnap.model.enums;
 import static com.github.rebi0395.instantsnap.common.AppConstant.*;
 
+import javafx.util.StringConverter;
+
 /**
  * 画像の拡張子を列挙するクラス
  */
@@ -57,5 +59,13 @@ public enum FormatType implements BaseEnum {
 	 */
 	public static FormatType parseOrDefault(String raw) {
 		return BaseEnum.parseOrDefault(FormatType.class, raw, PNG, FORMAT);
+	}
+	
+	/**
+	 * 列挙型と文字列を相互変換する	JavaFXコンバーターを取得する
+	 * @return FormatType と文字列を交互変換するJavaFXコンバーター
+	 */
+	public static StringConverter<FormatType> toConverter() {
+		return BaseEnum.toConverter(FormatType.class, PNG);
 	}
 }
