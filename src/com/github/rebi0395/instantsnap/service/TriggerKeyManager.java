@@ -105,13 +105,4 @@ public class TriggerKeyManager implements NativeKeyListener {
 	public boolean isKeyListenerRunning() {
 		return isKeyListenerRunning;
 	}
-
-	/**
-	 * ユーザーの設定値をセットする
-	 * @param config ユーザーの設定値
-	 */
-	public void setConfigBean(ConfigBean configBean) {
-		this.config = configBean;
-	}
-
 }
