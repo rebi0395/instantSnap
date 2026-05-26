@@ -5,6 +5,7 @@ import static com.github.rebi0395.instantsnap.common.StrCheckUtil.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -40,10 +41,10 @@ public class PropertiesRepository {
 
 	/**
 	 * プロパティファイルの読み取りを行います
-	 * @param configBean 設定保持クラス
+	 * @param config 設定保持クラス
 	 * @throws ServiceException 
 	 */
-	public void read(ConfigBean configBean) throws ServiceException {
+	public void read(ConfigBean config) throws ServiceException {
 		Properties properties = new Properties();
 
 		// プロパティファイルの実在チェックを行い、ない場合はプロパティファイルを生成
@@ -58,12 +59,12 @@ public class PropertiesRepository {
 			properties.load(reader);
 
 			// プロパティから読み取った情報をセット
-			configBean.setSavePath(properties.getProperty(SAVE_PATH));
-			configBean.setSnapArea(SnapArea.parseOrDefault(properties.getProperty(SNAP_AREA)));
-			configBean.setFormatType(FormatType.parseOrDefault(properties.getProperty(FORMAT)));
-			configBean.setTrigger(properties.getProperty(TRIGGER));
-			configBean.setSnapAfter(SnapAfter.parseOrDefault(properties.getProperty(SNAP_AFTER)));
-			configBean.setIsCopyToClipboard(isStrTrue(properties.getProperty(COPY_TO_CLIPBOARD)));
+			config.setSavePath(properties.getProperty(SAVE_PATH));
+			config.setSnapArea(SnapArea.parseOrDefault(properties.getProperty(SNAP_AREA)));
+			config.setFormatType(FormatType.parseOrDefault(properties.getProperty(FORMAT)));
+			config.setTrigger(properties.getProperty(TRIGGER));
+			config.setSnapAfter(SnapAfter.parseOrDefault(properties.getProperty(SNAP_AFTER)));
+			config.setIsCopyToClipboard(isStrTrue(properties.getProperty(COPY_TO_CLIPBOARD)));
 
 		} catch (IOException ie) {
 			throw new ServiceException("プロパティファイルの読み込みに失敗しました", ie);
@@ -73,7 +74,30 @@ public class PropertiesRepository {
 	/**
 	 * プロパティファイルの書き込みを行います
 	 */
-	public void save(ConfigBean configBean) {
+	public void save(ConfigBean config) throws ServiceException {
+		Properties properties = new Properties();
+
+		// プロパティファイルの実在チェックを行い、ない場合はプロパティファイルを生成
+		if (!Files.exists(PROPERTIES_PATH)) {
+			log.warn("プロパティファイルが見つかりません。再生成を行います");
+			reset();
+			log.warn("プロパティファイルを再生成しました");
+		}
+		
+		// Config → Properties へ変換
+		properties.setProperty(SAVE_PATH, config.getSavePath());
+		properties.setProperty(SNAP_AREA, config.getSnapArea().getValue());
+		properties.setProperty(FORMAT, config.getFormatType().getValue());
+		properties.setProperty(SNAP_AFTER, config.getSnapAfter().getValue());
+		properties.setProperty(COPY_TO_CLIPBOARD, String.valueOf(config.getIsCopyToClipboard()));
+
+		//TODO startWithを使って置換
+		
+        try (Writer writer = Files.newBufferedWriter(PROPERTIES_PATH, StandardCharsets.UTF_8)) {
+        	properties.store(writer, "InstantSnap Settings");
+        } catch (IOException e) {
+            throw new ServiceException("プロパティファイルの書き込みに失敗しました", e);
+        }
 	}
 
 	/**

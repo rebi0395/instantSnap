@@ -13,7 +13,7 @@ import com.github.rebi0395.instantsnap.repository.PropertiesRepository;
 public class ServiceFacade implements KeyEventListener {
 	
 	/** ユーザーの設定値 */
-	private ConfigBean configBean;
+	private ConfigBean config;
 	/** プロパティファイルのリポジトリ */
 	private PropertiesRepository editor;
 	/** 撮影トリガーの管理クラス */
@@ -26,15 +26,15 @@ public class ServiceFacade implements KeyEventListener {
 	}
 	
 	/**
-	 * アプリ起動時の初期化処理を行います
+	 * アプリ起動時の初期化処理を行う
 	 */
 	public void init() {
 		try {
-			this.configBean = new ConfigBean();
+			this.config = new ConfigBean();
 			this.editor = new PropertiesRepository();
-			this.editor.read(configBean);
-			this.manager = new TriggerKeyManager(configBean, this);
-			this.manager.activate();
+			editor.read(config);
+			this.manager = new TriggerKeyManager(this);
+			manager.activate(config);
 
 		// チェック済例外
 		} catch (ServiceException e) {
@@ -44,7 +44,27 @@ public class ServiceFacade implements KeyEventListener {
 			log.error("想定外のエラーが発生しました", e);
 		}
 	}
+	
+	/**
+	 * コンフィグに変更がある場合などに呼び出し、再度起動します。
+	 */
+	public void reset() {
+		try {
+			editor.save(config); // プロパティファイルを更新
+			if (manager.isKeyListenerRunning()) {
+				manager.deactivate(); // 一度キー監視を停止する
+			}
+			this.manager.activate(config); // 再起動
 
+		// チェック済例外
+		} catch (ServiceException e) {
+			log.error("設定の更新に失敗しました", e);
+		// 非チェック例外
+		} catch (Exception e) {
+			log.error("想定外のエラーが発生しました", e);
+		}
+	}
+	
 	/**
 	 * 撮影トリガーが押されたとき、撮影処理を呼び出す
 	 */
@@ -55,7 +75,7 @@ public class ServiceFacade implements KeyEventListener {
 			TakeSnapService snap = new TakeSnapService();
     		try {
     			// 撮影処理
-				snap.execute(configBean);
+				snap.execute(config);
 				
 			} catch (ServiceException e) {
 				log.error("スクリーンショットの撮影または保存に失敗しました", e);
@@ -77,17 +97,17 @@ public class ServiceFacade implements KeyEventListener {
 
 	/**
 	 * ユーザーの設定値を取得する
-	 * @return configBean
+	 * @return config
 	 */
 	public ConfigBean getConfigBean() {
-		return configBean;
+		return config;
 	}
 
 	/**
 	 * ユーザーの設定値インスタンスをセットする
-	 * @param configBean セットする
+	 * @param config セットする
 	 */
 	public void setConfigBean(ConfigBean configBean) {
-		this.configBean = configBean;
+		this.config = configBean;
 	}
 }

@@ -16,7 +16,7 @@ public class SnapAfterResolver {
 
 	public void afterAction(SnapAfter after, Path path) throws ServiceException {
 		switch (after) {
-		case NOTICE:
+		case TOAST:
 			showToast(path);
 			break;
 		case OPEN_IMAGE:

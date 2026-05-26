@@ -8,12 +8,12 @@ import javafx.util.StringConverter;
  */
 public enum SnapAfter implements BaseEnum {
 
-	/** 撮影後、通知を送付する */
-	NOTICE("1", "notice"),
-	/** 保存した画像ファイルを開く */
-	OPEN_IMAGE("2", "OpenFile"),
 	/** 何もしない(デフォルト値) */
-	NOTHING("0", "Nothing");
+	NOTHING("0", "Nothing"),
+	/** 撮影後、通知を送付する */
+	TOAST("1", "Toast Notification"),
+	/** 保存した画像ファイルを開く */
+	OPEN_IMAGE("2", "OpenFile");
 
 	/** プロパティファイルと紐つく値 */
 	private final String value;

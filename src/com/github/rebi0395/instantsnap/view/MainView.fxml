@@ -6,8 +6,6 @@
 <?import javafx.collections.FXCollections?>
 <?import java.lang.String?>
 
-<?import java.lang.String?>
-
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" stylesheets="@../view/main.css">
 
 	<top>
@@ -15,56 +13,77 @@
 	</top>
 
 	<center>
-		<VBox spacing="20">
-			<padding>
-				<Insets top="20" right="20" bottom="20" left="20"/>
-			</padding>
-			
-			<VBox spacing="10">
-				<Label text="① モード選択" styleClass="section-title"/>
-				<HBox spacing="15">
-					<RadioButton fx:id="mode1" text="モード1"/>
-					<RadioButton fx:id="mode2" text="モード2"/>
-					<RadioButton fx:id="mode3" text="モード3"/>
-					<RadioButton fx:id="modeOther" text="その他"/>
-				</HBox>
-				<HBox spacing="10">
-					<TextField fx:id="opt1" promptText="オプション1" disable="true"/>
-					<TextField fx:id="opt2" promptText="オプション2" disable="true"/>
-					<TextField fx:id="opt3" promptText="オプション3" disable="true"/>
-				</HBox>
-			</VBox>
+		<TabPane fx:id="mainTabPane" tabClosingPolicy="UNAVAILABLE">
+			<tabs>
+				
+				<Tab fx:id="configTab" text="基本設定">
+					<content>
+						<VBox spacing="20">
+							<padding>
+								<Insets top="20" right="20" bottom="20" left="20"/>
+							</padding>
+							
+							<VBox spacing="10">
+								<Label text="① モード選択" styleClass="section-title"/>
+								<HBox spacing="15">
+									<RadioButton fx:id="mode1" text="モード1"/>
+									<RadioButton fx:id="mode2" text="モード2"/>
+									<RadioButton fx:id="mode3" text="モード3"/>
+									<RadioButton fx:id="modeOther" text="その他"/>
+								</HBox>
+								<HBox spacing="10">
+									<TextField fx:id="opt1" promptText="オプション1" disable="true"/>
+									<TextField fx:id="opt2" promptText="オプション2" disable="true"/>
+									<TextField fx:id="opt3" promptText="オプション3" disable="true"/>
+								</HBox>
+							</VBox>
 
-			<VBox spacing="10">
-				<Label text="② 保存先フォルダ選択" styleClass="section-title"/>
-				<HBox spacing="10">
-					<Button text="選択..." onAction="#onSelectFile"/>
-					<TextField fx:id="filePath" promptText="選択されたフォルダ" editable="false"/>
-				</HBox>
-			</VBox>
-			<VBox spacing="10">
-				<Label text="③ 撮影範囲" styleClass="section-title"/>
-				<ComboBox fx:id="snapAreaBox">
-				</ComboBox>
-			</VBox>
-			<VBox spacing="10">
-				<Label text="④ 拡張子" styleClass="section-title"/>
-				<ComboBox fx:id="formatBox">
-				</ComboBox>
-			</VBox>
+							<VBox spacing="10">
+								<Label text="② 保存先フォルダ選択" styleClass="section-title"/>
+								<HBox spacing="10">
+									<Button text="選択..." onAction="#onSelectFile"/>
+									<TextField fx:id="filePath" promptText="選択されたフォルダ" editable="false"/>
+								</HBox>
+							</VBox>
+							<VBox spacing="10">
+								<Label text="③ 撮影範囲" styleClass="section-title"/>
+								<ComboBox fx:id="snapAreaBox">
+								</ComboBox>
+							</VBox>
+							<VBox spacing="10">
+								<Label text="④ 拡張子" styleClass="section-title"/>
+								<ComboBox fx:id="formatBox">
+								</ComboBox>
+							</VBox>
 
-			<VBox spacing="10">
-				<Label text="⑤ 撮影後の動作" styleClass="section-title"/>
-				<ComboBox fx:id="afterBox">
-				</ComboBox>
-			</VBox>
+							<VBox spacing="10">
+								<Label text="⑤ 撮影後の動作" styleClass="section-title"/>
+								<ComboBox fx:id="afterBox">
+								</ComboBox>
+							</VBox>
 
-			<VBox spacing="10">
-				<Label text="⑥ クリップボードに画像を保存する" styleClass="section-title"/>
-				<CheckBox fx:id="checkOption" text="有効にする"/>
-			</VBox>
-
-		</VBox>
+							<VBox spacing="10">
+								<Label text="⑥ クリップボードに画像を保存する" styleClass="section-title"/>
+								<CheckBox fx:id="checkOption" text="有効にする"/>
+							</VBox>
+						</VBox>
+					</content>
+				</Tab>
+				
+				<Tab fx:id="otherTab" text="その他設定">
+					<content>
+						<VBox spacing="20">
+							<padding>
+								<Insets top="20" right="20" bottom="20" left="20"/>
+							</padding>
+							<Label text="ここに新しい設定項目や、履歴などを追加できます。" />
+						</VBox>
+					</content>
+				</Tab>
+				<Tab fx:id="otherTab" text="履歴">
+				</Tab>
+			</tabs>
+		</TabPane>
 	</center>
 
 	<bottom>

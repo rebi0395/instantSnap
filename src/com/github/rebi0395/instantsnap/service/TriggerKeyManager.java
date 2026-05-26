@@ -20,30 +20,37 @@ import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 public class TriggerKeyManager implements NativeKeyListener {
 
 	/** ユーザー設定値 */
-    private ConfigBean configBean;
+    private ConfigBean config;
     /** キー押下をコントローラーに通知するインターフェース */
     private KeyEventListener listener;
+    /** キー監視を行ってるかを判定する変数 trueで監視中 */
+    private boolean isKeyListenerRunning = false;
     /** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(TriggerKeyManager.class);
 
     /**
      * コンストラクタ
-     * @param configBean ユーザー設定値
      * @param listener イベントの通知先
      */
-    public TriggerKeyManager(ConfigBean configBean, KeyEventListener listener) {
-        this.configBean = configBean;
+    public TriggerKeyManager(KeyEventListener listener) {
         this.listener = listener;
     }
 
     /**
      * キー監視を開始する
+     * @param config ユーザーの設定値
      * @throws ServiceException 
      */
-    public void activate() throws ServiceException {
+    public void activate(ConfigBean config) throws ServiceException {
+        if (isKeyListenerRunning) {
+            log.warn("キー監視はすでに開始されています");
+            return;
+        }
+    	this.config = config; // ユーザーの設定値を更新
         try {
             GlobalScreen.registerNativeHook();
             GlobalScreen.addNativeKeyListener(this);
+            isKeyListenerRunning = true;
             log.info("キー監視開始");
         } catch (NativeHookException ne) {
         	throw new ServiceException("キー監視の開始に失敗しました", ne);
@@ -55,8 +62,14 @@ public class TriggerKeyManager implements NativeKeyListener {
      * @throws ServiceException 
      */
     public void deactivate() throws ServiceException {
+        if (!isKeyListenerRunning) {
+            log.warn("キー監視は現在されていません");
+            return;
+        }
+        
         try {
             GlobalScreen.unregisterNativeHook();
+            isKeyListenerRunning = false;
             log.info("キー監視停止");
         } catch (NativeHookException nhe) {
         	throw new ServiceException("キー監視の停止に失敗しました", nhe);
@@ -73,15 +86,32 @@ public class TriggerKeyManager implements NativeKeyListener {
         	// ビット演算でshiftキーの状態ビットだけを抜き出し判定する
         	boolean isShiftPressed = (e.getModifiers() & NativeKeyEvent.SHIFT_MASK) != 0;
         	// shiftキーが押されているかで撮影可否を判定する
-        	if ((PRINTSCREEN.equals(configBean.getTrigger()) && !isShiftPressed) || 
-        		(SHIFT_PRINTSCREEN.equals(configBean.getTrigger()) && isShiftPressed)) {
+        	if ((PRINTSCREEN.equals(config.getTrigger()) && !isShiftPressed) || 
+        		(SHIFT_PRINTSCREEN.equals(config.getTrigger()) && isShiftPressed)) {
         		// 撮影トリガーが入力されたことを通知する
         		listener.requestSnap();
         	}
         }
         // pauseキー押下時、アプリを終了する
         if (e.getKeyCode() == NativeKeyEvent.VC_PAUSE) {
-        	listener.requestExit();;
+        	listener.requestExit();
         }
     }
+
+	/**
+	 * キー監視が実行されているか、状態を取得します
+	 * @return isKeyListenerRunning / true 監視中
+	 */
+	public boolean isKeyListenerRunning() {
+		return isKeyListenerRunning;
+	}
+
+	/**
+	 * ユーザーの設定値をセットする
+	 * @param config ユーザーの設定値
+	 */
+	public void setConfigBean(ConfigBean configBean) {
+		this.config = configBean;
+	}
+
 }
