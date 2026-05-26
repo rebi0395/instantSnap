@@ -42,7 +42,7 @@ public class Main extends Application {
 		// FXMLファイルを読み取る
 		Parent root = loader.load();
 		// シーン(ウィンドウの設定)
-		Scene scene = new Scene(root, 600, 750);
+		Scene scene = new Scene(root, 600, 800);
 		// ウィンドウを設定する
 		stage.setTitle("InstantSnap Menu");
 		stage.setScene(scene);

@@ -42,7 +42,7 @@ public class ViewController {
 	/** 拡張子を選択するコンボボックス */
 	@FXML private ComboBox<FormatType> formatBox;
 	/** 撮影後設定を選択するコンボボックス */
-	@FXML private ComboBox<String> afterBox;
+	@FXML private ComboBox<SnapAfter> afterBox;
 	/** クリップボードに画像を保存するチェックボックス */
 	@FXML private CheckBox checkOption;
 
@@ -69,10 +69,10 @@ public class ViewController {
 		formatBox.setValue(config.getFormatType());
 
 		// 撮影後設定のリストをセット
-		for (SnapAfter after : SnapAfter.values()) {
-			afterBox.getItems().add(after.getDisplayName());
-		}
-		afterBox.setValue(config.getSnapAfter().getDisplayName()); // 初期選択
+		afterBox.getItems().addAll(SnapAfter.values());
+		afterBox.setConverter(SnapAfter.toConverter());
+		afterBox.setValue(config.getSnapAfter());
+		
 		// クリップボードに画像をするかのチェックボックスをセット
 		checkOption.setSelected(config.getIsCopyToClipboard());
 
@@ -93,7 +93,7 @@ public class ViewController {
 	}
 
 	/**
-	 * ② 保存先フォルダ選択ボタンの処理
+	 * 保存先フォルダ選択ボタンの処理
 	 */
 	@FXML
 	public void onSelectFile() {
@@ -110,19 +110,20 @@ public class ViewController {
 	 */
 	@FXML
 	public void onApplyConfig() {
-		String folderPath = filePath.getText();
-		boolean isOptionEnabled = checkOption.isSelected();
 		
-		if (folderPath == null || folderPath.isEmpty()) {
-			statusLabel.setText("ステータス: 保存先フォルダを選択してください。");
-			return;
-		}
+		ConfigBean config = facade.getConfigBean();
+		// configに値をセット
+		config.setSavePath(filePath.getText()); // 保存パス
+		config.setSnapArea(snapAreaBox.getValue()); // 撮影範囲
+		config.setFormatType(formatBox.getValue()); // 拡張子
+		config.setSnapAfter(afterBox.getValue()); // 撮影後設定
+		config.setIsCopyToClipboard(checkOption.isSelected()); // クリップボード保存の有無
+		
+		// configを更新し、司令塔クラスに返す
+		facade.setConfigBean(config);
+		
+		
 
-		// 反映された値をコンソールで確認
-		System.out.println("--- 設定を反映しました ---");
-		System.out.println("フォルダパス: " + folderPath);
-		System.out.println("選択された拡張子:");
-		System.out.println("オプション: " + isOptionEnabled);
 
 		statusLabel.setText("ステータス: 設定を反映しました。");
 	}
@@ -144,7 +145,7 @@ public class ViewController {
 		
 		statusLabel.setText("ステータス: 設定を初期化しました。");
 	}
-	
+
 	/**
 	 * サービスクラスの司令塔クラスを取得する
 	 * @return facade
