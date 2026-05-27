@@ -1,9 +1,7 @@
 package com.github.rebi0395.instantsnap.repository;
 
 import static com.github.rebi0395.instantsnap.common.AppConstant.*;
-import static com.github.rebi0395.instantsnap.common.StrCheckUtil.*;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
@@ -12,6 +10,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
 
+import org.apache.commons.configuration2.PropertiesConfiguration;
+import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
+import org.apache.commons.configuration2.builder.fluent.Parameters;
+import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,11 +34,19 @@ public class PropertiesRepository {
 
 	/** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(PropertiesRepository.class);
-
+	
+	/** プロパティを読み取るビルダー */
+	private final FileBasedConfigurationBuilder<PropertiesConfiguration> builder; 
+	
 	/**
 	 * コンストラクタ
 	 */
 	public PropertiesRepository() {
+		this.builder = new FileBasedConfigurationBuilder<>(PropertiesConfiguration.class); 
+		// ビルダーの設定を渡すパラメータクラス
+		Parameters param = new Parameters();
+		// メソッドチェーンでファイルパスと文字コードを設定
+		builder.configure(param.properties().setFile(PROPERTIES_PATH.toFile()).setEncoding("UTF-8"));
 	}
 
 	/**
@@ -45,8 +55,6 @@ public class PropertiesRepository {
 	 * @throws ServiceException 
 	 */
 	public void read(ConfigBean config) throws ServiceException {
-		Properties properties = new Properties();
-
 		// プロパティファイルの実在チェックを行い、ない場合はプロパティファイルを生成
 		if (!Files.exists(PROPERTIES_PATH)) {
 			log.warn("プロパティファイルが見つかりません。再生成を行います");
@@ -54,19 +62,18 @@ public class PropertiesRepository {
 			log.warn("プロパティファイルを再生成しました");
 		}
 
-		// UTF-8を明示的に指定し、プロパティをセット
-		try (BufferedReader reader = Files.newBufferedReader(PROPERTIES_PATH, StandardCharsets.UTF_8)) {
-			properties.load(reader);
-
+		try {
+			// プロパティファイルをビルダーで読み取る(オブジェクトのためtry不要)
+			PropertiesConfiguration properties = builder.getConfiguration();
 			// プロパティから読み取った情報をセット
-			config.setSavePath(properties.getProperty(SAVE_PATH));
-			config.setSnapArea(SnapArea.parseOrDefault(properties.getProperty(SNAP_AREA)));
-			config.setFormatType(FormatType.parseOrDefault(properties.getProperty(FORMAT)));
-			config.setTrigger(properties.getProperty(TRIGGER));
-			config.setSnapAfter(SnapAfter.parseOrDefault(properties.getProperty(SNAP_AFTER)));
-			config.setIsCopyToClipboard(isStrTrue(properties.getProperty(COPY_TO_CLIPBOARD)));
+			config.setSavePath(properties.getString(SAVE_PATH));
+			config.setSnapArea(SnapArea.parseOrDefault(properties.getString(SNAP_AREA)));
+			config.setFormatType(FormatType.parseOrDefault(properties.getString(FORMAT)));
+			config.setTrigger(properties.getString(TRIGGER));
+			config.setSnapAfter(SnapAfter.parseOrDefault(properties.getString(SNAP_AFTER)));
+			config.setIsCopyToClipboard(properties.getBoolean(COPY_TO_CLIPBOARD, false)); // null時false
 
-		} catch (IOException ie) {
+		} catch (ConfigurationException ie) {
 			throw new ServiceException("プロパティファイルの読み込みに失敗しました", ie);
 		}
 	}
