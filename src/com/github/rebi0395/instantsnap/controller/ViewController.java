@@ -120,8 +120,7 @@ public class ViewController {
 		config.setIsCopyToClipboard(checkOption.isSelected()); // クリップボード保存の有無
 		
 		// configを更新し、司令塔クラスに返す
-		facade.reset(config);
-		
+		facade.reboot(config);
 		statusLabel.setText("ステータス: 設定を反映しました。");
 	}
 

@@ -1,19 +1,17 @@
 package com.github.rebi0395.instantsnap.repository;
 
-import static com.github.rebi0395.instantsnap.common.AppConstant.*;
-
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
-import org.apache.commons.configuration2.PropertiesConfiguration;
-import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
-import org.apache.commons.configuration2.builder.fluent.Parameters;
-import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,6 +20,8 @@ import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.model.enums.FormatType;
 import com.github.rebi0395.instantsnap.model.enums.SnapAfter;
 import com.github.rebi0395.instantsnap.model.enums.SnapArea;
+import static com.github.rebi0395.instantsnap.common.AppConstant.*;
+import static com.github.rebi0395.instantsnap.common.StrCheckUtil.*;
 
 /**
  * プロパティファイルの読み取り、書き込みを行い、
@@ -34,19 +34,11 @@ public class PropertiesRepository {
 
 	/** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(PropertiesRepository.class);
-	
-	/** プロパティを読み取るビルダー */
-	private final FileBasedConfigurationBuilder<PropertiesConfiguration> builder; 
-	
+
 	/**
 	 * コンストラクタ
 	 */
 	public PropertiesRepository() {
-		this.builder = new FileBasedConfigurationBuilder<>(PropertiesConfiguration.class); 
-		// ビルダーの設定を渡すパラメータクラス
-		Parameters param = new Parameters();
-		// メソッドチェーンでファイルパスと文字コードを設定
-		builder.configure(param.properties().setFile(PROPERTIES_PATH.toFile()).setEncoding("UTF-8"));
 	}
 
 	/**
@@ -55,56 +47,98 @@ public class PropertiesRepository {
 	 * @throws ServiceException 
 	 */
 	public void read(ConfigBean config) throws ServiceException {
-		// プロパティファイルの実在チェックを行い、ない場合はプロパティファイルを生成
-		if (!Files.exists(PROPERTIES_PATH)) {
-			log.warn("プロパティファイルが見つかりません。再生成を行います");
-			reset();
-			log.warn("プロパティファイルを再生成しました");
-		}
+		Properties properties = new Properties();
 
-		try {
-			// プロパティファイルをビルダーで読み取る(オブジェクトのためtry不要)
-			PropertiesConfiguration properties = builder.getConfiguration();
+		isExistProperties(); // プロパティファイルの実在チェック
+
+		// UTF-8を明示的に指定し、プロパティをセット
+		try (BufferedReader reader = Files.newBufferedReader(PROPERTIES_PATH, StandardCharsets.UTF_8)) {
+			properties.load(reader);
+
 			// プロパティから読み取った情報をセット
-			config.setSavePath(properties.getString(SAVE_PATH));
-			config.setSnapArea(SnapArea.parseOrDefault(properties.getString(SNAP_AREA)));
-			config.setFormatType(FormatType.parseOrDefault(properties.getString(FORMAT)));
-			config.setTrigger(properties.getString(TRIGGER));
-			config.setSnapAfter(SnapAfter.parseOrDefault(properties.getString(SNAP_AFTER)));
-			config.setIsCopyToClipboard(properties.getBoolean(COPY_TO_CLIPBOARD, false)); // null時false
+			config.setSavePath(properties.getProperty(SAVE_PATH));
+			config.setSnapArea(SnapArea.parseOrDefault(properties.getProperty(SNAP_AREA)));
+			config.setFormatType(FormatType.parseOrDefault(properties.getProperty(FORMAT)));
+			config.setTrigger(properties.getProperty(TRIGGER));
+			config.setSnapAfter(SnapAfter.parseOrDefault(properties.getProperty(SNAP_AFTER)));
+			config.setIsCopyToClipboard(isStrTrue(properties.getProperty(COPY_TO_CLIPBOARD)));
 
-		} catch (ConfigurationException ie) {
+		} catch (IOException ie) {
 			throw new ServiceException("プロパティファイルの読み込みに失敗しました", ie);
 		}
 	}
 
 	/**
 	 * プロパティファイルの書き込みを行います
+	 * @param config ユーザーの設定値を保持するクラス
+	 * @throws ServiceException
 	 */
 	public void save(ConfigBean config) throws ServiceException {
-		Properties properties = new Properties();
 
-		// プロパティファイルの実在チェックを行い、ない場合はプロパティファイルを生成
+		isExistProperties(); // プロパティファイルの実在チェック
+
+		// 更新したいキーと値のペアをMapに格納する
+		Map<String, String> updateMap = new HashMap<>();
+		updateMap.put(SAVE_PATH, config.getSavePath());
+		updateMap.put(SNAP_AREA, config.getSnapArea().getValue());
+		updateMap.put(FORMAT, config.getFormatType().getValue());
+		updateMap.put(SNAP_AFTER, config.getSnapAfter().getValue());
+		updateMap.put(COPY_TO_CLIPBOARD, String.valueOf(config.getIsCopyToClipboard()));
+
+		// 書き込み先の一時ファイルのパスを取得
+		Path tempPath = PROPERTIES_PATH.resolveSibling(PROPERTIES_PATH.getFileName() + ".tmp");
+		
+		try (BufferedWriter writer = Files.newBufferedWriter(tempPath, StandardCharsets.UTF_8); // 一時ファイル自動作成
+			BufferedReader reader = Files.newBufferedReader(PROPERTIES_PATH, StandardCharsets.UTF_8)) {
+
+			String line;
+			while (true) {
+				line = reader.readLine();
+				if (line == null) {
+					// ファイルの最終行でループを抜ける
+					break;
+				}
+				line = stripSafe(line); // 余分なスペース除去
+				boolean isMatched = false;
+
+				// マップのキーと値のペアのリストをentrySetで取得し、一つずつentryで受け取る
+				for (Map.Entry<String, String> entry : updateMap.entrySet()) {
+					String prefix = entry.getKey() + "="; // 先頭文字
+					if (line.startsWith(prefix)) {
+						// 一致すればその行を書き込み
+						writer.write(prefix + entry.getValue());
+						isMatched = true;
+						break; // この行の置換は完了したため、Mapのループを抜ける
+					}
+				}
+
+				// どのキーにもマッチしなかった行（コメントや空行）はそのままコピー
+				if (!isMatched) {
+					writer.write(line);
+				}
+
+				writer.newLine(); // 文末改行
+			}
+			
+			// 一時ファイルを元ファイルに置換する
+			Files.move(tempPath, PROPERTIES_PATH, StandardCopyOption.REPLACE_EXISTING);
+
+		} catch (IOException e) {
+			throw new ServiceException("プロパティファイルの書き込みに失敗しました", e);
+		}
+	}
+
+	/**
+	 * プロパティファイルの実在チェックを行い、存在しなければ再生成する
+	 * @throws ServiceException Resetが失敗した場合にthrowする
+	 */
+	private void isExistProperties() throws ServiceException {
+		// ファイルの実在チェック
 		if (!Files.exists(PROPERTIES_PATH)) {
 			log.warn("プロパティファイルが見つかりません。再生成を行います");
-			reset();
+			reset(); // 再生成
 			log.warn("プロパティファイルを再生成しました");
 		}
-		
-		// Config → Properties へ変換
-		properties.setProperty(SAVE_PATH, config.getSavePath());
-		properties.setProperty(SNAP_AREA, config.getSnapArea().getValue());
-		properties.setProperty(FORMAT, config.getFormatType().getValue());
-		properties.setProperty(SNAP_AFTER, config.getSnapAfter().getValue());
-		properties.setProperty(COPY_TO_CLIPBOARD, String.valueOf(config.getIsCopyToClipboard()));
-
-		//TODO startWithを使って置換
-		
-        try (Writer writer = Files.newBufferedWriter(PROPERTIES_PATH, StandardCharsets.UTF_8)) {
-        	properties.store(writer, "InstantSnap Settings");
-        } catch (IOException e) {
-            throw new ServiceException("プロパティファイルの書き込みに失敗しました", e);
-        }
 	}
 
 	/**
