@@ -33,8 +33,8 @@ public class ServiceFacade implements KeyEventListener {
 			this.config = new ConfigBean();
 			this.editor = new PropertiesRepository();
 			editor.read(config);
-			this.manager = new TriggerKeyManager(this);
-			manager.activate(config);
+			this.manager = new TriggerKeyManager(config, this);
+			manager.activate();
 
 		// チェック済例外
 		} catch (ServiceException e) {
@@ -47,15 +47,12 @@ public class ServiceFacade implements KeyEventListener {
 	
 	/**
 	 * コンフィグに変更がある場合などに呼び出し、再起動します。
+	 * (引数は本来不要だが、念のため)
 	 */
-	public void reset(ConfigBean configBean) {
+	public void reboot(ConfigBean configBean) {
 		try {
 			this.config = configBean; // 設定値インスタンスを更新
 			editor.save(config); // プロパティファイルを更新
-			if (manager.isKeyListenerRunning()) {
-				manager.deactivate(); // 一度キー監視を停止する
-			}
-			manager.activate(config); // 再起動
 
 		// チェック済例外
 		} catch (ServiceException e) {

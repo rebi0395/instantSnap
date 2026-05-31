@@ -24,7 +24,7 @@ public class TriggerKeyManager implements NativeKeyListener {
     /** キー押下をコントローラーに通知するインターフェース */
     private KeyEventListener listener;
     /** キー監視を行ってるかを判定する変数 trueで監視中 */
-    private boolean isKeyListenerRunning = false;
+    private boolean keyListenerRunning = false;
     /** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(TriggerKeyManager.class);
 
@@ -32,7 +32,8 @@ public class TriggerKeyManager implements NativeKeyListener {
      * コンストラクタ
      * @param listener イベントの通知先
      */
-    public TriggerKeyManager(KeyEventListener listener) {
+    public TriggerKeyManager(ConfigBean config, KeyEventListener listener) {
+    	this.config = config;
         this.listener = listener;
     }
 
@@ -41,16 +42,15 @@ public class TriggerKeyManager implements NativeKeyListener {
      * @param config ユーザーの設定値
      * @throws ServiceException 
      */
-    public void activate(ConfigBean config) throws ServiceException {
-        if (isKeyListenerRunning) {
+    public void activate() throws ServiceException {
+        if (keyListenerRunning) {
             log.warn("キー監視はすでに開始されています");
             return;
         }
-    	this.config = config; // ユーザーの設定値を更新
         try {
             GlobalScreen.registerNativeHook();
             GlobalScreen.addNativeKeyListener(this);
-            isKeyListenerRunning = true;
+            keyListenerRunning = true;
             log.info("キー監視開始");
         } catch (NativeHookException ne) {
         	throw new ServiceException("キー監視の開始に失敗しました", ne);
@@ -62,14 +62,14 @@ public class TriggerKeyManager implements NativeKeyListener {
      * @throws ServiceException 
      */
     public void deactivate() throws ServiceException {
-        if (!isKeyListenerRunning) {
-            log.warn("キー監視は現在されていません");
+        if (!keyListenerRunning) {
+            log.warn("キー監視は現在稼働していません");
             return;
         }
         
         try {
             GlobalScreen.unregisterNativeHook();
-            isKeyListenerRunning = false;
+            keyListenerRunning = false;
             log.info("キー監視停止");
         } catch (NativeHookException nhe) {
         	throw new ServiceException("キー監視の停止に失敗しました", nhe);
@@ -100,9 +100,9 @@ public class TriggerKeyManager implements NativeKeyListener {
 
 	/**
 	 * キー監視が実行されているか、状態を取得します
-	 * @return isKeyListenerRunning / true 監視中
+	 * @return keyListenerRunning / true 監視中
 	 */
 	public boolean isKeyListenerRunning() {
-		return isKeyListenerRunning;
+		return keyListenerRunning;
 	}
 }
