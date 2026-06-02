@@ -31,17 +31,26 @@ public class TakeSnapService {
 	
 	/** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(TakeSnapService.class);
+	/** 撮影範囲を解決するためのインスタンス */
+	private final SnapAreaResolver areaResolver;
 	
 	/**
-	 * 実行メソッド
-	 * @param configBean
+	 * コンストラクタ
+	 * @param areaResolver 撮影範囲を解決するインスタンス
+	 */
+	public TakeSnapService(SnapAreaResolver areaResolver) {
+		this.areaResolver = areaResolver;
+	}
+
+	/**
+	 * 撮影処理を実行する
+	 * @param config ユーザーの設定値
 	 * @throws ServiceException
 	 */
-	public void execute(ConfigBean configBean) throws ServiceException {
+	public void execute(ConfigBean config) throws ServiceException {
 		try {
 			// 画面サイズを取得
-			SnapAreaResolver areaResolver = new SnapAreaResolver();
-			Rectangle snapSize = areaResolver.getSnapArea(configBean.getSnapArea());
+			Rectangle snapSize = config.getSnapArea().resolveArea(areaResolver);
 			
 			// 撮影
 			Robot robot = new Robot();
@@ -51,16 +60,16 @@ public class TakeSnapService {
 			LocalDateTime now = LocalDateTime.now();
 			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd.HHmmss.SSS");
 			String systemTime = now.format(dtf);
-			String fileName = systemTime + "." + configBean.getFormatType().getValue();
+			String fileName = systemTime + "." + config.getFormatType().getValue();
 			
 			// 保存
-			Path dir = Paths.get(configBean.getSavePath());
+			Path dir = Paths.get(config.getSavePath());
 			// 実在チェック、ディレクトリチェック
 			if (Files.exists(dir)){
 				if (!Files.isDirectory(dir)) {
 					// 保存先フォルダがフォルダでない場合、デフォルト値を設定する
-					configBean.setSavePath(DEFAULT_SAVE_PATH);
-					dir = Paths.get(configBean.getSavePath());
+					config.setSavePath(DEFAULT_SAVE_PATH);
+					dir = Paths.get(config.getSavePath());
 					Files.createDirectories(dir); // 念押しで再生成する
 					log.warn("画像保存先が不正のため、画像保存先をデフォルト（" + DEFAULT_SAVE_PATH + "）に設定しました");
 				}
@@ -70,15 +79,15 @@ public class TakeSnapService {
 				log.warn("画像保存先パスが見つからないため、ファルダを自動生成しました");
 			}
 			Path target = dir.resolve(fileName);
-			ImageIO.write(snap, configBean.getFormatType().toString(), target.toFile());
+			ImageIO.write(snap, config.getFormatType().toString(), target.toFile());
 			log.info("スクリーンショットの撮影に成功しました");
 			
 			// 撮影後、ディレクトリなどを開く
 			SnapAfterResolver afterResolver = new SnapAfterResolver ();
-			afterResolver.afterAction(configBean.getSnapAfter(), target);
+			afterResolver.afterAction(config.getSnapAfter(), target);
 			
 			// 設定が有効であれば、クリップボードに画像を保存する
-			if (configBean.getIsCopyToClipboard()) {
+			if (config.getIsCopyToClipboard()) {
 				copyToClipboard(snap);
 			}
 			
