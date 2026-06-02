@@ -20,6 +20,8 @@ import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.model.enums.FormatType;
 import com.github.rebi0395.instantsnap.model.enums.SnapAfter;
 import com.github.rebi0395.instantsnap.model.enums.SnapArea;
+import com.github.rebi0395.instantsnap.model.enums.TriggerType;
+
 import static com.github.rebi0395.instantsnap.common.AppConstant.*;
 import static com.github.rebi0395.instantsnap.common.StrCheckUtil.*;
 
@@ -31,7 +33,7 @@ public class PropertiesRepository {
 
 	/** プロパティのファイルパス */
 	private static final Path PROPERTIES_PATH = Paths.get("config.properties");
-	
+
 	/** プロパティファイルの一時保存パス */
 	private static final Path TEMP_PATH = PROPERTIES_PATH.resolveSibling(PROPERTIES_PATH.getFileName() + ".tmp");
 
@@ -60,9 +62,9 @@ public class PropertiesRepository {
 
 			// プロパティから読み取った情報をセット
 			config.setSavePath(properties.getProperty(SAVE_PATH));
+			config.setTriggerType(TriggerType.parseOrDefault(properties.getProperty(TRIGGER)));
 			config.setSnapArea(SnapArea.parseOrDefault(properties.getProperty(SNAP_AREA)));
 			config.setFormatType(FormatType.parseOrDefault(properties.getProperty(FORMAT)));
-			config.setTrigger(properties.getProperty(TRIGGER));
 			config.setSnapAfter(SnapAfter.parseOrDefault(properties.getProperty(SNAP_AFTER)));
 			config.setIsCopyToClipboard(isStrTrue(properties.getProperty(COPY_TO_CLIPBOARD)));
 
@@ -83,13 +85,14 @@ public class PropertiesRepository {
 		// 更新したいキーと値のペアをMapに格納する
 		Map<String, String> updateMap = new HashMap<>();
 		updateMap.put(SAVE_PATH, config.getSavePath());
+		updateMap.put(TRIGGER, config.getTriggerType().getValue());
 		updateMap.put(SNAP_AREA, config.getSnapArea().getValue());
 		updateMap.put(FORMAT, config.getFormatType().getValue());
 		updateMap.put(SNAP_AFTER, config.getSnapAfter().getValue());
 		updateMap.put(COPY_TO_CLIPBOARD, String.valueOf(config.getIsCopyToClipboard()));
-		
+
 		try (BufferedWriter writer = Files.newBufferedWriter(TEMP_PATH, StandardCharsets.UTF_8); // 一時ファイル自動作成
-			BufferedReader reader = Files.newBufferedReader(PROPERTIES_PATH, StandardCharsets.UTF_8)) {
+				BufferedReader reader = Files.newBufferedReader(PROPERTIES_PATH, StandardCharsets.UTF_8)) {
 
 			String line;
 			while (true) {
@@ -119,7 +122,7 @@ public class PropertiesRepository {
 
 				writer.newLine(); // 文末改行
 			}
-			
+
 			// 一時ファイルを元ファイルに置換する
 			Files.move(TEMP_PATH, PROPERTIES_PATH, StandardCopyOption.REPLACE_EXISTING);
 
@@ -137,11 +140,11 @@ public class PropertiesRepository {
 		if (!Files.exists(PROPERTIES_PATH)) {
 			log.warn("プロパティファイルが見つかりません。再生成を行います");
 			reset(); // 再生成
-			log.warn("プロパティファイルを再生成しました"); 
-			
+			log.warn("プロパティファイルを再生成しました");
+
 		}
 	}
-	
+
 	/**
 	 * プロパティファイルの初期化を行います
 	 * @throws ServiceException 初期化失敗時
@@ -161,25 +164,36 @@ public class PropertiesRepository {
 
 	// 初期化時の文章をソース側で保持 改行コードを統一
 	private static final String DEFAULT_CONTENT = """
-			#Setting
+			#InstantSnap Settings
+
 			#保存先パスを絶対パスで指定してください
-			savePath=C:/Instantsnap画像保存先/
+			savePath=C:/Instantsnap画像保存先
+
+			#スクショ発動キーの選択
+			#1 -> shift + printscreen(デフォルト), 2 -> printscreen
+			#3 -> F10, 4 -> カスタムキー
+			trigger=1
+
+			#カスタムキーを使用する場合は、triggerを4にした上でキーコードを記載してください
+			#2つ以上設定した場合は、コンビネーションキーとして機能します
+			customKey1=
+			customKey2=
+			customKey3=
 
 			#撮影範囲の選択
 			#1 -> アクティブウィンドウ(デフォルト), 2 -> アクティブモニター
 			#3 -> メインモニター, 4 -> 全てのモニター
 			snapArea=1
 
-			#拡張子の選択 png、jpg、bmp、gifのいずれかを記載してください
+			#拡張子の選択 png、jpg、bmp、gifのいずれかを記載してください(デフォルト：png)
 			format=png
 
-			#スクショ発動キーの選択
-			#1 -> shift + printscreen(推奨), 2 -> printscreen
-			trigger=1
+			#撮影後に行う処理を選択
+			#1 -> 通知を表示する, 2 -> 画像ファイルを開く, 0, 未記入等 -> 何もしない(デフォルト)
+			snapAfter=0
 
-			#撮影後、フォルダ、画像を自動で開く設定です
-			#1 -> フォルダ, 2 -> 画像, それ以外 -> 開かない
-			openMode=0
+			#撮影後、クリップボードにコピーする設定です。使用する場合は"true"と記載してください
+			copyToClipboard=true
 
-			""";
+						""";
 }
