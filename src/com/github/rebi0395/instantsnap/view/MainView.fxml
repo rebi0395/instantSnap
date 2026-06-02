@@ -22,14 +22,11 @@
 							<padding>
 								<Insets top="20" right="20" bottom="20" left="20"/>
 							</padding>
-							
 							<VBox spacing="10">
-								<Label text="① モード選択" styleClass="section-title"/>
+								<Label text="① ショートカットキー選択" styleClass="section-title"/>
 								<HBox spacing="15">
-									<RadioButton fx:id="mode1" text="モード1"/>
-									<RadioButton fx:id="mode2" text="モード2"/>
-									<RadioButton fx:id="mode3" text="モード3"/>
-									<RadioButton fx:id="modeOther" text="その他"/>
+									<ComboBox fx:id="triggerKeyBox">
+									</ComboBox>
 								</HBox>
 								<HBox spacing="10">
 									<TextField fx:id="opt1" promptText="オプション1" disable="true"/>
@@ -37,7 +34,6 @@
 									<TextField fx:id="opt3" promptText="オプション3" disable="true"/>
 								</HBox>
 							</VBox>
-
 							<VBox spacing="10">
 								<Label text="② 保存先フォルダ選択" styleClass="section-title"/>
 								<HBox spacing="10">
