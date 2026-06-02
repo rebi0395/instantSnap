@@ -28,32 +28,12 @@ public class SnapAreaResolver {
  	/** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(SnapAreaResolver.class);
  	
-    /**
-     * ユーザーの設定に応じた、撮影範囲を取得する
-     * @param config ユーザーが設定した撮影範囲モード
-     * @return 撮影範囲の座標(X,Y,W,H)
-     */
-	public Rectangle getSnapArea(SnapArea config) {	   
-		switch (config) {
-			case ACTIVE_WINDOW:
-				return getActiveWindowArea();
-			case ACTIVE_SCREEN:
-				return getActiveScreenArea();
-			case MAIN_SCREEN:
-				return getMainScreenArea();
-			case FULL_SCREEN:
-				return getFullScreenArea();
-			default:
-				return getDefaultScreenArea();
-		}
-    }
-
 	/**
 	 * 影を除外したアクティブウィンドウの撮影範囲を取得する
 	 * (OSがwindowsのみ対応)
 	 * @return Rectangle 影を除外したアクティブウィンドウの範囲
 	 */
-	private Rectangle getActiveWindowArea() {
+	public Rectangle getActiveWindowArea() {
 		String os = System.getProperty("os.name").toLowerCase();
 		// Windows以外はデフォルト挙動を行う
 		if (!os.contains("win")) {
@@ -85,7 +65,7 @@ public class SnapAreaResolver {
 	 * @param hwnd ウィンドウの個別識別情報
 	 * @return ウィンドウの影なし座標情報 (X,Y,W,H)
 	 */
-	private Rectangle getPhysicalWindowRect(HWND hwnd) {
+	public Rectangle getPhysicalWindowRect(HWND hwnd) {
 
 		RECT windowRect = new RECT();
 		RECT clientRect = new RECT();
@@ -111,7 +91,7 @@ public class SnapAreaResolver {
 	 * @param rectangle ウィンドウのX,Y,W,H
 	 * @return GraphicsDevice ウィンドウの中心が属しているモニター
 	 */
-	private GraphicsDevice findMonitorOfActiveWindow(Rectangle rectangle) {
+	public GraphicsDevice findMonitorOfActiveWindow(Rectangle rectangle) {
 		int centerX = rectangle.x + (rectangle.width / 2);
 		int centerY = rectangle.y + (rectangle.height / 2);
 		
@@ -138,7 +118,7 @@ public class SnapAreaResolver {
 	 * @param device 取得したアクティブモニター
 	 * @return Javaが管理する等倍の仮想モニターの座標に変換した、アクティブウィンドウの座標
 	 */
-	private Rectangle convertToJavaVirtualBounds(HWND hwnd, Rectangle physRect, GraphicsDevice device) {
+	public Rectangle convertToJavaVirtualBounds(HWND hwnd, Rectangle physRect, GraphicsDevice device) {
 		Rectangle deviceBounds = device.getDefaultConfiguration().getBounds(); // モニター自体の座標取得 
 		try {
 			// ウィンドウが最も被っているモニターの識別子を取得する
@@ -181,7 +161,7 @@ public class SnapAreaResolver {
 	 * ポインターの位置からアクティブモニターを特定し、撮影範囲を取得する
 	 * @return アクティブモニターの撮影範囲
 	 */
-	private Rectangle getActiveScreenArea() {
+	public Rectangle getActiveScreenArea() {
 		PointerInfo pointer = MouseInfo.getPointerInfo();
 		GraphicsDevice activeDevice = pointer.getDevice();
 		return activeDevice.getDefaultConfiguration().getBounds();
@@ -191,7 +171,7 @@ public class SnapAreaResolver {
 	 * メインに設定しているモニターの範囲を取得する
 	 * @return メインモニターの撮影範囲
 	 */
-	private Rectangle getMainScreenArea() {
+	public Rectangle getMainScreenArea() {
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		GraphicsDevice mainDevice = ge.getDefaultScreenDevice();
 		return mainDevice.getDefaultConfiguration().getBounds();
@@ -202,7 +182,7 @@ public class SnapAreaResolver {
 	 * 
 	 * @return マルチモニター込みの撮影範囲
 	 */
-	private Rectangle getFullScreenArea() {
+	public Rectangle getFullScreenArea() {
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		GraphicsDevice[] screens = ge.getScreenDevices();
 
@@ -217,7 +197,7 @@ public class SnapAreaResolver {
 	 * プロパティファイルの設定値が不正のときのデフォルト処理
 	 * @return アクティブモニターの撮影範囲
 	 */
-	private Rectangle getDefaultScreenArea() {
+	public Rectangle getDefaultScreenArea() {
 		log.info("撮影範囲をデフォルト値で設定しました");
 		return getActiveScreenArea();
 	}

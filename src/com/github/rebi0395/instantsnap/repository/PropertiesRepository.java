@@ -31,6 +31,9 @@ public class PropertiesRepository {
 
 	/** プロパティのファイルパス */
 	private static final Path PROPERTIES_PATH = Paths.get("config.properties");
+	
+	/** プロパティファイルの一時保存パス */
+	private static final Path TEMP_PATH = PROPERTIES_PATH.resolveSibling(PROPERTIES_PATH.getFileName() + ".tmp");
 
 	/** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(PropertiesRepository.class);
@@ -49,7 +52,7 @@ public class PropertiesRepository {
 	public void read(ConfigBean config) throws ServiceException {
 		Properties properties = new Properties();
 
-		isExistProperties(); // プロパティファイルの実在チェック
+		checkAndResetProperties(); // プロパティファイルの実在チェック
 
 		// UTF-8を明示的に指定し、プロパティをセット
 		try (BufferedReader reader = Files.newBufferedReader(PROPERTIES_PATH, StandardCharsets.UTF_8)) {
@@ -75,7 +78,7 @@ public class PropertiesRepository {
 	 */
 	public void save(ConfigBean config) throws ServiceException {
 
-		isExistProperties(); // プロパティファイルの実在チェック
+		checkAndResetProperties(); // プロパティファイルの実在チェック
 
 		// 更新したいキーと値のペアをMapに格納する
 		Map<String, String> updateMap = new HashMap<>();
@@ -84,11 +87,8 @@ public class PropertiesRepository {
 		updateMap.put(FORMAT, config.getFormatType().getValue());
 		updateMap.put(SNAP_AFTER, config.getSnapAfter().getValue());
 		updateMap.put(COPY_TO_CLIPBOARD, String.valueOf(config.getIsCopyToClipboard()));
-
-		// 書き込み先の一時ファイルのパスを取得
-		Path tempPath = PROPERTIES_PATH.resolveSibling(PROPERTIES_PATH.getFileName() + ".tmp");
 		
-		try (BufferedWriter writer = Files.newBufferedWriter(tempPath, StandardCharsets.UTF_8); // 一時ファイル自動作成
+		try (BufferedWriter writer = Files.newBufferedWriter(TEMP_PATH, StandardCharsets.UTF_8); // 一時ファイル自動作成
 			BufferedReader reader = Files.newBufferedReader(PROPERTIES_PATH, StandardCharsets.UTF_8)) {
 
 			String line;
@@ -121,7 +121,7 @@ public class PropertiesRepository {
 			}
 			
 			// 一時ファイルを元ファイルに置換する
-			Files.move(tempPath, PROPERTIES_PATH, StandardCopyOption.REPLACE_EXISTING);
+			Files.move(TEMP_PATH, PROPERTIES_PATH, StandardCopyOption.REPLACE_EXISTING);
 
 		} catch (IOException e) {
 			throw new ServiceException("プロパティファイルの書き込みに失敗しました", e);
@@ -132,15 +132,16 @@ public class PropertiesRepository {
 	 * プロパティファイルの実在チェックを行い、存在しなければ再生成する
 	 * @throws ServiceException Resetが失敗した場合にthrowする
 	 */
-	private void isExistProperties() throws ServiceException {
+	private void checkAndResetProperties() throws ServiceException {
 		// ファイルの実在チェック
 		if (!Files.exists(PROPERTIES_PATH)) {
 			log.warn("プロパティファイルが見つかりません。再生成を行います");
 			reset(); // 再生成
-			log.warn("プロパティファイルを再生成しました");
+			log.warn("プロパティファイルを再生成しました"); 
+			
 		}
 	}
-
+	
 	/**
 	 * プロパティファイルの初期化を行います
 	 * @throws ServiceException 初期化失敗時
