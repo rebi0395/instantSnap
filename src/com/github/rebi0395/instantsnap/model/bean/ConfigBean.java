@@ -24,8 +24,10 @@ public class ConfigBean {
 	/** 撮影後設定 */
 	private SnapAfter snapAfter;
 	/** クリップボードに画像に保存する (trueで保存する) */
-	private boolean isCopyToClipboard = true;
-
+	private boolean isCopyToClipboard;
+	/** カスタムキーの保存配列 */
+	private int[] customKeyCodes;
+	
 	/**
 	 * コンストラクタ。デフォルト値を設定する
 	 */
@@ -35,6 +37,7 @@ public class ConfigBean {
 		this.snapArea = SnapArea.ACTIVE_WINDOW;
 		this.formatType = FormatType.PNG;
 		this.snapAfter = SnapAfter.NOTHING;
+		this.isCopyToClipboard = true;
 	}
 
 	/**
@@ -46,7 +49,7 @@ public class ConfigBean {
 	}
 
 	/**
-	 * \の置換処理、前後トリム処理を行い、savePathを適用する
+	 * \の置換処理、前後トリム処理を行い、savePathをセットする
 	 * 想定外の値やnull時には、デフォルトパスをセットする
 	 * @param savePath スクショの保存先パス
 	 */
@@ -138,4 +141,19 @@ public class ConfigBean {
 		this.isCopyToClipboard = isCopyToClipboard;
 	}
 
+	/**
+	 * カスタムキーのキーコードを取得する
+	 * @return customKeyCodes
+	 */
+	public int[] getCustomKeyCodes() {
+		return customKeyCodes;
+	}
+
+	/**
+	 * カスタムキーのキーコードをセットする
+	 * @param customKeyCodes セットする
+	 */
+	public void setCustomKeyCodes(int[] customKeyCodes) {
+		this.customKeyCodes = customKeyCodes;
+	}
 }

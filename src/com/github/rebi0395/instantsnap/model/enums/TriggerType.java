@@ -81,17 +81,6 @@ public enum TriggerType implements BaseEnum {
 
 	/**
 	 * プロパティファイルの値から対応する TriggerType を取得する。
-	 * 不正な値が指定された場合は null を返す。
-	 *
-	 * @param raw プロパティファイルと紐つく値
-	 * @return 対応する TriggerType、または不正値の場合は null
-	 */
-	public static TriggerType parseValue(String raw) {
-		return BaseEnum.parseValue(TriggerType.class, raw);
-	}
-
-	/**
-	 * プロパティファイルの値から対応する TriggerType を取得する。
 	 * 不正な値が指定された場合は デフォルト値を返し、ログを出力する。
 	 * 
 	 * @param raw プロパティファイルと紐つく値

@@ -86,11 +86,7 @@ public class TriggerKeyManager implements NativeKeyListener {
         	// ビット演算でshiftキーの状態ビットだけを抜き出し判定する
         	boolean isShiftPressed = (e.getModifiers() & NativeKeyEvent.SHIFT_MASK) != 0;
         	// shiftキーが押されているかで撮影可否を判定する
-        	if ((PRINTSCREEN.equals(config.getTrigger()) && !isShiftPressed) || 
-        		(SHIFT_PRINTSCREEN.equals(config.getTrigger()) && isShiftPressed)) {
-        		// 撮影トリガーが入力されたことを通知する
-        		listener.requestSnap();
-        	}
+
         }
         // pauseキー押下時、アプリを終了する
         if (e.getKeyCode() == NativeKeyEvent.VC_PAUSE) {

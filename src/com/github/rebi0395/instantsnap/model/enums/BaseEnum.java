@@ -56,7 +56,7 @@ public interface BaseEnum {
 	 * @return 設定項目
 	 */
 	static <E extends Enum<?> & BaseEnum> E parseValue(Class<E> enums, String value) {
-		if (!isBlankSafe(value)) {
+		if (isNotBlankSafe(value)) {
 			String sValue = value.strip(); // 左右空白除去
 			for (E mode : enums.getEnumConstants()) {
 				// アルファベットの大文字、小文字の差異は無視する
