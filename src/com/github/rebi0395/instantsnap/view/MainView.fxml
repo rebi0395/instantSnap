@@ -28,10 +28,17 @@
 									<ComboBox fx:id="triggerKeyBox">
 									</ComboBox>
 								</HBox>
-								<HBox spacing="10">
-									<TextField fx:id="opt1" promptText="オプション1" disable="true"/>
-									<TextField fx:id="opt2" promptText="オプション2" disable="true"/>
-									<TextField fx:id="opt3" promptText="オプション3" disable="true"/>
+								<HBox spacing="5">
+									<Label text="ーーカスタムキー設定ーー"/>
+								</HBox>
+								<HBox spacing="10" alignment="CENTER_LEFT">
+									<TextField fx:id="inputKeyText" promptText="ショートカットキーにしたいキーを入力" disable="true"/>
+									<Label text="+"/>
+									<CheckBox fx:id="checkAlt" text="Alt"/>
+									<Label text="+"/>
+									<CheckBox fx:id="checkCtrl" text="Ctrl"/>
+									<Label text="+"/>
+									<CheckBox fx:id="checkShift" text="Shift"/>
 								</HBox>
 							</VBox>
 							<VBox spacing="10">
@@ -60,7 +67,7 @@
 
 							<VBox spacing="10">
 								<Label text="⑥ クリップボードに画像を保存する" styleClass="section-title"/>
-								<CheckBox fx:id="checkOption" text="有効にする"/>
+								<CheckBox fx:id="checkClipboard" text="有効にする"/>
 							</VBox>
 						</VBox>
 					</content>

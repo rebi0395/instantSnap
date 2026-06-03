@@ -31,6 +31,18 @@ public class StrCheckUtil {
 	}
 	
 	/**
+	 * 空白でないことを、安全にチェックします
+	 * @param str 文字列
+	 * @return 文字があれば true / 空白やnullでfalse
+	 */
+	public static boolean isNotBlankSafe(String str) {
+		if (str == null) {
+			return false;
+		} 
+		return !isBlankSafe(str);
+	}
+	
+	/**
 	 * 文字列が"true"、もしくは "1" と記載がされているかをチェックします。
 	 * @param str 文字列
 	 * @return 判定結果 true: "true"、"1" と記載されている。false: されていない

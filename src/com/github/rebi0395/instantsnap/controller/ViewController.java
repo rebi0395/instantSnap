@@ -2,20 +2,24 @@ package com.github.rebi0395.instantsnap.controller;
 
 import java.io.File;
 
+import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
+import com.github.rebi0395.instantsnap.common.NativeKeyCodeConverter;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.model.enums.FormatType;
 import com.github.rebi0395.instantsnap.model.enums.SnapAfter;
 import com.github.rebi0395.instantsnap.model.enums.SnapArea;
 import com.github.rebi0395.instantsnap.model.enums.TriggerType;
 import com.github.rebi0395.instantsnap.service.ServiceFacade;
+import static com.github.rebi0395.instantsnap.common.StrCheckUtil.*;
+import static com.github.kwhat.jnativehook.keyboard.NativeKeyEvent.*;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
-import javafx.scene.control.ToggleGroup;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 
@@ -28,11 +32,13 @@ public class ViewController {
 	private Label statusLabel;
 
 	@FXML
-	private TextField opt1;
+	private TextField inputKeyText;
 	@FXML
-	private TextField opt2;
+	private CheckBox checkShift;
 	@FXML
-	private TextField opt3;
+	private CheckBox checkAlt;
+	@FXML
+	private CheckBox checkCtrl;
 
 	/** 保存先のフォルダを表示するテキストフィールド */
 	@FXML
@@ -52,7 +58,7 @@ public class ViewController {
 	private ComboBox<SnapAfter> afterBox;
 	/** クリップボードに画像を保存するチェックボックス */
 	@FXML
-	private CheckBox checkOption;
+	private CheckBox checkClipboard;
 
 	/**
 	 * 初期化処理。FXMLファイルの要素を取り込んだ後に呼び出す
@@ -68,13 +74,15 @@ public class ViewController {
 
 		// ショートカットキーのリストを監視するリスナー
 		triggerKeyBox.valueProperty().addListener((obs, oldType, newType) -> {
-			// 選択されたEnumが「CUSTOM」ではない時（!=）に、Disable（無効化）を true にする
-			boolean isNotCustom = (newType != TriggerType.CUSTOM);
-
-			opt1.setDisable(isNotCustom);
-			opt2.setDisable(isNotCustom);
-			opt3.setDisable(isNotCustom);
+			updateCustomKeyFieldState();
 		});
+		
+		// カスタムキーのテキストフィールドを監視するリスナー
+		inputKeyText.textProperty().addListener((obs, oldVal, newVal) -> {
+			updateCustomKeyFieldState();
+		});
+
+		inputCustomKey(inputKeyText);
 
 		// ショートカットキーのリストをセット
 		triggerKeyBox.getItems().addAll(TriggerType.values());
@@ -97,11 +105,11 @@ public class ViewController {
 		afterBox.setValue(config.getSnapAfter());
 
 		// クリップボードに画像をするかのチェックボックスをセット
-		checkOption.setSelected(config.getIsCopyToClipboard());
+		checkClipboard.setSelected(config.getIsCopyToClipboard());
 	}
 
 	/**
-	 * 保存先フォルダ選択ボタンの処理
+	 * 保存先フォルダ選択ボタン押下時、ディレクトリフォルダを選択させる
 	 */
 	@FXML
 	public void onSelectFile() {
@@ -114,7 +122,53 @@ public class ViewController {
 	}
 
 	/**
-	 * 「設定を反映」ボタンが押されたときの処理
+	 * カスタムキーの入力処理を行う
+	 * @param textField テキストフィールド
+	 */
+	public void inputCustomKey(TextField textField) {
+		// 文字入力イベントをキャンセルする
+		textField.addEventFilter(KeyEvent.KEY_TYPED, event -> {
+			// 通常のキー入力をキャンセルさせる
+			event.consume();
+		});
+
+		// キーが押された瞬間に、キーコードとキーの表示名を表示する処理
+		textField.setOnKeyPressed(event -> {
+			// JavaFXのキーコードを取得
+			KeyCode keyCode = event.getCode();
+			// Nativeキーコードに変換
+			int nativeCode = NativeKeyCodeConverter.toNativeKeyCode(keyCode);
+			if (nativeCode == VC_UNDEFINED) {
+				return; // マップにないキーは入力処理、イベント消費をしない
+			}
+			// 通常のキー押下イベントを消費させる
+			event.consume();
+			// テキストフィールドに表示する処理
+			String keyText = NativeKeyEvent.getKeyText(nativeCode);
+			textField.setText(keyText);
+			textField.end(); // カーソルを右に移動
+		});
+	}
+
+	/**
+	 * カスタムキーのテキストフィールド、チェックボックスの
+	 * 活性、非活性を制御する
+	 */
+	public void updateCustomKeyFieldState() {
+		boolean isCustom = (triggerKeyBox.getValue() == TriggerType.CUSTOM);
+		boolean hasKey = (isNotBlankSafe(inputKeyText.getText()));
+
+		// Custom設定ならテキストフィールドを活性
+		inputKeyText.setDisable(!isCustom);
+
+		// Custom設定かつ、カスタムキーのテキストフィールドに値があれば活性
+		checkAlt.setDisable(!(isCustom && hasKey));
+		checkCtrl.setDisable(!(isCustom && hasKey));
+		checkShift.setDisable(!(isCustom && hasKey));
+	}
+
+	/**
+	 * 「設定を反映」ボタンが押されたとき、ユーザーの設定値を保存する	
 	 */
 	@FXML
 	public void onApplyConfig() {
@@ -126,7 +180,9 @@ public class ViewController {
 		config.setSnapArea(snapAreaBox.getValue()); // 撮影範囲
 		config.setFormatType(formatBox.getValue()); // 拡張子
 		config.setSnapAfter(afterBox.getValue()); // 撮影後設定
-		config.setIsCopyToClipboard(checkOption.isSelected()); // クリップボード保存の有無
+		config.setIsCopyToClipboard(checkClipboard.isSelected()); // クリップボード保存の有無
+
+		config.setCustomKeyCodes(null);
 
 		// configを更新し、司令塔クラスに返す
 		facade.save(config);
@@ -145,7 +201,7 @@ public class ViewController {
 		formatBox.getSelectionModel().selectFirst();
 		afterBox.getSelectionModel().selectFirst();
 
-		checkOption.setSelected(false); // チェック解除
+		checkClipboard.setSelected(false); // チェック解除
 
 		statusLabel.setText("ステータス: 設定を初期化しました。");
 	}

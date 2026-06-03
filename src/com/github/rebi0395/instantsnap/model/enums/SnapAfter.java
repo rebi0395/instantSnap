@@ -1,4 +1,5 @@
 package com.github.rebi0395.instantsnap.model.enums;
+
 import static com.github.rebi0395.instantsnap.common.AppConstant.*;
 
 import javafx.util.StringConverter;
@@ -44,17 +45,6 @@ public enum SnapAfter implements BaseEnum {
 
 	/**
 	 * プロパティファイルの値から対応する SnapAfter を取得する。
-	 * 不正な値が指定された場合は null を返す。
-	 *
-	 * @param raw プロパティファイルと紐つく値
-	 * @return 対応する SnapAfter、または不正値の場合は null
-	 */
-	public static SnapAfter parseValue(String raw) {
-		return BaseEnum.parseValue(SnapAfter.class, raw);
-	}
-
-	/**
-	 * プロパティファイルの値から対応する SnapAfter を取得する。
 	 * 不正な値が指定された場合は デフォルト値を返し、ログを出力する。
 	 * @param raw プロパティファイルと紐つく値
 	 * @return 対応する SnapAfter、またはデフォルトの SnapAfter
@@ -62,7 +52,7 @@ public enum SnapAfter implements BaseEnum {
 	public static SnapAfter parseOrDefault(String raw) {
 		return BaseEnum.parseOrDefault(SnapAfter.class, raw, NOTHING, SNAP_AFTER);
 	}
-	
+
 	/**
 	 * 列挙型と文字列を相互変換する	JavaFXコンバーターを取得する
 	 * @return SnapAfter と文字列を交互変換するJavaFXコンバーター
