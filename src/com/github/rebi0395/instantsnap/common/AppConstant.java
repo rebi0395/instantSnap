@@ -10,9 +10,16 @@ public final class AppConstant {
 	
 	// プロパティの項目名 
 	public static final String SAVE_PATH = "savePath";
+	
+	public static final String TRIGGER = "trigger";
+	
+	public static final String CUSTOM_KEY = "customKey";
+	public static final String USE_ALT = "useAlt";
+	public static final String USE_CTRL = "useCtrl";
+	public static final String USE_SHIFT = "useShift";
+	
 	public static final String SNAP_AREA = "snapArea";
 	public static final String FORMAT = "format";
-	public static final String TRIGGER = "trigger";
 	public static final String SNAP_AFTER = "snapAfter";
 	public static final String COPY_TO_CLIPBOARD = "copyToClipboard";
 	// デフォルト値

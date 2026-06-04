@@ -12,7 +12,10 @@ import javafx.scene.input.KeyCode;
  * JavaFXのKeyCode、または文字列を、JNativeHookのNativeKeyCodeに変換するクラス
  */
 public class NativeKeyCodeConverter {
+	
+	/** KeyCodeをキーにもち、Nativeキーコードを値として持つ変換マップ */
 	private static final Map<KeyCode, Integer> KEYCODE_MAP = new HashMap<>();
+	/** Nativeキーコードをキーにもち、KeyCodeを値として持つ変換マップ */ 
 	private static final Map<Integer, KeyCode> NATIVE_MAP = new HashMap<>();
 
 	// インスタンス化しない
@@ -146,5 +149,14 @@ public class NativeKeyCodeConverter {
 		} catch (NumberFormatException e) {
 			return VC_UNDEFINED; // 整数値に変換できなかった場合は、未定義とする
 		}
+	}
+	
+	/**
+	 * NativeキーからJavaFXキーを返却する
+	 * @param code nativeのキーコード
+	 * @return 引数に対応するJavaFXのKeyCode
+	 */
+	public static KeyCode toFXKeyCode(int nativeCode) {
+		return NATIVE_MAP.get(nativeCode);
 	}
 }
