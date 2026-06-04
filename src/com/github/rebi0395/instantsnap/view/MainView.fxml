@@ -27,6 +27,7 @@
 								<HBox spacing="15">
 									<ComboBox fx:id="triggerKeyBox">
 									</ComboBox>
+									<Label fx:id="keyCombinationLabel"/>
 								</HBox>
 								<HBox spacing="5">
 									<Label text="ーーカスタムキー設定ーー"/>
