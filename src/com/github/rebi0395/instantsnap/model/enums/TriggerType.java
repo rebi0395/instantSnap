@@ -15,7 +15,7 @@ import static com.github.kwhat.jnativehook.keyboard.NativeKeyEvent.*;
 public enum TriggerType implements BaseEnum {
 
 	/** Shift + PrintScreenキー */
-	SHIFT_PRINTSCREEN("1", "Shift + PrintScreen"),
+	PRINTSCREEN_SHIFT("1", "PrintScreen + Shift"),
 	/** PrintScreenキー */
 	PRINTSCREEN("2", "PrintScreen"),
 	/** F10キー */
@@ -43,7 +43,7 @@ public enum TriggerType implements BaseEnum {
 	 */
 	public KeyCombinationBean getKeyCombination(KeyCombinationBean customKeyBean) {
 		switch (this) {
-		case SHIFT_PRINTSCREEN:
+		case PRINTSCREEN_SHIFT:
 			return new KeyCombinationBean(VC_PRINTSCREEN, false, false, true);
 
 		case PRINTSCREEN:
@@ -53,6 +53,9 @@ public enum TriggerType implements BaseEnum {
 			return new KeyCombinationBean(VC_F10, false, false, false);
 
 		case CUSTOM:
+			if (customKeyBean.getTriggerKey() == VC_UNDEFINED) {
+				return new KeyCombinationBean(VC_PRINTSCREEN, false, false, true);
+			}
 			return customKeyBean;
 
 		default:
@@ -84,7 +87,7 @@ public enum TriggerType implements BaseEnum {
 	 * @return 対応する TriggerType、またはデフォルトの TriggerType
 	 */
 	public static TriggerType parseOrDefault(String raw) {
-		return BaseEnum.parseOrDefault(TriggerType.class, raw, SHIFT_PRINTSCREEN, TRIGGER);
+		return BaseEnum.parseOrDefault(TriggerType.class, raw, PRINTSCREEN_SHIFT, TRIGGER);
 	}
 
 	/**
@@ -93,6 +96,6 @@ public enum TriggerType implements BaseEnum {
 	 * @return TriggerType と文字列を交互変換するJavaFXコンバーター
 	 */
 	public static StringConverter<TriggerType> toConverter() {
-		return BaseEnum.toConverter(TriggerType.class, SHIFT_PRINTSCREEN);
+		return BaseEnum.toConverter(TriggerType.class, PRINTSCREEN_SHIFT);
 	}
 }

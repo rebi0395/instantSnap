@@ -34,7 +34,7 @@ public class ConfigBean {
 	 */
 	public ConfigBean() {
 		this.savePath = DEFAULT_SAVE_PATH;
-		this.triggerType = TriggerType.SHIFT_PRINTSCREEN;
+		this.triggerType = TriggerType.PRINTSCREEN_SHIFT;
 		this.customKeyBean = new KeyCombinationBean(VC_S, true, true, false);
 		this.snapArea = SnapArea.ACTIVE_WINDOW;
 		this.formatType = FormatType.PNG;

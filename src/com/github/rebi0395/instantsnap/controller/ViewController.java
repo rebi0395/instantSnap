@@ -2,9 +2,9 @@ package com.github.rebi0395.instantsnap.controller;
 
 import java.io.File;
 
-import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.rebi0395.instantsnap.common.NativeKeyCodeConverter;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
+import com.github.rebi0395.instantsnap.model.bean.KeyCombinationBean;
 import com.github.rebi0395.instantsnap.model.enums.FormatType;
 import com.github.rebi0395.instantsnap.model.enums.SnapAfter;
 import com.github.rebi0395.instantsnap.model.enums.SnapArea;
@@ -27,9 +27,13 @@ public class ViewController {
 
 	/** サービスクラスの司令塔クラス */
 	private ServiceFacade facade;
+	/** nativeキーコードを保持する変数 */
+	private int nativeCode;
 
 	@FXML
 	private Label statusLabel;
+	@FXML
+	private Label keyCombinationLabel;
 
 	@FXML
 	private TextField inputKeyText;
@@ -68,26 +72,39 @@ public class ViewController {
 
 		ConfigBean config = facade.getConfigBean();
 
-		// 保存先のフォルダをテキストフィールドにセット
-		config.getSavePath();
-		filePath.setText(config.getSavePath());
-
+		// -- 活性・非活性の動的な制御の登録 -- 
 		// ショートカットキーのリストを監視するリスナー
 		triggerKeyBox.valueProperty().addListener((obs, oldType, newType) -> {
 			updateCustomKeyFieldState();
 		});
-		
+
 		// カスタムキーのテキストフィールドを監視するリスナー
 		inputKeyText.textProperty().addListener((obs, oldVal, newVal) -> {
 			updateCustomKeyFieldState();
 		});
 
+		// カスタムキーのテキストフィールドの挙動を設定
 		inputCustomKey(inputKeyText);
+
+		// -- ユーザー設定値のセット -- 
+		// 保存先のフォルダを取得し、テキストフィールドにセット
+		config.getSavePath();
+		filePath.setText(config.getSavePath());
 
 		// ショートカットキーのリストをセット
 		triggerKeyBox.getItems().addAll(TriggerType.values());
 		triggerKeyBox.setConverter(TriggerType.toConverter()); // コンバーターにより	Enumsをdisplaynameで変換が可能になる
 		triggerKeyBox.setValue(config.getTriggerType());
+
+		// カスタムキーの取得
+		KeyCombinationBean customKeys = config.getCustomKeyBean();
+		// トリガーキーの保持、名前変換
+		nativeCode = customKeys.getTriggerKey(); // nativeキーコードを保存しておく
+		inputKeyText.setText(getKeyText(nativeCode));
+		// 修飾キー
+		checkAlt.setSelected(customKeys.isUseAlt());
+		checkCtrl.setSelected(customKeys.isUseCtrl());
+		checkShift.setSelected(customKeys.isUseShift());
 
 		// 撮影範囲のリストをセット
 		snapAreaBox.getItems().addAll(SnapArea.values());
@@ -106,6 +123,10 @@ public class ViewController {
 
 		// クリップボードに画像をするかのチェックボックスをセット
 		checkClipboard.setSelected(config.getIsCopyToClipboard());
+
+		// -- 文字列反映 --
+		// キー監視しているショートカットキーを表示する
+		keyCombinationLabel.setText(config.getTriggerType().getKeyCombination(customKeys).toDisplayname());
 	}
 
 	/**
@@ -136,23 +157,22 @@ public class ViewController {
 		textField.setOnKeyPressed(event -> {
 			// JavaFXのキーコードを取得
 			KeyCode keyCode = event.getCode();
-			// Nativeキーコードに変換
-			int nativeCode = NativeKeyCodeConverter.toNativeKeyCode(keyCode);
+			// Nativeキーコードに変換し、フィールドで保持
+			nativeCode = NativeKeyCodeConverter.toNativeKeyCode(keyCode);
 			if (nativeCode == VC_UNDEFINED) {
 				return; // マップにないキーは入力処理、イベント消費をしない
 			}
 			// 通常のキー押下イベントを消費させる
 			event.consume();
 			// テキストフィールドに表示する処理
-			String keyText = NativeKeyEvent.getKeyText(nativeCode);
+			String keyText = getKeyText(nativeCode);
 			textField.setText(keyText);
 			textField.end(); // カーソルを右に移動
 		});
 	}
 
 	/**
-	 * カスタムキーのテキストフィールド、チェックボックスの
-	 * 活性、非活性を制御する
+	 * カスタムキーのテキストフィールド、チェックボックスの活性、非活性を制御する
 	 */
 	public void updateCustomKeyFieldState() {
 		boolean isCustom = (triggerKeyBox.getValue() == TriggerType.CUSTOM);
@@ -182,7 +202,16 @@ public class ViewController {
 		config.setSnapAfter(afterBox.getValue()); // 撮影後設定
 		config.setIsCopyToClipboard(checkClipboard.isSelected()); // クリップボード保存の有無
 
-		config.setCustomKeyCodes(null);
+		// カスタムキーの設定を保存する
+		KeyCombinationBean customKeys = config.getCustomKeyBean();
+		customKeys.setTriggerKey(nativeCode); // 保持しているキーコードをいれる
+		customKeys.setUseAlt(checkAlt.isSelected());
+		customKeys.setUseCtrl(checkCtrl.isSelected());
+		customKeys.setUseShift(checkShift.isSelected());
+
+		// 最新設定のTriggerTypeから、コンビネーションキーを取得し、
+		// 文字列を更新する
+		keyCombinationLabel.setText(config.getTriggerType().getKeyCombination(customKeys).toDisplayname());
 
 		// configを更新し、司令塔クラスに返す
 		facade.save(config);

@@ -1,5 +1,7 @@
 package com.github.rebi0395.instantsnap.model.bean;
 
+import static com.github.kwhat.jnativehook.keyboard.NativeKeyEvent.*;
+
 /**
  * 設定した起動キーを保持するクラスです。
  */
@@ -20,6 +22,25 @@ public class KeyCombinationBean {
 		this.useAlt = useAlt;
 		this.useCtrl = useCtrl;
 		this.useShift = useShift;
+	}
+
+	/**
+	 * 現在の設定しているキー設定を文字列で取得する
+	 * @return キー設定の文字列(例：F10 + Shift)
+	 */
+	public String toDisplayname() {
+		if (triggerKey == VC_UNDEFINED) {
+			return "";
+		}
+		StringBuilder blilder = new StringBuilder();
+		blilder.append(getKeyText(triggerKey));
+
+		// 修飾キーを用いるとき、文字列を結合する
+		if (useAlt) blilder.append(" + Alt");
+		if (useCtrl) blilder.append(" + Ctrl");
+		if (useShift) blilder.append(" + Shift");
+
+		return blilder.toString();
 	}
 
 	/**

@@ -15,13 +15,16 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.rebi0395.instantsnap.common.NativeKeyCodeConverter;
 import com.github.rebi0395.instantsnap.exception.ServiceException;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
+import com.github.rebi0395.instantsnap.model.bean.KeyCombinationBean;
 import com.github.rebi0395.instantsnap.model.enums.FormatType;
 import com.github.rebi0395.instantsnap.model.enums.SnapAfter;
 import com.github.rebi0395.instantsnap.model.enums.SnapArea;
 import com.github.rebi0395.instantsnap.model.enums.TriggerType;
 
+import static com.github.rebi0395.instantsnap.common.NativeKeyCodeConverter.*;
 import static com.github.rebi0395.instantsnap.common.AppConstant.*;
 import static com.github.rebi0395.instantsnap.common.StrCheckUtil.*;
 
@@ -60,9 +63,17 @@ public class PropertiesRepository {
 		try (BufferedReader reader = Files.newBufferedReader(PROPERTIES_PATH, StandardCharsets.UTF_8)) {
 			properties.load(reader);
 
-			// プロパティから読み取った情報をセット
+			// -- プロパティから読み取った情報をセット -- 
 			config.setSavePath(properties.getProperty(SAVE_PATH));
 			config.setTriggerType(TriggerType.parseOrDefault(properties.getProperty(TRIGGER)));
+
+			// カスタムキーの設定
+			KeyCombinationBean customKeys = config.getCustomKeyBean();
+			customKeys.setTriggerKey(toNativeKeyCode(properties.getProperty(CUSTOM_KEY)));
+			customKeys.setUseAlt(isStrTrue(properties.getProperty(USE_ALT)));
+			customKeys.setUseCtrl(isStrTrue(properties.getProperty(USE_CTRL)));
+			customKeys.setUseShift(isStrTrue(properties.getProperty(USE_SHIFT)));
+
 			config.setSnapArea(SnapArea.parseOrDefault(properties.getProperty(SNAP_AREA)));
 			config.setFormatType(FormatType.parseOrDefault(properties.getProperty(FORMAT)));
 			config.setSnapAfter(SnapAfter.parseOrDefault(properties.getProperty(SNAP_AFTER)));
@@ -90,6 +101,13 @@ public class PropertiesRepository {
 		updateMap.put(FORMAT, config.getFormatType().getValue());
 		updateMap.put(SNAP_AFTER, config.getSnapAfter().getValue());
 		updateMap.put(COPY_TO_CLIPBOARD, String.valueOf(config.getIsCopyToClipboard()));
+
+		// -- カスタムキーの設定 --
+		KeyCombinationBean customKeys = config.getCustomKeyBean();
+		updateMap.put(CUSTOM_KEY, String.valueOf(customKeys.getTriggerKey()));
+		updateMap.put(USE_ALT, String.valueOf(customKeys.isUseAlt()));
+		updateMap.put(USE_CTRL, String.valueOf(customKeys.isUseCtrl()));
+		updateMap.put(USE_SHIFT, String.valueOf(customKeys.isUseShift()));
 
 		try (BufferedWriter writer = Files.newBufferedWriter(TEMP_PATH, StandardCharsets.UTF_8); // 一時ファイル自動作成
 				BufferedReader reader = Files.newBufferedReader(PROPERTIES_PATH, StandardCharsets.UTF_8)) {
