@@ -3,7 +3,9 @@ package com.github.rebi0395.instantsnap.model.enums;
 import static com.github.rebi0395.instantsnap.common.AppConstant.*;
 
 import com.github.rebi0395.instantsnap.common.AppLogger;
+import com.github.rebi0395.instantsnap.model.bean.KeyCombinationBean;
 
+import javafx.scene.input.KeyCombination;
 import javafx.util.StringConverter;
 import static com.github.kwhat.jnativehook.keyboard.NativeKeyEvent.*;
 
@@ -33,33 +35,28 @@ public enum TriggerType implements BaseEnum {
 	}
 
 	/**
-	 * 列挙型に対応するキーコードの配列を返す
-	 * カスタム設定の場合は、そのまま値を返却する
-	 * @param customKeyCode
-	 * @return 列挙型に対応するキーコードの配列
+	 * ユーザーのトリガーキー設定に応じて、トリガーキーの組み合わせを返却する
+	 * カスタム設定の場合は、引数の組み合わせをそのまま返す
+	 * 
+	 * @param customKeyBean カスタム設定時に使用するキー組み合わせ
+	 * @return トリガー設定に応じた KeyCombinationBean
 	 */
-	public int[] getKeyCode(int... customKeyCode) {
+	public KeyCombinationBean getKeyCombination(KeyCombinationBean customKeyBean) {
 		switch (this) {
 		case SHIFT_PRINTSCREEN:
-			return new int[] { VC_SHIFT, VC_PRINTSCREEN };
+			return new KeyCombinationBean(VC_PRINTSCREEN, false, false, true);
 
 		case PRINTSCREEN:
-			return new int[] { VC_PRINTSCREEN };
+			return new KeyCombinationBean(VC_PRINTSCREEN, false, false, false);
 
 		case F10:
-			return new int[] { VC_F10 };
+			return new KeyCombinationBean(VC_F10, false, false, false);
 
 		case CUSTOM:
-			if (customKeyCode == null || customKeyCode.length == 0) {
-				// カスタム設定だが、キーコード未設定の場合
-				AppLogger.warn("キーが設定されていません。デフォルト値を適応します");
-				return new int[] { VC_SHIFT, VC_PRINTSCREEN };
-			}
-
-			return customKeyCode;
+			return customKeyBean;
 
 		default:
-			return new int[] { VC_SHIFT, VC_PRINTSCREEN };
+			return new KeyCombinationBean(VC_PRINTSCREEN, false, false, true);
 		}
 	}
 

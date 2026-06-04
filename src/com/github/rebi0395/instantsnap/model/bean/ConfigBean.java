@@ -2,6 +2,7 @@ package com.github.rebi0395.instantsnap.model.bean;
 
 import static com.github.rebi0395.instantsnap.common.AppConstant.*;
 import static com.github.rebi0395.instantsnap.common.StrCheckUtil.*;
+import static com.github.kwhat.jnativehook.keyboard.NativeKeyEvent.*;
 
 import com.github.rebi0395.instantsnap.model.enums.FormatType;
 import com.github.rebi0395.instantsnap.model.enums.SnapAfter;
@@ -17,6 +18,8 @@ public class ConfigBean {
 	private String savePath;
 	/** 撮影キー */
 	private TriggerType triggerType;
+	/** 撮影カスタムキーの保存クラス */
+	private KeyCombinationBean customKeyBean;
 	/** 撮影範囲 */
 	private SnapArea snapArea;
 	/** 拡張子 */
@@ -25,8 +28,6 @@ public class ConfigBean {
 	private SnapAfter snapAfter;
 	/** クリップボードに画像に保存する (trueで保存する) */
 	private boolean isCopyToClipboard;
-	/** カスタムキーの保存配列 */
-	private int[] customKeyCodes;
 	
 	/**
 	 * コンストラクタ。デフォルト値を設定する
@@ -34,6 +35,7 @@ public class ConfigBean {
 	public ConfigBean() {
 		this.savePath = DEFAULT_SAVE_PATH;
 		this.triggerType = TriggerType.SHIFT_PRINTSCREEN;
+		this.customKeyBean = new KeyCombinationBean(VC_S, true, true, false);
 		this.snapArea = SnapArea.ACTIVE_WINDOW;
 		this.formatType = FormatType.PNG;
 		this.snapAfter = SnapAfter.NOTHING;
@@ -75,6 +77,22 @@ public class ConfigBean {
 	 */
 	public void setTriggerType(TriggerType triggerType) {
 		this.triggerType = triggerType;
+	}
+
+	/**
+	 * カスタム設定のキーの組み合わせを取得する
+	 * @return customKeyBean
+	 */
+	public KeyCombinationBean getCustomKeyBean() {
+		return customKeyBean;
+	}
+
+	/**
+	 * カスタム設定のキーの組み合わせをセットする
+	 * @param customKeyBean
+	 */
+	public void setCustomKeyBean(KeyCombinationBean customKeyBean) {
+		this.customKeyBean = customKeyBean;
 	}
 
 	/**
@@ -139,21 +157,5 @@ public class ConfigBean {
 	 */
 	public void setIsCopyToClipboard(boolean isCopyToClipboard) {
 		this.isCopyToClipboard = isCopyToClipboard;
-	}
-
-	/**
-	 * カスタムキーのキーコードを取得する
-	 * @return customKeyCodes
-	 */
-	public int[] getCustomKeyCodes() {
-		return customKeyCodes;
-	}
-
-	/**
-	 * カスタムキーのキーコードをセットする
-	 * @param customKeyCodes セットする
-	 */
-	public void setCustomKeyCodes(int[] customKeyCodes) {
-		this.customKeyCodes = customKeyCodes;
 	}
 }
