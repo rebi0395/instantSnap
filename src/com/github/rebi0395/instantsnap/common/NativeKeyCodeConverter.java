@@ -12,11 +12,18 @@ import javafx.scene.input.KeyCode;
  * JavaFXのKeyCode、または文字列を、JNativeHookのNativeKeyCodeに変換するクラス
  */
 public class NativeKeyCodeConverter {
-	
+
 	/** KeyCodeをキーにもち、Nativeキーコードを値として持つ変換マップ */
 	private static final Map<KeyCode, Integer> KEYCODE_MAP = new HashMap<>();
-	/** Nativeキーコードをキーにもち、KeyCodeを値として持つ変換マップ */ 
+	/** Nativeキーコードをキーにもち、KeyCodeを値として持つ変換マップ */
 	private static final Map<Integer, KeyCode> NATIVE_MAP = new HashMap<>();
+
+	/** 右Altキーが拡張キー扱いされた場合、飛んでくるキーコードを定義 */
+	public static final int VC_ALT_R = 3640; // 3640
+	/** 右Ctrlキーが拡張キー扱いされた場合、飛んでくるキーコードを定義 */
+	public static final int VC_CONTROL_R = 3613; // 3613
+	/** 右Shiftキーが拡張キー扱いされた場合、飛んでくるキーコードを定義 */
+	public static final int VC_SHIFT_R = 3638; // 3638
 
 	// インスタンス化しない
 	private NativeKeyCodeConverter() {
@@ -97,9 +104,8 @@ public class NativeKeyCodeConverter {
 		KEYCODE_MAP.put(KeyCode.INSERT, VC_INSERT);
 		KEYCODE_MAP.put(KeyCode.DELETE, VC_DELETE);
 
-		// --- Space / Equal / PrintScreen ---
+		// --- Space / PrintScreen ---
 		KEYCODE_MAP.put(KeyCode.SPACE, VC_SPACE);
-		KEYCODE_MAP.put(KeyCode.EQUALS, VC_EQUALS);
 		KEYCODE_MAP.put(KeyCode.PRINTSCREEN, VC_PRINTSCREEN);
 
 		// Nativeキーコードをキー、javaFXキーコードを値とするマップ生成
@@ -150,7 +156,7 @@ public class NativeKeyCodeConverter {
 			return VC_UNDEFINED; // 整数値に変換できなかった場合は、未定義とする
 		}
 	}
-	
+
 	/**
 	 * NativeキーからJavaFXキーを返却する
 	 * @param code nativeのキーコード
@@ -159,4 +165,26 @@ public class NativeKeyCodeConverter {
 	public static KeyCode toFXKeyCode(int nativeCode) {
 		return NATIVE_MAP.get(nativeCode);
 	}
+
+	/**
+	 * 拡張キー（右側の Shift / Ctrl / Alt）を、左側と同じ正規キーコードに正規化する。
+	 * @param nativeCode nativeのキーコード
+	 * @return 正規化されたキーコード
+	 */
+	public static int normalizeNativeKeyCode(int nativeCode) {
+		switch (nativeCode) {
+		case VC_ALT_R:
+			return VC_ALT;
+
+		case VC_CONTROL_R:
+			return VC_CONTROL;
+
+		case VC_SHIFT_R:
+			return VC_SHIFT;
+
+		default:
+			return nativeCode;
+		}
+	}
+
 }

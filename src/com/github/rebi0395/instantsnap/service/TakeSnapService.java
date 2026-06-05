@@ -84,7 +84,7 @@ public class TakeSnapService {
 			
 			// 撮影後、ディレクトリなどを開く
 			SnapAfterResolver afterResolver = new SnapAfterResolver ();
-			afterResolver.afterAction(config.getSnapAfter(), target);
+			config.getSnapAfter().execute(afterResolver, target);
 			
 			// 設定が有効であれば、クリップボードに画像を保存する
 			if (config.getIsCopyToClipboard()) {

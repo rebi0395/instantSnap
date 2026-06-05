@@ -2,6 +2,10 @@ package com.github.rebi0395.instantsnap.model.enums;
 
 import static com.github.rebi0395.instantsnap.common.AppConstant.*;
 
+import java.nio.file.Path;
+
+import com.github.rebi0395.instantsnap.service.SnapAfterResolver;
+
 import javafx.util.StringConverter;
 
 /**
@@ -14,7 +18,7 @@ public enum SnapAfter implements BaseEnum {
 	/** 撮影後、通知を送付する */
 	TOAST("1", "Toast Notification"),
 	/** 保存した画像ファイルを開く */
-	OPEN_IMAGE("2", "OpenFile");
+	OPEN_IMAGE("2", "Open Image");
 
 	/** プロパティファイルと紐つく値 */
 	private final String value;
@@ -25,6 +29,26 @@ public enum SnapAfter implements BaseEnum {
 	SnapAfter(String value, String displayName) {
 		this.value = value;
 		this.displayName = displayName;
+	}
+
+	/**
+	 * 撮影後の処理クラスに、処理を依頼するメソッドです
+	 * @param resolver 撮影後解決クラス
+	 * @param path 保存した画像のファイルパス
+	 */
+	public void execute(SnapAfterResolver resolver, Path path) {
+		switch (this) {
+		case TOAST:
+			resolver.showToast(path);
+			break;
+
+		case OPEN_IMAGE:
+			resolver.openImage(path);
+			break;
+
+		default:
+			return; // 何もしない	
+		}
 	}
 
 	/**

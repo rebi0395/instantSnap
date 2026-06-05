@@ -126,7 +126,7 @@ public class ViewController {
 
 		// -- 文字列反映 --
 		// キー監視しているショートカットキーを表示する
-		keyCombinationLabel.setText(config.getTriggerType().getKeyCombination(customKeys).toDisplayname());
+		keyCombinationLabel.setText(config.getTriggerType().resolveKeyCombination(customKeys).resolveKeyCombinationName());
 	}
 
 	/**
@@ -157,6 +157,8 @@ public class ViewController {
 		textField.setOnKeyPressed(event -> {
 			// JavaFXのキーコードを取得
 			KeyCode keyCode = event.getCode();
+			System.out.println(keyCode.getName());
+			
 			// Nativeキーコードに変換し、フィールドで保持
 			nativeCode = NativeKeyCodeConverter.toNativeKeyCode(keyCode);
 			if (nativeCode == VC_UNDEFINED) {
@@ -211,7 +213,7 @@ public class ViewController {
 
 		// 最新設定のTriggerTypeから、コンビネーションキーを取得し、
 		// 文字列を更新する
-		keyCombinationLabel.setText(config.getTriggerType().getKeyCombination(customKeys).toDisplayname());
+		keyCombinationLabel.setText(config.getTriggerType().resolveKeyCombination(customKeys).resolveKeyCombinationName());
 
 		// configを更新し、司令塔クラスに返す
 		facade.save(config);

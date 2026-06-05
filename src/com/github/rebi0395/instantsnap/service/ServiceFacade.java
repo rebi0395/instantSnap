@@ -69,8 +69,6 @@ public class ServiceFacade implements KeyEventListener {
 	public void save(ConfigBean configBean) {
 		try {
 			synchronized (configLock) { // 排他制御
-
-				this.config = configBean; // 設定値インスタンスを更新
 				editor.save(config); // プロパティファイルを更新
 			}
 			// チェック済例外
