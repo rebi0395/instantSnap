@@ -98,7 +98,7 @@ public interface BaseEnum {
                     return defaultValue;
                 }
                 for (E mode : enums.getEnumConstants()) {
-                    if (mode.getDisplayName().equals(stripSafe(str))) {
+                    if (mode.getDisplayName().equalsIgnoreCase(stripSafe(str))) {
                         return mode;
                     }
                 }
