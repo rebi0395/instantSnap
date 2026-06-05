@@ -113,31 +113,26 @@ public class PropertiesRepository {
 				BufferedReader reader = Files.newBufferedReader(PROPERTIES_PATH, StandardCharsets.UTF_8)) {
 
 			String line;
-			while (true) {
-				line = reader.readLine();
-				if (line == null) {
-					// ファイルの最終行でループを抜ける
-					break;
-				}
+			while ((line = reader.readLine()) != null) {
+				
 				line = stripSafe(line); // 余分なスペース除去
-				boolean isMatched = false;
+				int index = line.indexOf("="); // イコールの箇所を取得(一文字目が0とする)
 
-				// マップのキーと値のペアのリストをentrySetで取得し、一つずつentryで受け取る
-				for (Map.Entry<String, String> entry : updateMap.entrySet()) {
-					String prefix = entry.getKey() + "="; // 先頭文字
-					if (line.startsWith(prefix)) {
-						// 一致すればその行を書き込み
-						writer.write(prefix + entry.getValue());
-						isMatched = true;
-						break; // この行の置換は完了したため、Mapのループを抜ける
+				// "=" より左側にキー名が存在するとき 
+				if (index > 0) {
+					String key = line.substring(0, index); // "="の左側の文字取得
+					String value = updateMap.get(key);
+					
+					if (value != null) {
+						// keyがupdateMapに存在したら更新
+						writer.write(key + "=" + value);
+					} else {
+						// 取得した行のまま書き写し
+						writer.write(line);
 					}
-				}
-
-				// どのキーにもマッチしなかった行（コメントや空行）はそのままコピー
-				if (!isMatched) {
+				} else {
 					writer.write(line);
 				}
-
 				writer.newLine(); // 文末改行
 			}
 
@@ -192,11 +187,13 @@ public class PropertiesRepository {
 			#3 -> F10, 4 -> カスタムキー
 			trigger=1
 
-			#カスタムキーを使用する場合は、triggerを4にした上でキーコードを記載してください
-			#2つ以上設定した場合は、コンビネーションキーとして機能します
-			customKey1=
-			customKey2=
-			customKey3=
+			#カスタムメインキー設定 -- triggerを4にした上でキーコードを記載してください
+			#未使用な場合は、0
+			customKey=0
+			#カスタムキーのコンビネーションキー設定 -- 使用する場合はtrue メインキー必須
+			useAlt=false
+			useCtrl=false
+			useShift=false
 
 			#撮影範囲の選択
 			#1 -> アクティブウィンドウ(デフォルト), 2 -> アクティブモニター
@@ -213,5 +210,5 @@ public class PropertiesRepository {
 			#撮影後、クリップボードにコピーする設定です。使用する場合は"true"と記載してください
 			copyToClipboard=true
 
-						""";
+									""";
 }

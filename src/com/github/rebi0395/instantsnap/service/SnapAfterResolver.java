@@ -14,19 +14,6 @@ public class SnapAfterResolver {
 	/** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(SnapAfterResolver.class);
 
-	public void afterAction(SnapAfter after, Path path) throws ServiceException {
-		switch (after) {
-		case TOAST:
-			showToast(path);
-			break;
-		case OPEN_IMAGE:
-			openImage(path);
-			break;
-		default:
-			return; // 何もしない	
-		}
-	}
-	
 	/**
 	 * 通知トースト押下時、画像の保存先ファイルを、スクリーンショットを選択状態で開きます
 	 * @param path 保存した画像のパス
