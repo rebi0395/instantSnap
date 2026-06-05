@@ -26,19 +26,19 @@ public class KeyCombinationBean {
 
 	/**
 	 * 現在の設定しているキー設定を文字列で取得する
-	 * @return キー設定の文字列(例：F10 + Shift)
+	 * @return キー設定の文字列(例：Shift + F10)
 	 */
-	public String toDisplayname() {
+	public String resolveKeyCombinationName() {
 		if (triggerKey == VC_UNDEFINED) {
 			return "";
 		}
 		StringBuilder blilder = new StringBuilder();
-		blilder.append(getKeyText(triggerKey));
 
 		// 修飾キーを用いるとき、文字列を結合する
-		if (useAlt) blilder.append(" + Alt");
-		if (useCtrl) blilder.append(" + Ctrl");
-		if (useShift) blilder.append(" + Shift");
+		if (useAlt) blilder.append("Alt + ");
+		if (useCtrl) blilder.append("Ctrl + ");
+		if (useShift) blilder.append("Shift + ");
+		blilder.append(getKeyText(triggerKey));
 
 		return blilder.toString();
 	}
