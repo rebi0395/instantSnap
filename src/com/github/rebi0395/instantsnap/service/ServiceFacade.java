@@ -33,7 +33,9 @@ public class ServiceFacade implements KeyEventListener {
 	/** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(ServiceFacade.class);
 
+	/** コンストラクタ 初期化処理を実行する */
 	public ServiceFacade() {
+		init();
 	}
 
 	/**
