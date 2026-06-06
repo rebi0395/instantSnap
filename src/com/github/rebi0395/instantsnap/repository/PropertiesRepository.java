@@ -15,7 +15,6 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.rebi0395.instantsnap.common.NativeKeyCodeConverter;
 import com.github.rebi0395.instantsnap.exception.ServiceException;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.model.bean.KeyCombinationBean;
@@ -210,7 +209,6 @@ public class PropertiesRepository {
 
 			#撮影後、クリップボードにコピーする設定です。使用する場合は"true"と記載してください
 			copyToClipboard=true
-
 
 
 												""";
