@@ -194,7 +194,7 @@ public class ViewController {
 			KeyCode keyCode = event.getCode();
 			// ログレベルがtraceであればキーログを出力する
 			AppLogger.keyPressed(keyCode);
-			
+
 			// Nativeキーコードに変換し、フィールドで保持
 			nativeCode = NativeKeyCodeConverter.toNativeKeyCode(keyCode);
 			if (nativeCode == VC_UNDEFINED) {
