@@ -22,17 +22,19 @@
 							<padding>
 								<Insets top="20" right="20" bottom="20" left="20"/>
 							</padding>
-							<VBox spacing="10">
-								<Label text="① ショートカットキー選択" styleClass="section-title"/>
-								<HBox spacing="15">
+							<VBox spacing="15">
+								<HBox styleClass="setting-header">
+									<Label text="ショートカットキー選択" styleClass="section-title"/>
+									<Label fx:id="keyCombinationLabel" styleClass="current-value"/>
+								</HBox>
+								<HBox styleClass="setting-header">
 									<ComboBox fx:id="triggerKeyBox">
 									</ComboBox>
-									<Label fx:id="keyCombinationLabel"/>
 								</HBox>
-								<HBox spacing="5">
+								<HBox>
 									<Label text="ーーカスタムキー設定ーー"/>
 								</HBox>
-								<HBox spacing="10" alignment="CENTER_LEFT">
+								<HBox styleClass="setting-header">
 									<TextField fx:id="inputKeyText" promptText="ショートカットキーにしたいキーを入力" disable="true"/>
 									<Label text="+"/>
 									<CheckBox fx:id="checkAlt" text="Alt"/>
@@ -42,33 +44,54 @@
 									<CheckBox fx:id="checkShift" text="Shift"/>
 								</HBox>
 							</VBox>
-							<VBox spacing="10">
-								<Label text="② 保存先フォルダ選択" styleClass="section-title"/>
-								<HBox spacing="10">
+							<VBox spacing="15">
+								<HBox styleClass="setting-header">
+									<Label text="保存先フォルダ選択" styleClass="section-title"/>
+									<Label text="設定値" styleClass="current-value"/>
+								</HBox>
+								<HBox styleClass="setting-header">
 									<Button text="選択..." onAction="#onSelectFile"/>
 									<TextField fx:id="filePath" promptText="選択されたフォルダ" editable="false"/>
 								</HBox>
+								<HBox styleClass="setting-header">
+									<Label text="画像の拡張子" styleClass="section-title"/>
+									<Label text="設定値" styleClass="current-value"/>
+								</HBox>
+								<HBox styleClass="setting-header">
+									<ComboBox fx:id="formatBox">
+									</ComboBox>
+								</HBox>
 							</VBox>
 							<VBox spacing="10">
-								<Label text="③ 撮影範囲" styleClass="section-title"/>
-								<ComboBox fx:id="snapAreaBox">
-								</ComboBox>
-							</VBox>
-							<VBox spacing="10">
-								<Label text="④ 拡張子" styleClass="section-title"/>
-								<ComboBox fx:id="formatBox">
-								</ComboBox>
+								<HBox styleClass="setting-header">
+									<Label text="撮影範囲" styleClass="section-title"/>
+									<Label text="設定値" styleClass="current-value"/>
+								</HBox>
+								<HBox styleClass="setting-header">
+									<ComboBox fx:id="snapAreaBox">
+									</ComboBox>
+								</HBox>
 							</VBox>
 
 							<VBox spacing="10">
-								<Label text="⑤ 撮影後の動作" styleClass="section-title"/>
-								<ComboBox fx:id="afterBox">
-								</ComboBox>
+								<HBox styleClass="setting-header">
+									<Label text="撮影後の動作" styleClass="section-title"/>
+									<Label text="設定値" styleClass="current-value"/>
+								</HBox>
+								<HBox styleClass="setting-header">
+									<ComboBox fx:id="afterBox">
+									</ComboBox>
+								</HBox>
 							</VBox>
 
 							<VBox spacing="10">
-								<Label text="⑥ クリップボードに画像を保存する" styleClass="section-title"/>
-								<CheckBox fx:id="checkClipboard" text="有効にする"/>
+								<HBox styleClass="setting-header">
+									<Label text="クリップボードに画像を保存する" styleClass="section-title"/>
+									<Label text="有効" styleClass="current-value"/>
+								</HBox>
+								<HBox styleClass="setting-header">
+									<CheckBox fx:id="checkClipboard" text="有効にする"/>
+								</HBox>
 							</VBox>
 						</VBox>
 					</content>
