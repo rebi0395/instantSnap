@@ -162,11 +162,9 @@ public class PropertiesRepository {
 	 * @throws ServiceException 初期化失敗時
 	 */
 	public synchronized void reset() throws ServiceException {
-		// osごとの最適な改行コードで統一する
-		String content = DEFAULT_CONTENT.replace("\r\n", "\n").replace("\n", System.lineSeparator());
 		try {
 			// プロパティファイルがなければ作成、あれば文章を上書きする (追記しない)
-			Files.writeString(PROPERTIES_PATH, content, StandardCharsets.UTF_8);
+			Files.writeString(PROPERTIES_PATH, DEFAULT_CONTENT, StandardCharsets.UTF_8);
 			log.info("プロパティファイルを初期化しました");
 
 		} catch (IOException ie) {
@@ -178,8 +176,8 @@ public class PropertiesRepository {
 	private static final String DEFAULT_CONTENT = """
 			#InstantSnap Settings
 
-			#保存先パスを絶対パスで指定してください
-			savePath=C:/Instantsnap画像保存先
+			#保存先パスを指定してください
+			savePath=./screenshots/
 
 			#スクショ発動キーの選択
 			#1 -> shift + printscreen(デフォルト), 2 -> printscreen
@@ -210,6 +208,5 @@ public class PropertiesRepository {
 			#撮影後、クリップボードにコピーする設定です。使用する場合は"true"と記載してください
 			copyToClipboard=true
 
-
-												""";
+			""".replace("\r\n", "\n").replace("\n", System.lineSeparator());
 }
