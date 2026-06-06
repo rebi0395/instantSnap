@@ -32,17 +32,22 @@ public class ViewController {
 
 	@FXML
 	private Label statusLabel;
+	/** 適応中のキー設定を表示するラベル */
 	@FXML
 	private Label keyCombinationLabel;
 
+	/** カスタムキー設定のキー入力を受け付けるテキストフィールド */
 	@FXML
 	private TextField inputKeyText;
-	@FXML
-	private CheckBox checkShift;
+	/** コンビネーションキーとしてAltを使用するかを選択するチェックボックス */
 	@FXML
 	private CheckBox checkAlt;
+	/** コンビネーションキーとしてCtrlえお使用するかを選択するチェックボックス */
 	@FXML
 	private CheckBox checkCtrl;
+	/** コンビネーションキーとしてShiftを使用するかを選択するチェックボックス */
+	@FXML
+	private CheckBox checkShift;
 
 	/** 保存先のフォルダを表示するテキストフィールド */
 	@FXML
@@ -157,7 +162,6 @@ public class ViewController {
 		textField.setOnKeyPressed(event -> {
 			// JavaFXのキーコードを取得
 			KeyCode keyCode = event.getCode();
-			System.out.println(keyCode.getName());
 			
 			// Nativeキーコードに変換し、フィールドで保持
 			nativeCode = NativeKeyCodeConverter.toNativeKeyCode(keyCode);

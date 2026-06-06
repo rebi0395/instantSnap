@@ -15,9 +15,9 @@ import static com.github.kwhat.jnativehook.keyboard.NativeKeyEvent.*;
 public enum TriggerType implements BaseEnum {
 
 	/** Shift + PrintScreenキー */
-	SHIFT_PRINTSCREEN("1", "Shift + PrintScreen"),
+	SHIFT_PRINTSCREEN("1", "Shift + Print Screen"),
 	/** PrintScreenキー */
-	PRINTSCREEN("2", "PrintScreen"),
+	PRINTSCREEN("2", "Print Screen"),
 	/** F10キー */
 	F10("3", "F10"),
 	/** カスタム設定 */

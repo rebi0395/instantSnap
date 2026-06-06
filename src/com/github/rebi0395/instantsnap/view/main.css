@@ -15,4 +15,19 @@ VBox {
     -fx-background-radius: 5;
 }
 
+.setting-header {
+	-fx-spacing: 15; 
+	-fx-alignment: baseline_left;
+}
+
+.current-value {
+    -fx-background-color: #e8f0fe;
+    -fx-background-radius: 12;
+
+    -fx-padding: 2 10 2 10;
+
+    -fx-text-fill: #1565c0;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
 
