@@ -27,3 +27,4 @@ replay_pid*
 /screenshots/
 /config.properties
 /dependency-reduced-pom.xml
+/exe/
