@@ -9,7 +9,7 @@
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" stylesheets="@../view/main.css">
 
 	<top>
-		<Label fx:id="statusLabel" text="起動中..." />
+		<Label fx:id="labelStatus" text="起動中..." />
 	</top>
 
 	<center>
@@ -18,82 +18,81 @@
 				
 				<Tab fx:id="configTab" text="基本設定">
 					<content>
-						<VBox spacing="20">
-							<padding>
-								<Insets top="20" right="20" bottom="20" left="20"/>
-							</padding>
-							<VBox spacing="15">
-								<HBox styleClass="setting-header">
-									<Label text="ショートカットキー選択" styleClass="section-title"/>
-									<Label fx:id="keyCombinationLabel" styleClass="current-value"/>
-								</HBox>
-								<HBox styleClass="setting-header">
-									<ComboBox fx:id="triggerKeyBox">
-									</ComboBox>
-								</HBox>
-								<HBox>
-									<Label text="ーーカスタムキー設定ーー"/>
-								</HBox>
-								<HBox styleClass="setting-header">
-									<TextField fx:id="inputKeyText" promptText="ショートカットキーにしたいキーを入力" disable="true"/>
-									<Label text="+"/>
-									<CheckBox fx:id="checkAlt" text="Alt"/>
-									<Label text="+"/>
-									<CheckBox fx:id="checkCtrl" text="Ctrl"/>
-									<Label text="+"/>
-									<CheckBox fx:id="checkShift" text="Shift"/>
-								</HBox>
+						<ScrollPane fitToWidth="true" fitToHeight="true" pannable="true">
+							<VBox spacing="20">
+								<padding>
+									<Insets top="20" right="20" bottom="20" left="20"/>
+								</padding>
+								<VBox spacing="15">
+									<HBox styleClass="setting-header">
+										<Label text="ショートカットキー選択" styleClass="section-title"/>
+										<Label fx:id="labelKeyCombination" styleClass="current-value"/>
+									</HBox>
+									<HBox styleClass="setting-header">
+										<ComboBox fx:id="comboTriggerType">
+										</ComboBox>
+									</HBox>
+									<HBox>
+										<Label text="ーーカスタムキー設定ーー"/>
+									</HBox>
+									<HBox styleClass="setting-header">
+										<TextField fx:id="textInputKey" promptText="ショートカットキーにしたいキーを入力" disable="true"/>
+										<Label text="+"/>
+										<CheckBox fx:id="checkAlt" text="Alt"/>
+										<Label text="+"/>
+										<CheckBox fx:id="checkCtrl" text="Ctrl"/>
+										<Label text="+"/>
+										<CheckBox fx:id="checkShift" text="Shift"/>
+									</HBox>
+								</VBox>
+								<VBox spacing="15">
+									<HBox styleClass="setting-header">
+										<Label text="保存先フォルダ選択" styleClass="section-title"/>
+										<Label fx:id="labelFilePath" styleClass="current-value"/>
+									</HBox>
+									<HBox styleClass="setting-header">
+										<Button text="選択..." onAction="#onSelectFile"/>
+										<TextField fx:id="textFilePath" promptText="選択されたフォルダ" editable="false"/>
+									</HBox>
+									<HBox styleClass="setting-header">
+										<Label text="画像の拡張子" styleClass="section-title"/>
+										<Label fx:id="labelFormatType" styleClass="current-value"/>
+									</HBox>
+									<HBox styleClass="setting-header">
+										<ComboBox fx:id="comboFormatType">
+										</ComboBox>
+									</HBox>
+								</VBox>
+								<VBox spacing="10">
+									<HBox styleClass="setting-header">
+										<Label text="撮影範囲" styleClass="section-title"/>
+										<Label fx:id="labelSnapArea" styleClass="current-value"/>
+									</HBox>
+									<HBox styleClass="setting-header">
+										<ComboBox fx:id="comboSnapArea">
+										</ComboBox>
+									</HBox>
+								</VBox>
+	
+								<VBox spacing="15">
+									<HBox styleClass="setting-header">
+										<Label text="撮影後の動作" styleClass="section-title"/>
+										<Label fx:id="labelSnapAfter" styleClass="current-value"/>
+									</HBox>
+									<HBox styleClass="setting-header">
+										<ComboBox fx:id="comboSnapAfter">
+										</ComboBox>
+									</HBox>
+									<HBox styleClass="setting-header">
+										<Label text="クリップボード" styleClass="section-title"/>
+										<Label text="有効" styleClass="current-value"/>
+									</HBox>
+									<HBox styleClass="setting-header">
+										<CheckBox fx:id="checkClipboard" text="クリップボードに画像を保存する"/>
+									</HBox>
+								</VBox>
 							</VBox>
-							<VBox spacing="15">
-								<HBox styleClass="setting-header">
-									<Label text="保存先フォルダ選択" styleClass="section-title"/>
-									<Label text="設定値" styleClass="current-value"/>
-								</HBox>
-								<HBox styleClass="setting-header">
-									<Button text="選択..." onAction="#onSelectFile"/>
-									<TextField fx:id="filePath" promptText="選択されたフォルダ" editable="false"/>
-								</HBox>
-								<HBox styleClass="setting-header">
-									<Label text="画像の拡張子" styleClass="section-title"/>
-									<Label text="設定値" styleClass="current-value"/>
-								</HBox>
-								<HBox styleClass="setting-header">
-									<ComboBox fx:id="formatBox">
-									</ComboBox>
-								</HBox>
-							</VBox>
-							<VBox spacing="10">
-								<HBox styleClass="setting-header">
-									<Label text="撮影範囲" styleClass="section-title"/>
-									<Label text="設定値" styleClass="current-value"/>
-								</HBox>
-								<HBox styleClass="setting-header">
-									<ComboBox fx:id="snapAreaBox">
-									</ComboBox>
-								</HBox>
-							</VBox>
-
-							<VBox spacing="10">
-								<HBox styleClass="setting-header">
-									<Label text="撮影後の動作" styleClass="section-title"/>
-									<Label text="設定値" styleClass="current-value"/>
-								</HBox>
-								<HBox styleClass="setting-header">
-									<ComboBox fx:id="afterBox">
-									</ComboBox>
-								</HBox>
-							</VBox>
-
-							<VBox spacing="10">
-								<HBox styleClass="setting-header">
-									<Label text="クリップボードに画像を保存する" styleClass="section-title"/>
-									<Label text="有効" styleClass="current-value"/>
-								</HBox>
-								<HBox styleClass="setting-header">
-									<CheckBox fx:id="checkClipboard" text="有効にする"/>
-								</HBox>
-							</VBox>
-						</VBox>
+						</ScrollPane>
 					</content>
 				</Tab>
 				
@@ -124,5 +123,4 @@
 			</children>
 		</HBox>
 	</bottom>
-
 </BorderPane>

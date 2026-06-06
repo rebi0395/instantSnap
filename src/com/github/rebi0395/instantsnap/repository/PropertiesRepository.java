@@ -114,7 +114,7 @@ public class PropertiesRepository {
 
 			String line;
 			while ((line = reader.readLine()) != null) {
-				
+
 				line = stripSafe(line); // 余分なスペース除去
 				int index = line.indexOf("="); // イコールの箇所を取得(一文字目が0とする)
 
@@ -122,7 +122,7 @@ public class PropertiesRepository {
 				if (index > 0) {
 					String key = line.substring(0, index); // "="の左側の文字取得
 					String value = updateMap.get(key);
-					
+
 					if (value != null) {
 						// keyがupdateMapに存在したら更新
 						writer.write(key + "=" + value);
@@ -190,6 +190,7 @@ public class PropertiesRepository {
 			#カスタムメインキー設定 -- triggerを4にした上でキーコードを記載してください
 			#未使用な場合は、0
 			customKey=0
+
 			#カスタムキーのコンビネーションキー設定 -- 使用する場合はtrue メインキー必須
 			useAlt=false
 			useCtrl=false
@@ -210,5 +211,7 @@ public class PropertiesRepository {
 			#撮影後、クリップボードにコピーする設定です。使用する場合は"true"と記載してください
 			copyToClipboard=true
 
-									""";
+
+
+												""";
 }

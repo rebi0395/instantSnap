@@ -3,10 +3,17 @@ package com.github.rebi0395.instantsnap.common;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
+
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+
 public class AppLogger {
 
 	/** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(AppLogger.class);
+	/** キー専用ログ */
+	private static final Logger keyLog = LoggerFactory.getLogger("keyboard");
 
 	/**
 	 * infoレベルのログを出力します
@@ -42,5 +49,21 @@ public class AppLogger {
 	 */
 	public static void error(String message, Throwable t) {
 		log.error(message, t);
+	}
+	
+	/**
+	 * traceレベルのとき、Nativeキーのログを出力する
+	 * @param e キーの押下時
+	 */
+	public static void keyPressed(NativeKeyEvent e) {
+		keyLog.trace("[Native_PRESSED] {} (code: {})", NativeKeyEvent.getKeyText(e.getKeyCode()), e.getKeyCode());
+	}
+	
+	/**
+	 * traceレベルのとき、JavaFXキーのログを出力する
+	 * @param e キーの押下時
+	 */
+	public static void keyPressed(KeyCode keyCode) {
+		keyLog.trace("[JavaFX_PRESSED] {} (code: {})", keyCode, keyCode.getCode());
 	}
 }

@@ -1,6 +1,7 @@
 .section-title {
     -fx-font-size: 14px;
     -fx-font-weight: bold;
+	-fx-pref-width: 120;
 }
 
 .text-field, .combo-box, .button {
