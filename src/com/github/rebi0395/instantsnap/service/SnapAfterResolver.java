@@ -6,6 +6,9 @@ import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.rebi0395.instantsnap.exception.ServiceException;
+import com.github.rebi0395.instantsnap.model.enums.SnapAfter;
+
 public class SnapAfterResolver {
 
 	/** ロガー */
