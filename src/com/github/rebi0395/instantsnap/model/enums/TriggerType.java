@@ -2,8 +2,10 @@ package com.github.rebi0395.instantsnap.model.enums;
 
 import static com.github.rebi0395.instantsnap.common.AppConstant.*;
 
+import com.github.rebi0395.instantsnap.common.AppLogger;
 import com.github.rebi0395.instantsnap.model.bean.KeyCombinationBean;
 
+import javafx.scene.input.KeyCombination;
 import javafx.util.StringConverter;
 import static com.github.kwhat.jnativehook.keyboard.NativeKeyEvent.*;
 

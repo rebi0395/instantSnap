@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 
 public class AppLogger {
 
