@@ -2,6 +2,7 @@ package com.github.rebi0395.instantsnap.controller;
 
 import java.io.File;
 
+import com.github.rebi0395.instantsnap.common.AppLogger;
 import com.github.rebi0395.instantsnap.common.NativeKeyCodeConverter;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.model.bean.KeyCombinationBean;
@@ -10,6 +11,7 @@ import com.github.rebi0395.instantsnap.model.enums.SnapAfter;
 import com.github.rebi0395.instantsnap.model.enums.SnapArea;
 import com.github.rebi0395.instantsnap.model.enums.TriggerType;
 import com.github.rebi0395.instantsnap.service.ServiceFacade;
+import static com.github.rebi0395.instantsnap.common.AppConstant.*;
 import static com.github.rebi0395.instantsnap.common.StrCheckUtil.*;
 import static com.github.kwhat.jnativehook.keyboard.NativeKeyEvent.*;
 
@@ -30,41 +32,65 @@ public class ViewController {
 	/** nativeキーコードを保持する変数 */
 	private int nativeCode;
 
+	// -- ラベル --
+	/** 操作完了やエラーメッセージを表示するラベル */
 	@FXML
-	private Label statusLabel;
+	private Label labelStatus;
+
 	/** 適応中のキー設定を表示するラベル */
 	@FXML
-	private Label keyCombinationLabel;
+	private Label labelKeyCombination;
 
+	/** 適応中の保存先ファイルパスを表示するラベル */
+	@FXML
+	private Label labelFilePath;
+
+	/** 適応中の拡張子を表示するラベル */
+	@FXML
+	private Label labelFormatType;
+
+	/** 適応中の撮影範囲を表示するラベル */
+	@FXML
+	private Label labelSnapArea;
+
+	/** 適応中の撮影後設定を表示するラベル */
+	@FXML
+	private Label labelSnapAfter;
+
+	// -- 基本設定項目 --
 	/** カスタムキー設定のキー入力を受け付けるテキストフィールド */
 	@FXML
-	private TextField inputKeyText;
+	private TextField textInputKey;
 	/** コンビネーションキーとしてAltを使用するかを選択するチェックボックス */
 	@FXML
 	private CheckBox checkAlt;
-	/** コンビネーションキーとしてCtrlえお使用するかを選択するチェックボックス */
+	/** コンビネーションキーとしてCtrlを使用するかを選択するチェックボックス */
 	@FXML
 	private CheckBox checkCtrl;
 	/** コンビネーションキーとしてShiftを使用するかを選択するチェックボックス */
 	@FXML
 	private CheckBox checkShift;
 
-	/** 保存先のフォルダを表示するテキストフィールド */
-	@FXML
-	private TextField filePath;
-
 	/** 撮影ショートカットキーを選択するコンボボックス */
 	@FXML
-	private ComboBox<TriggerType> triggerKeyBox;
-	/** 撮影範囲を選択するコンボボックス */
+	private ComboBox<TriggerType> comboTriggerType;
+
+	/** 保存先のフォルダを表示するテキストフィールド */
 	@FXML
-	private ComboBox<SnapArea> snapAreaBox;
+	private TextField textFilePath;
+
 	/** 拡張子を選択するコンボボックス */
 	@FXML
-	private ComboBox<FormatType> formatBox;
+	private ComboBox<FormatType> comboFormatType;
+
+	/** 撮影範囲を選択するコンボボックス */
+	@FXML
+	private ComboBox<SnapArea> comboSnapArea;
+
 	/** 撮影後設定を選択するコンボボックス */
 	@FXML
-	private ComboBox<SnapAfter> afterBox;
+	private ComboBox<SnapAfter> comboSnapAfter;
+
 	/** クリップボードに画像を保存するチェックボックス */
 	@FXML
 	private CheckBox checkClipboard;
@@ -79,59 +105,63 @@ public class ViewController {
 
 		// -- 活性・非活性の動的な制御の登録 -- 
 		// ショートカットキーのリストを監視するリスナー
-		triggerKeyBox.valueProperty().addListener((obs, oldType, newType) -> {
+		comboTriggerType.valueProperty().addListener((obs, oldType, newType) -> {
 			updateCustomKeyFieldState();
 		});
 
 		// カスタムキーのテキストフィールドを監視するリスナー
-		inputKeyText.textProperty().addListener((obs, oldVal, newVal) -> {
+		textInputKey.textProperty().addListener((obs, oldVal, newVal) -> {
 			updateCustomKeyFieldState();
 		});
 
 		// カスタムキーのテキストフィールドの挙動を設定
-		inputCustomKey(inputKeyText);
+		inputCustomKey(textInputKey);
 
 		// -- ユーザー設定値のセット -- 
 		// 保存先のフォルダを取得し、テキストフィールドにセット
 		config.getSavePath();
-		filePath.setText(config.getSavePath());
+		textFilePath.setText(config.getSavePath());
 
 		// ショートカットキーのリストをセット
-		triggerKeyBox.getItems().addAll(TriggerType.values());
-		triggerKeyBox.setConverter(TriggerType.toConverter()); // コンバーターにより	Enumsをdisplaynameで変換が可能になる
-		triggerKeyBox.setValue(config.getTriggerType());
+		comboTriggerType.getItems().addAll(TriggerType.values());
+		comboTriggerType.setConverter(TriggerType.toConverter()); // コンバーターにより	Enumsをdisplaynameで変換が可能になる
+		comboTriggerType.setValue(config.getTriggerType());
 
 		// カスタムキーの取得
 		KeyCombinationBean customKeys = config.getCustomKeyBean();
 		// トリガーキーの保持、名前変換
-		nativeCode = customKeys.getTriggerKey(); // nativeキーコードを保存しておく
-		inputKeyText.setText(getKeyText(nativeCode));
+		nativeCode = customKeys.getTriggerKey(); // nativeキーコードを保持
+		if (!(nativeCode == VC_UNDEFINED)) {
+			// 未定義でない場合、テキストフィールドにセットする
+			textInputKey.setText(getKeyText(nativeCode));
+		}
+
 		// 修飾キー
 		checkAlt.setSelected(customKeys.isUseAlt());
 		checkCtrl.setSelected(customKeys.isUseCtrl());
 		checkShift.setSelected(customKeys.isUseShift());
 
 		// 撮影範囲のリストをセット
-		snapAreaBox.getItems().addAll(SnapArea.values());
-		snapAreaBox.setConverter(SnapArea.toConverter()); // コンバーターにより	Enumsをdisplaynameで変換が可能になる
-		snapAreaBox.setValue(config.getSnapArea());
+		comboSnapArea.getItems().addAll(SnapArea.values());
+		comboSnapArea.setConverter(SnapArea.toConverter()); // コンバーターにより	Enumsをdisplaynameで変換が可能になる
+		comboSnapArea.setValue(config.getSnapArea());
 
 		// 拡張子のリストをセット
-		formatBox.getItems().addAll(FormatType.values());
-		formatBox.setConverter(FormatType.toConverter());
-		formatBox.setValue(config.getFormatType());
+		comboFormatType.getItems().addAll(FormatType.values());
+		comboFormatType.setConverter(FormatType.toConverter());
+		comboFormatType.setValue(config.getFormatType());
 
 		// 撮影後設定のリストをセット
-		afterBox.getItems().addAll(SnapAfter.values());
-		afterBox.setConverter(SnapAfter.toConverter());
-		afterBox.setValue(config.getSnapAfter());
+		comboSnapAfter.getItems().addAll(SnapAfter.values());
+		comboSnapAfter.setConverter(SnapAfter.toConverter());
+		comboSnapAfter.setValue(config.getSnapAfter());
 
 		// クリップボードに画像をするかのチェックボックスをセット
 		checkClipboard.setSelected(config.getIsCopyToClipboard());
 
 		// -- 文字列反映 --
-		// キー監視しているショートカットキーを表示する
-		keyCombinationLabel.setText(config.getTriggerType().resolveKeyCombination(customKeys).resolveKeyCombinationName());
+		updateSettingLabels(config, customKeys);
+
 	}
 
 	/**
@@ -143,7 +173,7 @@ public class ViewController {
 		dc.setTitle("保存先フォルダを選択");
 		File folder = dc.showDialog(new Stage());
 		if (folder != null) {
-			filePath.setText(folder.getAbsolutePath().replace("\\", "/")); // パス文字を置換する
+			textFilePath.setText(folder.getAbsolutePath().replace("\\", "/")); // パス文字を置換する
 		}
 	}
 
@@ -162,6 +192,8 @@ public class ViewController {
 		textField.setOnKeyPressed(event -> {
 			// JavaFXのキーコードを取得
 			KeyCode keyCode = event.getCode();
+			// ログレベルがtraceであればキーログを出力する
+			AppLogger.keyPressed(keyCode);
 			
 			// Nativeキーコードに変換し、フィールドで保持
 			nativeCode = NativeKeyCodeConverter.toNativeKeyCode(keyCode);
@@ -181,11 +213,11 @@ public class ViewController {
 	 * カスタムキーのテキストフィールド、チェックボックスの活性、非活性を制御する
 	 */
 	public void updateCustomKeyFieldState() {
-		boolean isCustom = (triggerKeyBox.getValue() == TriggerType.CUSTOM);
-		boolean hasKey = (isNotBlankSafe(inputKeyText.getText()));
+		boolean isCustom = (comboTriggerType.getValue() == TriggerType.CUSTOM);
+		boolean hasKey = (isNotBlankSafe(textInputKey.getText()));
 
 		// Custom設定ならテキストフィールドを活性
-		inputKeyText.setDisable(!isCustom);
+		textInputKey.setDisable(!isCustom);
 
 		// Custom設定かつ、カスタムキーのテキストフィールドに値があれば活性
 		checkAlt.setDisable(!(isCustom && hasKey));
@@ -201,11 +233,11 @@ public class ViewController {
 
 		ConfigBean config = facade.getConfigBean();
 		// configに値をセット
-		config.setSavePath(filePath.getText()); // 保存パス
-		config.setTriggerType(triggerKeyBox.getValue()); // トリガーキー
-		config.setSnapArea(snapAreaBox.getValue()); // 撮影範囲
-		config.setFormatType(formatBox.getValue()); // 拡張子
-		config.setSnapAfter(afterBox.getValue()); // 撮影後設定
+		config.setSavePath(textFilePath.getText()); // 保存パス
+		config.setTriggerType(comboTriggerType.getValue()); // トリガーキー
+		config.setSnapArea(comboSnapArea.getValue()); // 撮影範囲
+		config.setFormatType(comboFormatType.getValue()); // 拡張子
+		config.setSnapAfter(comboSnapAfter.getValue()); // 撮影後設定
 		config.setIsCopyToClipboard(checkClipboard.isSelected()); // クリップボード保存の有無
 
 		// カスタムキーの設定を保存する
@@ -215,13 +247,12 @@ public class ViewController {
 		customKeys.setUseCtrl(checkCtrl.isSelected());
 		customKeys.setUseShift(checkShift.isSelected());
 
-		// 最新設定のTriggerTypeから、コンビネーションキーを取得し、
 		// 文字列を更新する
-		keyCombinationLabel.setText(config.getTriggerType().resolveKeyCombination(customKeys).resolveKeyCombinationName());
+		updateSettingLabels(config, customKeys);
 
 		// configを更新し、司令塔クラスに返す
 		facade.save(config);
-		statusLabel.setText("ステータス: 設定を反映しました。");
+		labelStatus.setText("ステータス: 設定を反映しました。");
 	}
 
 	/**
@@ -229,16 +260,37 @@ public class ViewController {
 	 */
 	@FXML
 	public void onResetConfig() {
-		filePath.clear(); // フォルダパスを空に
+		// フォルダパスをデフォルトに設定
+		textFilePath.setText(DEFAULT_SAVE_PATH);
+
+		// カスタムキーの設定をリセットする
+		textInputKey.clear();
+		checkAlt.setSelected(false);
+		checkCtrl.setSelected(false);
+		checkShift.setSelected(false);
 
 		// 各コンボボックスを一番上にリセット
-		snapAreaBox.getSelectionModel().selectFirst();
-		formatBox.getSelectionModel().selectFirst();
-		afterBox.getSelectionModel().selectFirst();
+		comboTriggerType.getSelectionModel().selectFirst();
+		comboFormatType.getSelectionModel().selectFirst();
+		comboSnapArea.getSelectionModel().selectFirst();
+		comboSnapAfter.getSelectionModel().selectFirst();
 
-		checkClipboard.setSelected(false); // チェック解除
+		checkClipboard.setSelected(true); // チェックをつける
+		labelStatus.setText("ステータス: 入力値を初期化しました");
+	}
 
-		statusLabel.setText("ステータス: 設定を初期化しました。");
+	/**
+	 * 設定更新時、現在の設定値を表示するラベルを一斉に更新する
+	 * @param config ユーザー設定値
+	 * @param customKeys ユーザーのカスタムキーの設定値
+	 */
+	public void updateSettingLabels(ConfigBean config, KeyCombinationBean customKeys) {
+		labelKeyCombination
+				.setText(config.getTriggerType().resolveKeyCombination(customKeys).resolveKeyCombinationName());
+		labelFilePath.setText(config.getSavePath());
+		labelFormatType.setText(config.getFormatType().getDisplayName());
+		labelSnapArea.setText(config.getSnapArea().getDisplayName());
+		labelSnapAfter.setText(config.getSnapAfter().getDisplayName());
 	}
 
 	/**

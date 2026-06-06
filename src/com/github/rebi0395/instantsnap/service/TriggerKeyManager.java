@@ -14,6 +14,7 @@ import javax.xml.crypto.dsig.XMLValidateContext;
 import static com.github.rebi0395.instantsnap.common.NativeKeyCodeConverter.VC_SHIFT_R;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
+import com.github.rebi0395.instantsnap.common.AppLogger;
 import com.github.rebi0395.instantsnap.common.NativeKeyCodeConverter;
 import com.github.rebi0395.instantsnap.exception.ServiceException;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
@@ -97,10 +98,12 @@ public class TriggerKeyManager implements NativeKeyListener {
 	 */
 	@Override
 	public void nativeKeyPressed(NativeKeyEvent e) {
-
+		
+		AppLogger.keyPressed(e);
+		
 		// 右側のAlt,Ctrl,Shiftの拡張キーを正規化する
 		int nativeKeyCode = NativeKeyCodeConverter.normalizeNativeKeyCode(e.getKeyCode());
-
+		
 		// pauseキー押下時、アプリを終了する
 		if (nativeKeyCode == VC_PAUSE) {
 			listener.requestExit();

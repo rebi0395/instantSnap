@@ -104,10 +104,26 @@ public class NativeKeyCodeConverter {
 		KEYCODE_MAP.put(KeyCode.INSERT, VC_INSERT);
 		KEYCODE_MAP.put(KeyCode.DELETE, VC_DELETE);
 
-		// --- Space / PrintScreen ---
+		// --- Bracket ---
+		KEYCODE_MAP.put(KeyCode.OPEN_BRACKET, VC_OPEN_BRACKET);
+		KEYCODE_MAP.put(KeyCode.CLOSE_BRACKET, VC_CLOSE_BRACKET);
+		
+		// Comma / Period / Slash / Minus
+		KEYCODE_MAP.put(KeyCode.COMMA, VC_COMMA);
+		KEYCODE_MAP.put(KeyCode.PERIOD, VC_PERIOD);
+		KEYCODE_MAP.put(KeyCode.SLASH, VC_SLASH);
+		KEYCODE_MAP.put(KeyCode.BACK_SLASH, VC_BACK_SLASH);
+		KEYCODE_MAP.put(KeyCode.MINUS, VC_MINUS);
+		
+		// --- Space / PrintScreen / Scroll Lock ---
 		KEYCODE_MAP.put(KeyCode.SPACE, VC_SPACE);
 		KEYCODE_MAP.put(KeyCode.PRINTSCREEN, VC_PRINTSCREEN);
-
+		KEYCODE_MAP.put(KeyCode.SCROLL_LOCK, VC_SCROLL_LOCK);
+		
+		// Windows / Command(macOS)
+		KEYCODE_MAP.put(KeyCode.WINDOWS, VC_META);
+		KEYCODE_MAP.put(KeyCode.META, VC_META);
+		
 		// Nativeキーコードをキー、javaFXキーコードを値とするマップ生成
 		for (Map.Entry<KeyCode, Integer> entry : KEYCODE_MAP.entrySet()) {
 			NATIVE_MAP.put(entry.getValue(), entry.getKey());
