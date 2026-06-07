@@ -38,9 +38,9 @@ public class TriggerKeyManager implements NativeKeyListener {
 
 	/** ALTキーの押下フラグ */
 	boolean isAltPressed = false;
-	/** ALTキーの押下フラグ */
+	/** Ctrlキーの押下フラグ */
 	boolean isCtrlPressed = false;
-	/** ALTキーの押下フラグ */
+	/** Shiftキーの押下フラグ */
 	boolean isShiftPressed = false;
 	/** 撮影後、連写防止用のフラグ trueで撮影を禁止する */
 	private boolean hasTriggeredSnap = false;
@@ -99,6 +99,7 @@ public class TriggerKeyManager implements NativeKeyListener {
 	@Override
 	public void nativeKeyPressed(NativeKeyEvent e) {
 		
+		// traceの場合、キーログをコンソール表示
 		AppLogger.keyPressed(e);
 		
 		// 右側のAlt,Ctrl,Shiftの拡張キーを正規化する
@@ -148,12 +149,15 @@ public class TriggerKeyManager implements NativeKeyListener {
 		// 右側のAlt,Ctrl,Shiftの拡張キーを正規化する
 		int nativeKeyCode = NativeKeyCodeConverter.normalizeNativeKeyCode(e.getKeyCode());
 
-		if (nativeKeyCode == VC_ALT)
+		if (nativeKeyCode == VC_ALT) {
 			isAltPressed = false;
-		if (nativeKeyCode == VC_CONTROL)
+		}
+		if (nativeKeyCode == VC_CONTROL) {
 			isCtrlPressed = false;
-		if (nativeKeyCode == VC_SHIFT)
+		}
+		if (nativeKeyCode == VC_SHIFT) {
 			isShiftPressed = false;
+		}
 
 		// 設定されているトリガーキーを取得
 		int key = config.getTriggerType().resolveKeyCombination(config.getCustomKeyBean()).getTriggerKey();

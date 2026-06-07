@@ -1,4 +1,4 @@
-package com.github.rebi0395.instantsnap.service;
+package com.github.rebi0395.instantsnap.app;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -9,11 +9,15 @@ import org.slf4j.LoggerFactory;
 import com.github.rebi0395.instantsnap.exception.ServiceException;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.repository.PropertiesRepository;
+import com.github.rebi0395.instantsnap.service.KeyEventListener;
+import com.github.rebi0395.instantsnap.service.SnapAreaResolver;
+import com.github.rebi0395.instantsnap.service.TakeSnapService;
+import com.github.rebi0395.instantsnap.service.TriggerKeyManager;
 
 /**
  * 対応するサービスクラスに処理を振り分ける、司令塔クラス
  */
-public class ServiceFacade implements KeyEventListener {
+public class InstantSnapCoordinator implements KeyEventListener {
 
 	/** ユーザーの設定値 */
 	private ConfigBean config;
@@ -31,10 +35,10 @@ public class ServiceFacade implements KeyEventListener {
 	/** 設定値の保存処理と、撮影処理の同時呼び出しを防止するオブジェクト */
 	private final Object configLock = new Object();
 	/** ロガー */
-	private static final Logger log = LoggerFactory.getLogger(ServiceFacade.class);
+	private static final Logger log = LoggerFactory.getLogger(InstantSnapCoordinator.class);
 
 	/** コンストラクタ 初期化処理を実行する */
-	public ServiceFacade() {
+	public InstantSnapCoordinator() {
 		init();
 	}
 

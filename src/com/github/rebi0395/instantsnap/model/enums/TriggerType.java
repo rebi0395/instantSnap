@@ -2,10 +2,8 @@ package com.github.rebi0395.instantsnap.model.enums;
 
 import static com.github.rebi0395.instantsnap.common.AppConstant.*;
 
-import com.github.rebi0395.instantsnap.common.AppLogger;
 import com.github.rebi0395.instantsnap.model.bean.KeyCombinationBean;
 
-import javafx.scene.input.KeyCombination;
 import javafx.util.StringConverter;
 import static com.github.kwhat.jnativehook.keyboard.NativeKeyEvent.*;
 
@@ -44,7 +42,7 @@ public enum TriggerType implements BaseEnum {
 	public KeyCombinationBean resolveKeyCombination(KeyCombinationBean customKeyBean) {
 		switch (this) {
 		case SHIFT_PRINTSCREEN:
-			return new KeyCombinationBean(VC_PRINTSCREEN, false, false, true);
+			return defaultKeyCombination();
 
 		case PRINTSCREEN:
 			return new KeyCombinationBean(VC_PRINTSCREEN, false, false, false);
@@ -53,14 +51,22 @@ public enum TriggerType implements BaseEnum {
 			return new KeyCombinationBean(VC_F10, false, false, false);
 
 		case CUSTOM:
-			if (customKeyBean.getTriggerKey() == VC_UNDEFINED) {
-				return new KeyCombinationBean(VC_PRINTSCREEN, false, false, true);
+			if (customKeyBean == null || customKeyBean.getTriggerKey() == VC_UNDEFINED) {
+				return defaultKeyCombination();
 			}
 			return customKeyBean;
 
 		default:
-			return new KeyCombinationBean(VC_PRINTSCREEN, false, false, true);
+			return defaultKeyCombination();
 		}
+	}
+
+	/**
+	 * デフォルト設定のトリガーキーの組み合わせを取得する
+	 * @return デフォルト設定である、Shift + Print Screenのキー組み合わせ
+	 */
+	private static KeyCombinationBean defaultKeyCombination() {
+		return new KeyCombinationBean(VC_PRINTSCREEN, false, false, true);
 	}
 
 	/**
@@ -87,7 +93,7 @@ public enum TriggerType implements BaseEnum {
 	 * @return 対応する TriggerType、またはデフォルトの TriggerType
 	 */
 	public static TriggerType parseOrDefault(String raw) {
-		return BaseEnum.parseOrDefault(TriggerType.class, raw, SHIFT_PRINTSCREEN, TRIGGER);
+		return BaseEnum.parseOrDefault(TriggerType.class, raw, SHIFT_PRINTSCREEN, PROPERTY_TRIGGER);
 	}
 
 	/**

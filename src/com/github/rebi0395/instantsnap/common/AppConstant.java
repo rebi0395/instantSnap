@@ -4,27 +4,37 @@ package com.github.rebi0395.instantsnap.common;
  * 定数管理クラス
  */
 public final class AppConstant {
-	
+
 	// インスタンス化しない
-	private AppConstant() {}
+	private AppConstant() {
+	}
+
+	// -- プロパティファイル --
+	public static final String CONFIG_FILE_NAME = "config.properties";
 	
-	// プロパティの項目名 
-	public static final String SAVE_PATH = "savePath";
-	
-	public static final String TRIGGER = "trigger";
-	
-	public static final String CUSTOM_KEY = "customKey";
-	public static final String USE_ALT = "useAlt";
-	public static final String USE_CTRL = "useCtrl";
-	public static final String USE_SHIFT = "useShift";
-	
-	public static final String SNAP_AREA = "snapArea";
-	public static final String FORMAT = "format";
-	public static final String SNAP_AFTER = "snapAfter";
-	public static final String COPY_TO_CLIPBOARD = "copyToClipboard";
-	// デフォルト値
+	// -- プロパティの項目名 --
+	public static final String PROPERTY_SAVE_PATH = "savePath";
+	public static final String PROPERTY_TRIGGER = "trigger";
+	public static final String PROPERTY_CUSTOM_KEY = "customKey";
+	public static final String PROPERTY_USE_ALT = "useAlt";
+	public static final String PROPERTY_USE_CTRL = "useCtrl";
+	public static final String PROPERTY_USE_SHIFT = "useShift";
+	public static final String PROPERTY_SNAP_AREA = "snapArea";
+	public static final String PROPERTY_FORMAT = "format";
+	public static final String PROPERTY_SNAP_AFTER = "snapAfter";
+	public static final String PROPERTY_COPY_TO_CLIPBOARD = "copyToClipboard";
+
+	// -- 保存先ファイルのデフォルト値 --
 	public static final String DEFAULT_SAVE_PATH = "./screenshots/";
-	// 撮影トリガーキー
-	public static final String SHIFT_PRINTSCREEN = "1";
-	public static final String PRINTSCREEN = "2";
+	
+	// -- FXMLファイル --
+	public static final String FXML_MAIN_VIEW = 
+			"/com/github/rebi0395/instantsnap/view/fxml/MainView.fxml";
+	public static final String FXML_EXIT_DIALOG = 
+			"/com/github/rebi0395/instantsnap/view/fxml/ExitDialog.fxml";
+
+	// -- CSSファイル --
+	public static final String CSS_MAIN = 
+			"/com/github/rebi0395/instantsnap/view/css/main.css";
+	
 }

@@ -34,7 +34,7 @@ import static com.github.rebi0395.instantsnap.common.StrCheckUtil.*;
 public class PropertiesRepository {
 
 	/** プロパティのファイルパス */
-	private static final Path PROPERTIES_PATH = Paths.get("config.properties");
+	private static final Path PROPERTIES_PATH = Paths.get(CONFIG_FILE_NAME);
 
 	/** プロパティファイルの一時保存パス */
 	private static final Path TEMP_PATH = PROPERTIES_PATH.resolveSibling(PROPERTIES_PATH.getFileName() + ".tmp");
@@ -63,20 +63,20 @@ public class PropertiesRepository {
 			properties.load(reader);
 
 			// -- プロパティから読み取った情報をセット -- 
-			config.setSavePath(properties.getProperty(SAVE_PATH));
-			config.setTriggerType(TriggerType.parseOrDefault(properties.getProperty(TRIGGER)));
+			config.setSavePath(properties.getProperty(PROPERTY_SAVE_PATH));
+			config.setTriggerType(TriggerType.parseOrDefault(properties.getProperty(PROPERTY_TRIGGER)));
 
 			// カスタムキーの設定
 			KeyCombinationBean customKeys = config.getCustomKeyBean();
-			customKeys.setTriggerKey(toNativeKeyCode(properties.getProperty(CUSTOM_KEY)));
-			customKeys.setUseAlt(isStrTrue(properties.getProperty(USE_ALT)));
-			customKeys.setUseCtrl(isStrTrue(properties.getProperty(USE_CTRL)));
-			customKeys.setUseShift(isStrTrue(properties.getProperty(USE_SHIFT)));
+			customKeys.setTriggerKey(toNativeKeyCode(properties.getProperty(PROPERTY_CUSTOM_KEY)));
+			customKeys.setUseAlt(isStrTrue(properties.getProperty(PROPERTY_USE_ALT)));
+			customKeys.setUseCtrl(isStrTrue(properties.getProperty(PROPERTY_USE_CTRL)));
+			customKeys.setUseShift(isStrTrue(properties.getProperty(PROPERTY_USE_SHIFT)));
 
-			config.setSnapArea(SnapArea.parseOrDefault(properties.getProperty(SNAP_AREA)));
-			config.setFormatType(FormatType.parseOrDefault(properties.getProperty(FORMAT)));
-			config.setSnapAfter(SnapAfter.parseOrDefault(properties.getProperty(SNAP_AFTER)));
-			config.setIsCopyToClipboard(isStrTrue(properties.getProperty(COPY_TO_CLIPBOARD)));
+			config.setSnapArea(SnapArea.parseOrDefault(properties.getProperty(PROPERTY_SNAP_AREA)));
+			config.setFormatType(FormatType.parseOrDefault(properties.getProperty(PROPERTY_FORMAT)));
+			config.setSnapAfter(SnapAfter.parseOrDefault(properties.getProperty(PROPERTY_SNAP_AFTER)));
+			config.setIsCopyToClipboard(isStrTrue(properties.getProperty(PROPERTY_COPY_TO_CLIPBOARD)));
 
 		} catch (IOException ie) {
 			throw new ServiceException("プロパティファイルの読み込みに失敗しました", ie);
@@ -94,19 +94,19 @@ public class PropertiesRepository {
 
 		// 更新したいキーと値のペアをMapに格納する
 		Map<String, String> updateMap = new HashMap<>();
-		updateMap.put(SAVE_PATH, config.getSavePath());
-		updateMap.put(TRIGGER, config.getTriggerType().getValue());
-		updateMap.put(SNAP_AREA, config.getSnapArea().getValue());
-		updateMap.put(FORMAT, config.getFormatType().getValue());
-		updateMap.put(SNAP_AFTER, config.getSnapAfter().getValue());
-		updateMap.put(COPY_TO_CLIPBOARD, String.valueOf(config.getIsCopyToClipboard()));
+		updateMap.put(PROPERTY_SAVE_PATH, config.getSavePath());
+		updateMap.put(PROPERTY_TRIGGER, config.getTriggerType().getValue());
+		updateMap.put(PROPERTY_SNAP_AREA, config.getSnapArea().getValue());
+		updateMap.put(PROPERTY_FORMAT, config.getFormatType().getValue());
+		updateMap.put(PROPERTY_SNAP_AFTER, config.getSnapAfter().getValue());
+		updateMap.put(PROPERTY_COPY_TO_CLIPBOARD, String.valueOf(config.getIsCopyToClipboard()));
 
 		// -- カスタムキーの設定 --
 		KeyCombinationBean customKeys = config.getCustomKeyBean();
-		updateMap.put(CUSTOM_KEY, String.valueOf(customKeys.getTriggerKey()));
-		updateMap.put(USE_ALT, String.valueOf(customKeys.isUseAlt()));
-		updateMap.put(USE_CTRL, String.valueOf(customKeys.isUseCtrl()));
-		updateMap.put(USE_SHIFT, String.valueOf(customKeys.isUseShift()));
+		updateMap.put(PROPERTY_CUSTOM_KEY, String.valueOf(customKeys.getTriggerKey()));
+		updateMap.put(PROPERTY_USE_ALT, String.valueOf(customKeys.isUseAlt()));
+		updateMap.put(PROPERTY_USE_CTRL, String.valueOf(customKeys.isUseCtrl()));
+		updateMap.put(PROPERTY_USE_SHIFT, String.valueOf(customKeys.isUseShift()));
 
 		try (BufferedWriter writer = Files.newBufferedWriter(TEMP_PATH, StandardCharsets.UTF_8); // 一時ファイル自動作成
 				BufferedReader reader = Files.newBufferedReader(PROPERTIES_PATH, StandardCharsets.UTF_8)) {

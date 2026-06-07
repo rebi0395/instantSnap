@@ -1,7 +1,8 @@
-package com.github.rebi0395.instantsnap.controller;
+package com.github.rebi0395.instantsnap.view.controller;
 
 import java.io.File;
 
+import com.github.rebi0395.instantsnap.app.InstantSnapCoordinator;
 import com.github.rebi0395.instantsnap.common.AppLogger;
 import com.github.rebi0395.instantsnap.common.NativeKeyCodeConverter;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
@@ -10,7 +11,7 @@ import com.github.rebi0395.instantsnap.model.enums.FormatType;
 import com.github.rebi0395.instantsnap.model.enums.SnapAfter;
 import com.github.rebi0395.instantsnap.model.enums.SnapArea;
 import com.github.rebi0395.instantsnap.model.enums.TriggerType;
-import com.github.rebi0395.instantsnap.service.ServiceFacade;
+
 import static com.github.rebi0395.instantsnap.common.AppConstant.*;
 import static com.github.rebi0395.instantsnap.common.StrCheckUtil.*;
 import static com.github.kwhat.jnativehook.keyboard.NativeKeyEvent.*;
@@ -25,10 +26,10 @@ import javafx.scene.input.KeyEvent;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 
-public class ViewController {
+public class MainViewController {
 
 	/** サービスクラスの司令塔クラス */
-	private ServiceFacade facade;
+	private InstantSnapCoordinator facade;
 	/** nativeキーコードを保持する変数 */
 	private int nativeCode;
 
@@ -297,7 +298,7 @@ public class ViewController {
 	 * サービスクラスの司令塔クラスを取得する
 	 * @return facade
 	 */
-	public ServiceFacade getFacade() {
+	public InstantSnapCoordinator getFacade() {
 		return facade;
 	}
 
@@ -305,7 +306,7 @@ public class ViewController {
 	 * サービスクラスの司令塔クラスをセットする
 	 * @param facade セットする facade
 	 */
-	public void setFacade(ServiceFacade facade) {
+	public void setFacade(InstantSnapCoordinator facade) {
 		this.facade = facade;
 	}
 }

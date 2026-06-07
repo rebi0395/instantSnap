@@ -4,7 +4,7 @@ import static com.github.rebi0395.instantsnap.common.AppConstant.*;
 
 import java.nio.file.Path;
 
-import com.github.rebi0395.instantsnap.service.SnapAfterResolver;
+import com.github.rebi0395.instantsnap.service.SnapAfterService;
 
 import javafx.util.StringConverter;
 
@@ -36,7 +36,7 @@ public enum SnapAfter implements BaseEnum {
 	 * @param resolver 撮影後解決クラス
 	 * @param path 保存した画像のファイルパス
 	 */
-	public void execute(SnapAfterResolver resolver, Path path) {
+	public void execute(SnapAfterService resolver, Path path) {
 		switch (this) {
 		case TOAST:
 			resolver.showToast(path);
@@ -74,7 +74,7 @@ public enum SnapAfter implements BaseEnum {
 	 * @return 対応する SnapAfter、またはデフォルトの SnapAfter
 	 */
 	public static SnapAfter parseOrDefault(String raw) {
-		return BaseEnum.parseOrDefault(SnapAfter.class, raw, NOTHING, SNAP_AFTER);
+		return BaseEnum.parseOrDefault(SnapAfter.class, raw, NOTHING, PROPERTY_SNAP_AFTER);
 	}
 
 	/**

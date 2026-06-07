@@ -9,7 +9,6 @@ import java.awt.Rectangle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.rebi0395.instantsnap.model.enums.SnapArea;
 import com.sun.jna.platform.win32.User32;
 import com.sun.jna.platform.win32.WinDef.HWND;
 import com.sun.jna.platform.win32.WinDef.RECT;
@@ -23,11 +22,11 @@ import com.sun.jna.platform.win32.WinUser.MONITORINFOEX;
 public class SnapAreaResolver {
 
 	/** WindowsのUser32 APIにアクセスするためのJNA定数 */
- 	private static final User32 USER32 = User32.INSTANCE;
- 	
- 	/** ロガー */
+	private static final User32 USER32 = User32.INSTANCE;
+
+	/** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(SnapAreaResolver.class);
- 	
+
 	/**
 	 * 影を除外したアクティブウィンドウの撮影範囲を取得する
 	 * (OSがwindowsのみ対応)
@@ -94,7 +93,7 @@ public class SnapAreaResolver {
 	public GraphicsDevice findMonitorOfActiveWindow(Rectangle rectangle) {
 		int centerX = rectangle.x + (rectangle.width / 2);
 		int centerY = rectangle.y + (rectangle.height / 2);
-		
+
 		try {
 			GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 			for (GraphicsDevice device : ge.getScreenDevices()) {
@@ -123,34 +122,34 @@ public class SnapAreaResolver {
 		try {
 			// ウィンドウが最も被っているモニターの識別子を取得する
 			HMONITOR hMonitor = USER32.MonitorFromWindow(hwnd, WinUser.MONITOR_DEFAULTTONEAREST);
-			
+
 			// osからモニターの配置、解像度情報を取得する
 			MONITORINFOEX info = new MONITORINFOEX();
 			USER32.GetMonitorInfo(hMonitor, info);
-			
+
 			// OSが認識する幅と高さを算出する
 			int osMonitorW = info.rcMonitor.right - info.rcMonitor.left;
 			int osMonitorH = info.rcMonitor.bottom - info.rcMonitor.top;
-			
+
 			// Java側の論理幅 / OS側の物理幅 を行い、スケーリング比率(拡大率)を算出する
 			double scaleX = (double) deviceBounds.width / osMonitorW;
 			double scaleY = (double) deviceBounds.height / osMonitorH;
-			
+
 			// ウィンドウの物理座標から、モニター内部の物理的な端を引くことで、
 			// モニター左上を(0,0)とした時のX,Yを取得
 			int relativeX = physRect.x - info.rcMonitor.left;
 			int relativeY = physRect.y - info.rcMonitor.top;
-			
+
 			// 以下計算式を用いて、Javaが管理する等倍の仮想モニターの座標に変換する
 			// モニター自体の座標 + (四捨五入) 座標 * スケーリング
 			int x = deviceBounds.x + (int) Math.round(relativeX * scaleX);
 			int y = deviceBounds.y + (int) Math.round(relativeY * scaleY);
 			int w = (int) Math.round(physRect.width * scaleX);
 			int h = (int) Math.round(physRect.height * scaleY);
-			
+
 			Rectangle finalResult = new Rectangle(x, y, w, h);
 			return finalResult.intersection(deviceBounds); // 画面外の黒領域をカットする
-			
+
 		} catch (Throwable t) {
 			log.warn("Windowsの物理座標を、Javaの仮想画面座標系へスケーリング変換処理が失敗しました", t);
 			return physRect; // 失敗時は物理座標のまま返却する
@@ -163,10 +162,14 @@ public class SnapAreaResolver {
 	 */
 	public Rectangle getActiveScreenArea() {
 		PointerInfo pointer = MouseInfo.getPointerInfo();
+		if (pointer == null || pointer.getDevice() == null) {
+			log.warn("マウスポインターの位置からモニターを特定できませんでした");
+			return getMainScreenArea();
+		}
 		GraphicsDevice activeDevice = pointer.getDevice();
 		return activeDevice.getDefaultConfiguration().getBounds();
 	}
-	
+
 	/**
 	 * メインに設定しているモニターの範囲を取得する
 	 * @return メインモニターの撮影範囲
@@ -192,7 +195,7 @@ public class SnapAreaResolver {
 		}
 		return allRectangle;
 	}
-	
+
 	/**
 	 * プロパティファイルの設定値が不正のときのデフォルト処理
 	 * @return アクティブモニターの撮影範囲
