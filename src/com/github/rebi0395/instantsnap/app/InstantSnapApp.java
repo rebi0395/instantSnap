@@ -1,21 +1,16 @@
-package com.github.rebi0395.instantsnap;
+package com.github.rebi0395.instantsnap.app;
 
 import java.awt.Toolkit;
-import java.io.IOException;
-import java.util.Optional;
 
-import com.github.rebi0395.instantsnap.controller.ExitDialogController;
-import com.github.rebi0395.instantsnap.controller.ViewController;
-import com.github.rebi0395.instantsnap.service.ServiceFacade;
+import com.github.rebi0395.instantsnap.view.controller.ExitDialogController;
+import com.github.rebi0395.instantsnap.view.controller.MainViewController;
+import static com.github.rebi0395.instantsnap.common.AppConstant.*;
 
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonBar.ButtonData;
-import javafx.scene.control.ButtonType;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -26,7 +21,7 @@ import javafx.stage.StageStyle;
 public class InstantSnapApp extends Application {
 
 	/** 司令塔クラス */
-	private ServiceFacade facade;
+	private InstantSnapCoordinator coordinator;
 
 	/**
 	 * コントローラにサービスクラスを注入し、初期起動を行う
@@ -34,20 +29,20 @@ public class InstantSnapApp extends Application {
 	@Override
 	public void start(Stage stage) throws Exception {
 		// サービスクラスの司令塔クラスを生成し、初期化処理を行う
-		this.facade = new ServiceFacade();
+		this.coordinator = new InstantSnapCoordinator();
 		
 		// コントローラを生成
-		ViewController controller = new ViewController();
-		controller.setFacade(facade);
+		MainViewController mainController = new MainViewController();
+		mainController.setFacade(coordinator);
 		
 		// FXMLファイルローダーを作成する
 		FXMLLoader loader = new FXMLLoader(
-				getClass().getResource("/com/github/rebi0395/instantsnap/view/MainView.fxml"));
-		loader.setController(controller); // FXMLローダーにコントローラをセットする
-		Parent root = loader.load(); // FXMLファイルを読み取る
+				getClass().getResource(FXML_MAIN_VIEW));
+		loader.setController(mainController); // FXMLローダーにコントローラをセットする
+		Parent mainRoot = loader.load(); // FXMLファイルを読み取る
 		
 		// シーン(ウィンドウの設定)
-		Scene scene = new Scene(root, 600, 800);
+		Scene scene = new Scene(mainRoot, 600, 800);
 
 		// ウィンドウを閉じたらアプリを完全終了させる
 		stage.setOnCloseRequest(event -> {
@@ -57,7 +52,7 @@ public class InstantSnapApp extends Application {
 				ExitDialogController exitController = new ExitDialogController();
 				// FXMLファイルローダーを作成する
 				FXMLLoader exitLoader = new FXMLLoader(
-						getClass().getResource("/com/github/rebi0395/instantsnap/view/ExitDialog.fxml"));
+						getClass().getResource(FXML_EXIT_DIALOG));
 				exitLoader.setController(exitController); // FXMLローダーにコントローラをセットする
 				Parent exitRoot = exitLoader.load(); // FXMLファイルを読み取る
 				

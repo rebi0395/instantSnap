@@ -1,4 +1,4 @@
-package com.github.rebi0395.instantsnap;
+package com.github.rebi0395.instantsnap.app;
 
 import com.github.rebi0395.instantsnap.common.DpiUtil;
 

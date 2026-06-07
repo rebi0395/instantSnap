@@ -9,10 +9,10 @@ import org.slf4j.LoggerFactory;
 import com.github.rebi0395.instantsnap.exception.ServiceException;
 import com.github.rebi0395.instantsnap.model.enums.SnapAfter;
 
-public class SnapAfterResolver {
+public class SnapAfterService {
 
 	/** ロガー */
-	private static final Logger log = LoggerFactory.getLogger(SnapAfterResolver.class);
+	private static final Logger log = LoggerFactory.getLogger(SnapAfterService.class);
 
 	/**
 	 * 通知トースト押下時、画像の保存先ファイルを、スクリーンショットを選択状態で開きます

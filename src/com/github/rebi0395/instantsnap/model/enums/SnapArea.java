@@ -80,7 +80,7 @@ public enum SnapArea implements BaseEnum {
 	 * @return 対応する SnapArea、またはデフォルトの SnapArea
 	 */
 	public static SnapArea parseOrDefault(String raw) {
-		return BaseEnum.parseOrDefault(SnapArea.class, raw, ACTIVE_WINDOW, SNAP_AREA);
+		return BaseEnum.parseOrDefault(SnapArea.class, raw, ACTIVE_WINDOW, PROPERTY_SNAP_AREA);
 	}
 
 	/**

@@ -83,7 +83,7 @@ public class TakeSnapService {
 			log.info("スクリーンショットの撮影に成功しました");
 			
 			// 撮影後、ディレクトリなどを開く
-			SnapAfterResolver afterResolver = new SnapAfterResolver ();
+			SnapAfterService afterResolver = new SnapAfterService ();
 			config.getSnapAfter().execute(afterResolver, target);
 			
 			// 設定が有効であれば、クリップボードに画像を保存する

@@ -48,7 +48,7 @@ public enum FormatType implements BaseEnum {
 	 * @return 対応する FormatType、またはデフォルトの FormatType
 	 */
 	public static FormatType parseOrDefault(String raw) {
-		return BaseEnum.parseOrDefault(FormatType.class, raw, PNG, FORMAT);
+		return BaseEnum.parseOrDefault(FormatType.class, raw, PNG, PROPERTY_FORMAT);
 	}
 
 	/**

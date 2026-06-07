@@ -1,4 +1,4 @@
-package com.github.rebi0395.instantsnap.controller;
+package com.github.rebi0395.instantsnap.view.controller;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
