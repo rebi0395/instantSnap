@@ -13,6 +13,7 @@ public final class AppConstant {
 	public static final String CONFIG_FILE_NAME = "config.properties";
 	
 	// -- プロパティの項目名 --
+	public static final String PROPERTY_LANGUAGE = "language";
 	public static final String PROPERTY_SAVE_PATH = "savePath";
 	public static final String PROPERTY_TRIGGER = "trigger";
 	public static final String PROPERTY_CUSTOM_KEY = "customKey";
