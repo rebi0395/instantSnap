@@ -5,6 +5,7 @@ import static com.github.rebi0395.instantsnap.common.StrCheckUtil.*;
 import static com.github.kwhat.jnativehook.keyboard.NativeKeyEvent.*;
 
 import com.github.rebi0395.instantsnap.model.enums.FormatType;
+import com.github.rebi0395.instantsnap.model.enums.LanguageType;
 import com.github.rebi0395.instantsnap.model.enums.SnapAfter;
 import com.github.rebi0395.instantsnap.model.enums.SnapArea;
 import com.github.rebi0395.instantsnap.model.enums.TriggerType;
@@ -14,6 +15,8 @@ import com.github.rebi0395.instantsnap.model.enums.TriggerType;
  */
 public class ConfigBean {
 
+	/** 言語設定 */
+	private LanguageType languageType;
 	/** 画像の保存パス */
 	private String savePath;
 	/** 撮影キー */
@@ -28,11 +31,12 @@ public class ConfigBean {
 	private SnapAfter snapAfter;
 	/** クリップボードに画像に保存する (trueで保存する) */
 	private boolean isCopyToClipboard;
-	
+
 	/**
 	 * コンストラクタ。デフォルト値を設定する
 	 */
 	public ConfigBean() {
+		this.languageType = LanguageType.JAPANESE;
 		this.savePath = DEFAULT_SAVE_PATH;
 		this.triggerType = TriggerType.SHIFT_PRINTSCREEN;
 		this.customKeyBean = new KeyCombinationBean(VC_UNDEFINED, false, false, false);
@@ -40,6 +44,22 @@ public class ConfigBean {
 		this.formatType = FormatType.PNG;
 		this.snapAfter = SnapAfter.NOTHING;
 		this.isCopyToClipboard = true;
+	}
+
+	/**
+	 * 言語設定を取得する
+	 * @return languageType 言語設定
+	 */
+	public LanguageType getLanguageType() {
+		return languageType;
+	}
+
+	/**
+	 * 言語設定をセットする
+	 * @param languageType セットする
+	 */
+	public void setLanguageType(LanguageType languageType) {
+		this.languageType = languageType;
 	}
 
 	/**
