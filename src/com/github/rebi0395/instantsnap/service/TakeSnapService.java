@@ -50,7 +50,7 @@ public class TakeSnapService {
 	public void execute(ConfigBean config) throws ServiceException {
 		try {
 			// 画面サイズを取得
-			Rectangle snapSize = config.getSnapArea().resolveArea(areaResolver);
+			Rectangle snapSize = areaResolver.resolveArea(config.getSnapArea());
 			
 			// 撮影
 			Robot robot = new Robot();
@@ -83,8 +83,8 @@ public class TakeSnapService {
 			log.info("スクリーンショットの撮影に成功しました");
 			
 			// 撮影後、ディレクトリなどを開く
-			SnapAfterService afterResolver = new SnapAfterService ();
-			config.getSnapAfter().execute(afterResolver, target);
+			SnapAfterService afterService = new SnapAfterService ();
+			afterService.execute(config.getSnapAfter(), target);
 			
 			// 設定が有効であれば、クリップボードに画像を保存する
 			if (config.getIsCopyToClipboard()) {

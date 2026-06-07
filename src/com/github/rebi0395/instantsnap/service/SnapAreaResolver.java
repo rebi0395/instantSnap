@@ -9,6 +9,7 @@ import java.awt.Rectangle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.rebi0395.instantsnap.model.enums.SnapArea;
 import com.sun.jna.platform.win32.User32;
 import com.sun.jna.platform.win32.WinDef.HWND;
 import com.sun.jna.platform.win32.WinDef.RECT;
@@ -26,6 +27,30 @@ public class SnapAreaResolver {
 
 	/** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(SnapAreaResolver.class);
+
+	/**
+	 * 列挙型に対応する撮影範囲の座標を返却する
+	 * @param resolver 撮影範囲を特定するクラス
+	 * @return 撮影範囲の座標
+	 */
+	public Rectangle resolveArea(SnapArea snapArea) {
+		switch (snapArea) {
+		case ACTIVE_WINDOW:
+			return getActiveWindowArea();
+
+		case ACTIVE_SCREEN:
+			return getActiveScreenArea();
+
+		case MAIN_SCREEN:
+			return getMainScreenArea();
+
+		case FULL_SCREEN:
+			return getFullScreenArea();
+
+		default:
+			return getDefaultScreenArea();
+		}
+	}
 
 	/**
 	 * 影を除外したアクティブウィンドウの撮影範囲を取得する
