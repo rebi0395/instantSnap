@@ -2,10 +2,6 @@ package com.github.rebi0395.instantsnap.model.enums;
 
 import static com.github.rebi0395.instantsnap.common.AppConstant.*;
 
-import java.nio.file.Path;
-
-import com.github.rebi0395.instantsnap.service.SnapAfterService;
-
 import javafx.util.StringConverter;
 
 /**

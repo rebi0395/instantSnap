@@ -14,6 +14,8 @@ import com.github.rebi0395.instantsnap.service.SnapAreaResolver;
 import com.github.rebi0395.instantsnap.service.TakeSnapService;
 import com.github.rebi0395.instantsnap.service.TriggerKeyManager;
 
+import javafx.application.Platform;
+
 /**
  * 対応するサービスクラスに処理を振り分ける、司令塔クラス
  */
@@ -57,6 +59,7 @@ public class InstantSnapCoordinator implements KeyEventListener {
 			this.areaResolver = new SnapAreaResolver();
 			this.takeSnap = new TakeSnapService(areaResolver);
 
+			// キー監視開始
 			keyManager.activate();
 
 			// チェック済例外
@@ -85,6 +88,24 @@ public class InstantSnapCoordinator implements KeyEventListener {
 			log.error("想定外のエラーが発生しました", e);
 		}
 	}
+	
+	/**
+	 * アプリを終了する
+	 * 
+	 * @param status 終了コード。正常終了は0、異常終了は1
+	 */
+	public void exit(int status) {
+		try {
+			keyManager.deactivate(); // キー監視の停止
+		} catch (ServiceException e) {
+			log.error("Instant Snapの終了処理に失敗しました", e);
+			status = 1;
+		} finally {
+			executor.shutdown(); // 撮影処理の終了
+			Platform.exit(); // 画面を閉じる
+			System.exit(status); // アプリのロジックの終了
+		}
+	}
 
 	/**
 	 * 撮影トリガーが押されたとき、撮影処理を呼び出す
@@ -106,16 +127,11 @@ public class InstantSnapCoordinator implements KeyEventListener {
 	}
 
 	/**
-	 * pauseキーが押されたとき、キー監視を終了する
+	 * アプリの終了キーが押されたとき、アプリを終了する
 	 */
 	@Override
 	public void requestExit() {
-		try {
-			keyManager.deactivate();
-			executor.shutdown(); // 撮影処理のスレッドを終了させる
-		} catch (ServiceException e) {
-			log.error("キー監視の終了処理に失敗しました", e);
-		}
+		exit(0); // アプリを正常終了させる
 	}
 
 	/**
