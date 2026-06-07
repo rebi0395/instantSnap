@@ -50,30 +50,6 @@ public enum SnapArea implements BaseEnum {
 	}
 
 	/**
-	 * 列挙型に対応する撮影範囲の座標を返却する
-	 * @param resolver 撮影範囲を特定するクラス
-	 * @return 撮影範囲の座標
-	 */
-	public Rectangle resolveArea(SnapAreaResolver resolver) {
-		switch (this) {
-		case ACTIVE_WINDOW:
-			return resolver.getActiveWindowArea();
-
-		case ACTIVE_SCREEN:
-			return resolver.getActiveScreenArea();
-
-		case MAIN_SCREEN:
-			return resolver.getMainScreenArea();
-
-		case FULL_SCREEN:
-			return resolver.getFullScreenArea();
-
-		default:
-			return resolver.getDefaultScreenArea();
-		}
-	}
-
-	/**
 	 * プロパティファイルの値から対応する SnapArea を取得する。
 	 * 不正な値が指定された場合は デフォルト値を返し、ログを出力する。
 	 * @param raw プロパティファイルと紐つく値

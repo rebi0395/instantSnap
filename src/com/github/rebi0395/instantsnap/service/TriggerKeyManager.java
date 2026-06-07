@@ -5,13 +5,9 @@ import org.slf4j.LoggerFactory;
 
 import com.github.kwhat.jnativehook.GlobalScreen;
 import com.github.kwhat.jnativehook.NativeHookException;
-import com.github.kwhat.jnativehook.NativeInputEvent;
 
 import static com.github.kwhat.jnativehook.keyboard.NativeKeyEvent.*;
 
-import javax.xml.crypto.dsig.XMLValidateContext;
-
-import static com.github.rebi0395.instantsnap.common.NativeKeyCodeConverter.VC_SHIFT_R;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
 import com.github.rebi0395.instantsnap.common.AppLogger;
@@ -98,13 +94,13 @@ public class TriggerKeyManager implements NativeKeyListener {
 	 */
 	@Override
 	public void nativeKeyPressed(NativeKeyEvent e) {
-		
+
 		// traceの場合、キーログをコンソール表示
 		AppLogger.keyPressed(e);
-		
+
 		// 右側のAlt,Ctrl,Shiftの拡張キーを正規化する
 		int nativeKeyCode = NativeKeyCodeConverter.normalizeNativeKeyCode(e.getKeyCode());
-		
+
 		// pauseキー押下時、アプリを終了する
 		if (nativeKeyCode == VC_PAUSE) {
 			listener.requestExit();

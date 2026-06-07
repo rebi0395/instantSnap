@@ -32,26 +32,6 @@ public enum SnapAfter implements BaseEnum {
 	}
 
 	/**
-	 * 撮影後の処理クラスに、処理を依頼するメソッドです
-	 * @param resolver 撮影後解決クラス
-	 * @param path 保存した画像のファイルパス
-	 */
-	public void execute(SnapAfterService resolver, Path path) {
-		switch (this) {
-		case TOAST:
-			resolver.showToast(path);
-			break;
-
-		case OPEN_IMAGE:
-			resolver.openImage(path);
-			break;
-
-		default:
-			return; // 何もしない	
-		}
-	}
-
-	/**
 	 * @return value プロパティファイルと紐つく値
 	 */
 	@Override
