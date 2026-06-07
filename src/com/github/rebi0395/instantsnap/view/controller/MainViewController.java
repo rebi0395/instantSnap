@@ -29,7 +29,7 @@ import javafx.stage.Stage;
 public class MainViewController {
 
 	/** サービスクラスの司令塔クラス */
-	private InstantSnapCoordinator facade;
+	private InstantSnapCoordinator coordinator;
 	/** nativeキーコードを保持する変数 */
 	private int nativeCode;
 
@@ -102,7 +102,7 @@ public class MainViewController {
 	@FXML
 	public void initialize() {
 
-		ConfigBean config = facade.getConfigBean();
+		ConfigBean config = coordinator.getConfigBean();
 
 		// -- 活性・非活性の動的な制御の登録 -- 
 		// ショートカットキーのリストを監視するリスナー
@@ -232,7 +232,7 @@ public class MainViewController {
 	@FXML
 	public void onApplyConfig() {
 
-		ConfigBean config = facade.getConfigBean();
+		ConfigBean config = coordinator.getConfigBean();
 		// configに値をセット
 		config.setSavePath(textFilePath.getText()); // 保存パス
 		config.setTriggerType(comboTriggerType.getValue()); // トリガーキー
@@ -252,7 +252,7 @@ public class MainViewController {
 		updateSettingLabels(config, customKeys);
 
 		// configを更新し、司令塔クラスに返す
-		facade.save(config);
+		coordinator.save(config);
 		labelStatus.setText("ステータス: 設定を反映しました。");
 	}
 
@@ -296,17 +296,17 @@ public class MainViewController {
 
 	/**
 	 * サービスクラスの司令塔クラスを取得する
-	 * @return facade
+	 * @return coordinator
 	 */
-	public InstantSnapCoordinator getFacade() {
-		return facade;
+	public InstantSnapCoordinator getCoordinator() {
+		return coordinator;
 	}
 
 	/**
 	 * サービスクラスの司令塔クラスをセットする
-	 * @param facade セットする facade
+	 * @param coordinator セットする coordinator
 	 */
-	public void setFacade(InstantSnapCoordinator facade) {
-		this.facade = facade;
+	public void setCoordinator(InstantSnapCoordinator coordinator) {
+		this.coordinator = coordinator;
 	}
 }

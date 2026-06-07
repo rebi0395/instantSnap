@@ -2,10 +2,6 @@ package com.github.rebi0395.instantsnap.model.enums;
 
 import static com.github.rebi0395.instantsnap.common.AppConstant.*;
 
-import java.awt.Rectangle;
-
-import com.github.rebi0395.instantsnap.service.SnapAreaResolver;
-
 import javafx.util.StringConverter;
 
 /**

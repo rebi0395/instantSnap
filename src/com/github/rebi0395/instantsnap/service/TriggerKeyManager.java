@@ -32,14 +32,16 @@ public class TriggerKeyManager implements NativeKeyListener {
 	/** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(TriggerKeyManager.class);
 
+	/** トリガーキーの押下フラグ */
+	private boolean isTriggerPressed = false;
 	/** ALTキーの押下フラグ */
-	boolean isAltPressed = false;
+	private boolean isAltPressed = false;
 	/** Ctrlキーの押下フラグ */
-	boolean isCtrlPressed = false;
+	private boolean isCtrlPressed = false;
 	/** Shiftキーの押下フラグ */
-	boolean isShiftPressed = false;
-	/** 撮影後、連写防止用のフラグ trueで撮影を禁止する */
-	private boolean hasTriggeredSnap = false;
+	private boolean isShiftPressed = false;
+	/** 撮影後、連写防止用のフラグ trueで撮影可能 */
+	private boolean canSnap = true;
 
 	/**
 	 * コンストラクタ
@@ -104,36 +106,20 @@ public class TriggerKeyManager implements NativeKeyListener {
 		// pauseキー押下時、アプリを終了する
 		if (nativeKeyCode == VC_PAUSE) {
 			listener.requestExit();
-		}
-
-		// ALT押下フラグ
-		if (nativeKeyCode == VC_ALT) {
-			isAltPressed = true;
-		}
-		// Ctrl押下フラグ
-		if (nativeKeyCode == VC_CONTROL) {
-			isCtrlPressed = true;
-		}
-		// Shift押下フラグ
-		if (nativeKeyCode == VC_SHIFT) {
-			isShiftPressed = true;
+			return;
 		}
 
 		// 撮影キーのショートカットキーを取得
 		KeyCombinationBean keys = config.getTriggerType().resolveKeyCombination(config.getCustomKeyBean());
 
-		// 押下状態を完全判定で判定する。一致でtrue、不要な修飾キーが押下されていればfalseとなる
-		boolean isModifierKeyPressed = (keys.isUseAlt() == isAltPressed)
-				&& (keys.isUseCtrl() == isCtrlPressed)
-				&& (keys.isUseShift() == isShiftPressed);
+		// 押下状態を更新する
+		updateKeyStates(nativeKeyCode, true, keys);
 
-		// トリガーキーと修飾キーで判定を行う
-		if (nativeKeyCode == keys.getTriggerKey() && isModifierKeyPressed) {
-			if (!hasTriggeredSnap) {
-				// 連写を防ぐためのフラグをオンにする
-				hasTriggeredSnap = true;
-				listener.requestSnap();
-			}
+		// 条件キーが完全一致で押されているかを判定し、かつ撮影可能であれば、撮影を行う
+		if (canSnap && isShortcutPressed(keys)) {
+			// 連写を防ぐため、撮影可能フラグをオフにする
+			canSnap = false;
+			listener.requestSnap();
 		}
 	}
 
@@ -145,22 +131,56 @@ public class TriggerKeyManager implements NativeKeyListener {
 		// 右側のAlt,Ctrl,Shiftの拡張キーを正規化する
 		int nativeKeyCode = NativeKeyCodeConverter.normalizeNativeKeyCode(e.getKeyCode());
 
-		if (nativeKeyCode == VC_ALT) {
-			isAltPressed = false;
-		}
-		if (nativeKeyCode == VC_CONTROL) {
-			isCtrlPressed = false;
-		}
-		if (nativeKeyCode == VC_SHIFT) {
-			isShiftPressed = false;
-		}
+		// 撮影キーのショートカットキーを取得
+		KeyCombinationBean keys = config.getTriggerType().resolveKeyCombination(config.getCustomKeyBean());
 
-		// 設定されているトリガーキーを取得
-		int key = config.getTriggerType().resolveKeyCombination(config.getCustomKeyBean()).getTriggerKey();
-		if (nativeKeyCode == key) {
-			// 離されたキーがトリガーキーなら、フラグをオフにし、撮影を可能にする
-			hasTriggeredSnap = false;
+		// 押下状態を更新し、条件キーが完全一致で押されているかを判定する
+		updateKeyStates(nativeKeyCode, false, keys);
+
+		if (!isShortcutPressed(keys)) {
+			// キーの押下状況が一致していないとき、フラグをオンにし、撮影を可能にする
+			canSnap = true;
 		}
+	}
+
+	/**
+	 * キーの押下状態を更新する
+	 *
+	 * @param nativeKeyCode キーコード
+	 * @param pressed 押下イベント呼び出しならtrue、離した場合はfalseを指定
+	 * @param keys 設定されているショートカットキー
+	 */
+	private void updateKeyStates(int nativeKeyCode, boolean pressed, KeyCombinationBean keys) {
+		// トリガーキー押下フラグ
+		if (nativeKeyCode == keys.getTriggerKey()) {
+			isTriggerPressed = pressed;
+		}
+		// ALT押下フラグ
+		if (nativeKeyCode == VC_ALT) {
+			isAltPressed = pressed;
+		}
+		// Ctrl押下フラグ
+		if (nativeKeyCode == VC_CONTROL) {
+			isCtrlPressed = pressed;
+		}
+		// Shift押下フラグ
+		if (nativeKeyCode == VC_SHIFT) {
+			isShiftPressed = pressed;
+		}
+	}
+
+	/**
+	 * ショートカットキーが完全一致で押されているか判定する
+	 *
+	 * @param keys 設定されているショートカットキー
+	 * @return 完全一致で押されている場合true
+	 * 押されていないキーがある場合、余計な修飾キーが押されている場合はfalseを返す
+	 */
+	private boolean isShortcutPressed(KeyCombinationBean keys) {
+		return (keys.isUseAlt() == isAltPressed)
+				&& (keys.isUseCtrl() == isCtrlPressed)
+				&& (keys.isUseShift() == isShiftPressed)
+				&& isTriggerPressed;
 	}
 
 	/**

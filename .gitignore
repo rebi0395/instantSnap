@@ -28,3 +28,4 @@ replay_pid*
 /config.properties
 /dependency-reduced-pom.xml
 /exe/
+/logs/

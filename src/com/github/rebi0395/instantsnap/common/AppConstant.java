@@ -27,6 +27,9 @@ public final class AppConstant {
 	// -- 保存先ファイルのデフォルト値 --
 	public static final String DEFAULT_SAVE_PATH = "./screenshots/";
 	
+	// -- アイコンのpngファイル --
+	public static final String ICON_APP = "/icon/instantsnap.png";
+	
 	// -- FXMLファイル --
 	public static final String FXML_MAIN_VIEW = 
 			"/com/github/rebi0395/instantsnap/view/fxml/MainView.fxml";
