@@ -38,9 +38,9 @@
 									<HBox styleClass="setting-header">
 										<TextField fx:id="textInputKey" promptText="ショートカットキーにしたいキーを入力" disable="true"/>
 										<Label text="+"/>
-										<CheckBox fx:id="checkAlt" text="Alt"/>
-										<Label text="+"/>
 										<CheckBox fx:id="checkCtrl" text="Ctrl"/>
+										<Label text="+"/>
+										<CheckBox fx:id="checkAlt" text="Alt"/>
 										<Label text="+"/>
 										<CheckBox fx:id="checkShift" text="Shift"/>
 									</HBox>
