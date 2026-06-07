@@ -9,18 +9,18 @@ public class KeyCombinationBean {
 
 	/** 組み合わせの中心となるキー Nativeキーコードを持つ */
 	private int triggerKey;
-	/** Altを使用するかの真偽値 trueで使用する */
-	private boolean useAlt;
 	/** Ctrlを使用するかの真偽値 trueで使用する */
 	private boolean useCtrl;
+	/** Altを使用するかの真偽値 trueで使用する */
+	private boolean useAlt;
 	/** Shiftを使用するかの真偽値 trueで使用する */
 	private boolean useShift;
 
 	/** コンストラクタ */
-	public KeyCombinationBean(int triggerKey, boolean useAlt, boolean useCtrl, boolean useShift) {
+	public KeyCombinationBean(int triggerKey, boolean useCtrl, boolean useAlt, boolean useShift) {
 		this.triggerKey = triggerKey;
-		this.useAlt = useAlt;
 		this.useCtrl = useCtrl;
+		this.useAlt = useAlt;
 		this.useShift = useShift;
 	}
 
@@ -35,8 +35,8 @@ public class KeyCombinationBean {
 		StringBuilder blilder = new StringBuilder();
 
 		// 修飾キーを用いるとき、文字列を結合する
-		if (useAlt) blilder.append("Alt + ");
 		if (useCtrl) blilder.append("Ctrl + ");
+		if (useAlt) blilder.append("Alt + ");
 		if (useShift) blilder.append("Shift + ");
 		blilder.append(getKeyText(triggerKey));
 

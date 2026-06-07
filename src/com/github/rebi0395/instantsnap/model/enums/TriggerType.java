@@ -12,12 +12,12 @@ import static com.github.kwhat.jnativehook.keyboard.NativeKeyEvent.*;
  */
 public enum TriggerType implements BaseEnum {
 
-	/** Shift + PrintScreenキー */
+	/** Shift + PrintScreen キー */
 	SHIFT_PRINTSCREEN("1", "Shift + Print Screen"),
-	/** PrintScreenキー */
-	PRINTSCREEN("2", "Print Screen"),
-	/** F10キー */
-	F10("3", "F10"),
+	/** Ctrl + Shift + S キー */
+	CTRL_SHIFT_S("2", "Ctrl + Shift + S"),
+	/** F9 キー */
+	F9("3", "F9"),
 	/** カスタム設定 */
 	CUSTOM("4", "Custom");
 
@@ -43,12 +43,12 @@ public enum TriggerType implements BaseEnum {
 		switch (this) {
 		case SHIFT_PRINTSCREEN:
 			return defaultKeyCombination();
+			
+		case CTRL_SHIFT_S:
+			return new KeyCombinationBean(VC_S, true, false, true);
 
-		case PRINTSCREEN:
-			return new KeyCombinationBean(VC_PRINTSCREEN, false, false, false);
-
-		case F10:
-			return new KeyCombinationBean(VC_F10, false, false, false);
+		case F9:
+			return new KeyCombinationBean(VC_F9, false, false, false);
 
 		case CUSTOM:
 			if (customKeyBean == null || customKeyBean.getTriggerKey() == VC_UNDEFINED) {

@@ -138,8 +138,8 @@ public class MainViewController {
 		}
 
 		// 修飾キー
-		checkAlt.setSelected(customKeys.isUseAlt());
 		checkCtrl.setSelected(customKeys.isUseCtrl());
+		checkAlt.setSelected(customKeys.isUseAlt());
 		checkShift.setSelected(customKeys.isUseShift());
 
 		// 撮影範囲のリストをセット
@@ -221,8 +221,8 @@ public class MainViewController {
 		textInputKey.setDisable(!isCustom);
 
 		// Custom設定かつ、カスタムキーのテキストフィールドに値があれば活性
-		checkAlt.setDisable(!(isCustom && hasKey));
 		checkCtrl.setDisable(!(isCustom && hasKey));
+		checkAlt.setDisable(!(isCustom && hasKey));
 		checkShift.setDisable(!(isCustom && hasKey));
 	}
 
@@ -244,8 +244,8 @@ public class MainViewController {
 		// カスタムキーの設定を保存する
 		KeyCombinationBean customKeys = config.getCustomKeyBean();
 		customKeys.setTriggerKey(nativeCode); // 保持しているキーコードをいれる
-		customKeys.setUseAlt(checkAlt.isSelected());
 		customKeys.setUseCtrl(checkCtrl.isSelected());
+		customKeys.setUseAlt(checkAlt.isSelected());
 		customKeys.setUseShift(checkShift.isSelected());
 
 		// 文字列を更新する
@@ -266,8 +266,8 @@ public class MainViewController {
 
 		// カスタムキーの設定をリセットする
 		textInputKey.clear();
-		checkAlt.setSelected(false);
 		checkCtrl.setSelected(false);
+		checkAlt.setSelected(false);
 		checkShift.setSelected(false);
 
 		// 各コンボボックスを一番上にリセット
