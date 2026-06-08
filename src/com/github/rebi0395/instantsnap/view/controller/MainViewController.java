@@ -8,6 +8,7 @@ import com.github.rebi0395.instantsnap.common.NativeKeyCodeConverter;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.model.bean.KeyCombinationBean;
 import com.github.rebi0395.instantsnap.model.enums.FormatType;
+import com.github.rebi0395.instantsnap.model.enums.LanguageType;
 import com.github.rebi0395.instantsnap.model.enums.SnapAfter;
 import com.github.rebi0395.instantsnap.model.enums.SnapArea;
 import com.github.rebi0395.instantsnap.model.enums.TriggerType;
@@ -57,6 +58,11 @@ public class MainViewController {
 	/** 適応中の撮影後設定を表示するラベル */
 	@FXML
 	private Label labelSnapAfter;
+
+	// -- 言語設定 --
+	/** 撮影ショートカットキーを選択するコンボボックス */
+	@FXML
+	private ComboBox<LanguageType> comboLanguageType;
 
 	// -- 基本設定項目 --
 	/** カスタムキー設定のキー入力を受け付けるテキストフィールド */
@@ -119,13 +125,20 @@ public class MainViewController {
 		inputCustomKey(textInputKey);
 
 		// -- ユーザー設定値のセット -- 
+
+		// 言語設定のリストをセット
+		comboLanguageType.getItems().addAll(LanguageType.values());
+		// コンバーターにて設定しているEnumsからdisplaynameを取得可能になる
+		comboLanguageType.setConverter(LanguageType.toConverter());
+		comboLanguageType.setValue(config.getLanguageType());
+
 		// 保存先のフォルダを取得し、テキストフィールドにセット
 		config.getSavePath();
 		textFilePath.setText(config.getSavePath());
 
 		// ショートカットキーのリストをセット
 		comboTriggerType.getItems().addAll(TriggerType.values());
-		comboTriggerType.setConverter(TriggerType.toConverter()); // コンバーターにより	Enumsをdisplaynameで変換が可能になる
+		comboTriggerType.setConverter(TriggerType.toConverter());
 		comboTriggerType.setValue(config.getTriggerType());
 
 		// カスタムキーの取得
@@ -234,6 +247,7 @@ public class MainViewController {
 
 		ConfigBean config = coordinator.getConfigBean();
 		// configに値をセット
+		config.setLanguageType(comboLanguageType.getValue()); // 言語設定
 		config.setSavePath(textFilePath.getText()); // 保存パス
 		config.setTriggerType(comboTriggerType.getValue()); // トリガーキー
 		config.setSnapArea(comboSnapArea.getValue()); // 撮影範囲
@@ -271,6 +285,7 @@ public class MainViewController {
 		checkShift.setSelected(false);
 
 		// 各コンボボックスを一番上にリセット
+		comboLanguageType.getSelectionModel().selectFirst();
 		comboTriggerType.getSelectionModel().selectFirst();
 		comboFormatType.getSelectionModel().selectFirst();
 		comboSnapArea.getSelectionModel().selectFirst();

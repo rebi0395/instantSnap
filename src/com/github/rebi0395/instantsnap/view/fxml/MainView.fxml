@@ -9,13 +9,17 @@
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" stylesheets="@../css/main.css">
 
 	<top>
-		<Label fx:id="labelStatus" text="起動中..." />
+		<HBox styleClass="top-bar">
+        	<Label fx:id="labelStatus" text="起動中..." />
+        	<Region HBox.hgrow="ALWAYS" />
+        	<Label text="Language" />
+        	<ComboBox fx:id="comboLanguageType" styleClass="language-combo"/>
+    	</HBox>
 	</top>
 
 	<center>
 		<TabPane fx:id="mainTabPane" tabClosingPolicy="UNAVAILABLE">
 			<tabs>
-				
 				<Tab fx:id="configTab" text="基本設定">
 					<content>
 						<ScrollPane fitToWidth="true" fitToHeight="true" pannable="true">
@@ -23,14 +27,13 @@
 								<padding>
 									<Insets top="20" right="20" bottom="20" left="20"/>
 								</padding>
-								<VBox spacing="15">
+								<VBox spacing="10">
 									<HBox styleClass="setting-header">
 										<Label text="ショートカットキー選択" styleClass="section-title"/>
 										<Label fx:id="labelKeyCombination" styleClass="current-value"/>
 									</HBox>
 									<HBox styleClass="setting-header">
-										<ComboBox fx:id="comboTriggerType">
-										</ComboBox>
+										<ComboBox fx:id="comboTriggerType"/>
 									</HBox>
 									<HBox>
 										<Label text="ーーカスタムキー設定ーー"/>
@@ -45,7 +48,7 @@
 										<CheckBox fx:id="checkShift" text="Shift"/>
 									</HBox>
 								</VBox>
-								<VBox spacing="15">
+								<VBox spacing="10">
 									<HBox styleClass="setting-header">
 										<Label text="保存先フォルダ選択" styleClass="section-title"/>
 										<Label fx:id="labelFilePath" styleClass="current-value"/>
@@ -59,8 +62,7 @@
 										<Label fx:id="labelFormatType" styleClass="current-value"/>
 									</HBox>
 									<HBox styleClass="setting-header">
-										<ComboBox fx:id="comboFormatType">
-										</ComboBox>
+										<ComboBox fx:id="comboFormatType"/>
 									</HBox>
 								</VBox>
 								<VBox spacing="10">
@@ -69,19 +71,17 @@
 										<Label fx:id="labelSnapArea" styleClass="current-value"/>
 									</HBox>
 									<HBox styleClass="setting-header">
-										<ComboBox fx:id="comboSnapArea">
-										</ComboBox>
+										<ComboBox fx:id="comboSnapArea"/>
 									</HBox>
 								</VBox>
 	
-								<VBox spacing="15">
+								<VBox spacing="10">
 									<HBox styleClass="setting-header">
 										<Label text="撮影後の動作" styleClass="section-title"/>
 										<Label fx:id="labelSnapAfter" styleClass="current-value"/>
 									</HBox>
 									<HBox styleClass="setting-header">
-										<ComboBox fx:id="comboSnapAfter">
-										</ComboBox>
+										<ComboBox fx:id="comboSnapAfter"/>
 									</HBox>
 									<HBox styleClass="setting-header">
 										<Label text="クリップボード" styleClass="section-title"/>
@@ -95,7 +95,6 @@
 						</ScrollPane>
 					</content>
 				</Tab>
-				
 				<Tab fx:id="otherTab" text="その他設定">
 					<content>
 						<VBox spacing="20">
@@ -105,8 +104,6 @@
 							<Label text="ここに新しい設定項目や、履歴などを追加できます。" />
 						</VBox>
 					</content>
-				</Tab>
-				<Tab fx:id="otherTab" text="履歴">
 				</Tab>
 			</tabs>
 		</TabPane>
