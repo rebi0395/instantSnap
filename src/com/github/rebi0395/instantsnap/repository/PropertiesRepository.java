@@ -19,6 +19,7 @@ import com.github.rebi0395.instantsnap.exception.ServiceException;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.model.bean.KeyCombinationBean;
 import com.github.rebi0395.instantsnap.model.enums.FormatType;
+import com.github.rebi0395.instantsnap.model.enums.LanguageType;
 import com.github.rebi0395.instantsnap.model.enums.SnapAfter;
 import com.github.rebi0395.instantsnap.model.enums.SnapArea;
 import com.github.rebi0395.instantsnap.model.enums.TriggerType;
@@ -63,6 +64,7 @@ public class PropertiesRepository {
 			properties.load(reader);
 
 			// -- プロパティから読み取った情報をセット -- 
+			config.setLanguageType(LanguageType.parseOrDefault(properties.getProperty(PROPERTY_LANGUAGE)));
 			config.setSavePath(properties.getProperty(PROPERTY_SAVE_PATH));
 			config.setTriggerType(TriggerType.parseOrDefault(properties.getProperty(PROPERTY_TRIGGER)));
 
@@ -94,6 +96,7 @@ public class PropertiesRepository {
 
 		// 更新したいキーと値のペアをMapに格納する
 		Map<String, String> updateMap = new HashMap<>();
+		updateMap.put(PROPERTY_LANGUAGE, config.getLanguageType().getValue());
 		updateMap.put(PROPERTY_SAVE_PATH, config.getSavePath());
 		updateMap.put(PROPERTY_TRIGGER, config.getTriggerType().getValue());
 		updateMap.put(PROPERTY_SNAP_AREA, config.getSnapArea().getValue());
@@ -175,6 +178,9 @@ public class PropertiesRepository {
 	// 初期化時の文章をソース側で保持 改行コードを統一
 	private static final String DEFAULT_CONTENT = """
 			#InstantSnap Settings
+
+			#言語を指定してください
+			language=ja
 
 			#保存先パスを指定してください
 			savePath=./screenshots/
