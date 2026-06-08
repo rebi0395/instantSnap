@@ -115,7 +115,6 @@ public class MainViewController {
 		comboTriggerType.valueProperty().addListener((obs, oldType, newType) -> {
 			updateCustomKeyFieldState();
 		});
-
 		// カスタムキーのテキストフィールドを監視するリスナー
 		textInputKey.textProperty().addListener((obs, oldVal, newVal) -> {
 			updateCustomKeyFieldState();
@@ -131,6 +130,7 @@ public class MainViewController {
 		// コンバーターにて設定しているEnumsからdisplaynameを取得可能になる
 		comboLanguageType.setConverter(LanguageType.toConverter());
 		comboLanguageType.setValue(config.getLanguageType());
+		registerLanguageChangeListener(); // 言語切り替え時の処理を設定
 
 		// 保存先のフォルダを取得し、テキストフィールドにセット
 		config.getSavePath();
@@ -179,6 +179,24 @@ public class MainViewController {
 	}
 
 	/**
+	 * 言語設定が変更されたときのリスナーを登録する
+	 * 言語設定のみプロパティファイルを更新し、uiの表示言語切り替える(未実装)
+	 */
+	private void registerLanguageChangeListener() {
+		comboLanguageType.valueProperty().addListener((obs, oldVal, newVal) -> {
+			if (newVal == null || newVal == oldVal) {
+				return;
+			}
+
+			ConfigBean config = coordinator.getConfigBean();
+			config.setLanguageType(newVal);
+			coordinator.save(); // 内部では全項目更新
+
+			//TODO リソースバンドル読み取り処理
+		});
+	}
+
+	/**
 	 * 保存先フォルダ選択ボタン押下時、ディレクトリフォルダを選択させる
 	 */
 	@FXML
@@ -192,7 +210,7 @@ public class MainViewController {
 	}
 
 	/**
-	 * カスタムキーの入力処理を行う
+	 * カスタムキーの入力処理を行う、リスナーを登録する
 	 * @param textField テキストフィールド
 	 */
 	public void inputCustomKey(TextField textField) {
@@ -266,7 +284,7 @@ public class MainViewController {
 		updateSettingLabels(config, customKeys);
 
 		// configを更新し、司令塔クラスに返す
-		coordinator.save(config);
+		coordinator.save();
 		labelStatus.setText("ステータス: 設定を反映しました。");
 	}
 

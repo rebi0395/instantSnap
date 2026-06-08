@@ -91,7 +91,6 @@ public class PropertiesRepository {
 	 * @throws ServiceException
 	 */
 	public void save(ConfigBean config) throws ServiceException {
-
 		checkAndResetProperties(); // プロパティファイルの実在チェック
 
 		// 更新したいキーと値のペアをMapに格納する
@@ -116,33 +115,37 @@ public class PropertiesRepository {
 
 			String line;
 			while ((line = reader.readLine()) != null) {
-
-				line = stripSafe(line); // 余分なスペース除去
-				int index = line.indexOf("="); // イコールの箇所を取得(一文字目が0とする)
-
-				// "=" より左側にキー名が存在するとき 
-				if (index > 0) {
-					String key = line.substring(0, index); // "="の左側の文字取得
-					String value = updateMap.get(key);
-
-					if (value != null) {
-						// keyがupdateMapに存在したら更新
-						writer.write(key + "=" + value);
-					} else {
-						// 取得した行のまま書き写し
-						writer.write(line);
-					}
-				} else {
+				// 余分なスペース除去（空白は書き込まない）
+				line = stripSafe(line);
+				// 何文字目に "=" があるかを取得する (一文字目が0とする)
+				int index = line.indexOf("=");
+				// コメント行は先に処理
+				if (line.startsWith("#") || index <= 0) {
 					writer.write(line);
+					writer.newLine();
+					continue;
+				}
+
+				String key = line.substring(0, index); // "="の左側の文字を取得
+				String value = updateMap.get(key);
+				// 常にindex > 0
+				if (value != null) {
+					writer.write(key + "=" + value); // keyがupdateMapに存在したら更新
+				} else {
+					writer.write(line); // 取得した行のまま書き写し
 				}
 				writer.newLine(); // 文末改行
 			}
-
-			// 一時ファイルを元ファイルに置換する
-			Files.move(TEMP_PATH, PROPERTIES_PATH, StandardCopyOption.REPLACE_EXISTING);
-
 		} catch (IOException e) {
 			throw new ServiceException("プロパティファイルの書き込みに失敗しました", e);
+		}
+
+		// readerとwriterは閉じてから処理する
+		try {
+			// 一時ファイルを元ファイルに置換する
+			Files.move(TEMP_PATH, PROPERTIES_PATH, StandardCopyOption.REPLACE_EXISTING);
+		} catch (IOException e) {
+			throw new ServiceException("プロパティファイルの生成に失敗しました", e);
 		}
 	}
 
