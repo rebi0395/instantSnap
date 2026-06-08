@@ -73,9 +73,8 @@ public class InstantSnapCoordinator implements KeyEventListener {
 
 	/**
 	 * プロパティファイルに設定を保存します
-	 * @param configBean ユーザーの設定値を保持するインスタンス
 	 */
-	public void save(ConfigBean configBean) {
+	public void save() {
 		try {
 			synchronized (configLock) { // 排他制御
 				editor.save(config); // プロパティファイルを更新
@@ -88,7 +87,7 @@ public class InstantSnapCoordinator implements KeyEventListener {
 			log.error("想定外のエラーが発生しました", e);
 		}
 	}
-	
+
 	/**
 	 * アプリを終了する
 	 * 
