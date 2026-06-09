@@ -50,7 +50,7 @@ public class InstantSnapApp extends Application {
 			mainRoot = loader.load();
 
 			// シーン (ウィンドウのファイル、横幅、高さを設定)
-			Scene scene = new Scene(mainRoot, 510, 765);
+			Scene scene = new Scene(mainRoot, 600, 900);
 
 			// ウィンドウを閉じるとアプリを終了させるため、確認ウィンドウを表示する
 			stage.setOnCloseRequest(event -> {

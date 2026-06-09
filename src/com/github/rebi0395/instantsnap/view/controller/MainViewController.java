@@ -1,6 +1,8 @@
 package com.github.rebi0395.instantsnap.view.controller;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.github.rebi0395.instantsnap.app.InstantSnapCoordinator;
 import com.github.rebi0395.instantsnap.common.AppLogger;
@@ -21,7 +23,9 @@ import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.stage.DirectoryChooser;
@@ -94,9 +98,20 @@ public class MainViewController {
 	@FXML
 	private ComboBox<SnapArea> comboSnapArea;
 
-	/** 撮影後設定を選択するコンボボックス */
+	/** 撮影後設定を選択するラジオボタンをグループ化するトグルボタン */
 	@FXML
-	private ComboBox<SnapAfter> comboSnapAfter;
+	private final ToggleGroup radioSnapAfterGroup = new ToggleGroup();
+	/** 撮影後設定を選択するラジオボタンの一つ「何もしない」 */
+	@FXML
+	private RadioButton	radioSnapAfterNothing;
+	/** 撮影後設定を選択するラジオボタンの一つ「画像を開く」 */
+	@FXML
+	private RadioButton	radioSnapAfterOpenImage;
+	/** 撮影後設定を選択するラジオボタンの一つ「ペイントで開く」 */
+	@FXML
+	private RadioButton	radioSnapAfterOpenPaint;
+	
+	private Map<SnapAfter, RadioButton> snapAfterRadioMap;
 
 	/** クリップボードに画像を保存するチェックボックス */
 	@FXML
@@ -164,12 +179,12 @@ public class MainViewController {
 		comboFormatType.getItems().addAll(FormatType.values());
 		comboFormatType.setConverter(FormatType.toConverter());
 		comboFormatType.setValue(config.getFormatType());
-
-		// 撮影後設定のリストをセット
-		comboSnapAfter.getItems().addAll(SnapAfter.values());
-		comboSnapAfter.setConverter(SnapAfter.toConverter());
-		comboSnapAfter.setValue(config.getSnapAfter());
-
+		
+		// ラジオボタンの初期設定
+		snapAfterRadioMap = createSnapAfterRadioMap(); // 紐付けマップ作成
+		setupAfterRadioButtons(snapAfterRadioMap); // ラジオボタンの初期設定
+		radioSnapAfterGroup.selectToggle(snapAfterRadioMap.get(config.getSnapAfter())); // 初期選択
+		
 		// クリップボードに画像をするかのチェックボックスをセット
 		checkClipboard.setSelected(config.getIsCopyToClipboard());
 
@@ -256,6 +271,37 @@ public class MainViewController {
 		checkAlt.setDisable(!(isCustom && hasKey));
 		checkShift.setDisable(!(isCustom && hasKey));
 	}
+	
+	/**
+	 * SnapAfterと各種ラジオボタンを紐付けたマップを作成する
+	 * @return SnapAfterと各種ラジオボタンを紐付けたマップ
+	 */
+	private Map<SnapAfter, RadioButton> createSnapAfterRadioMap() {
+		// 
+		Map<SnapAfter, RadioButton> snapAfterRadioMap = new HashMap<SnapAfter, RadioButton>();
+		snapAfterRadioMap.put(SnapAfter.NOTHING, radioSnapAfterNothing);
+		snapAfterRadioMap.put(SnapAfter.OPEN_IMAGE, radioSnapAfterOpenImage);
+		snapAfterRadioMap.put(SnapAfter.OPEN_PAINT, radioSnapAfterOpenPaint);
+		return snapAfterRadioMap;
+	}
+	
+	/**
+	 * 撮影後設定のラジオボタンに、ラジオボタンのグループ化、
+	 * SnapAfterのEnumのセット、表示名の設定を行う
+	 * @param snapAfterRadioMap SnapAfterと各種ラジオボタンを紐付けたマップ
+	 */
+	private void setupAfterRadioButtons(Map<SnapAfter, RadioButton> snapAfterRadioMap) {
+
+		// SnapAfterとRadioButtonの組み合わせを一つずつ取得し、ラジオボタンに各種設定をしていく
+		for (Map.Entry<SnapAfter, RadioButton> entry : snapAfterRadioMap.entrySet()) {
+			SnapAfter snapAfter = entry.getKey(); 
+			RadioButton radioButton = entry.getValue();
+			
+			radioButton.setToggleGroup(radioSnapAfterGroup);
+			radioButton.setUserData(snapAfter);
+			radioButton.setText(snapAfter.getDisplayName());
+		}
+	}
 
 	/**
 	 * 「設定を反映」ボタンが押されたとき、ユーザーの設定値を保存する	
@@ -270,7 +316,7 @@ public class MainViewController {
 		config.setTriggerType(comboTriggerType.getValue()); // トリガーキー
 		config.setSnapArea(comboSnapArea.getValue()); // 撮影範囲
 		config.setFormatType(comboFormatType.getValue()); // 拡張子
-		config.setSnapAfter(comboSnapAfter.getValue()); // 撮影後設定
+		config.setSnapAfter((SnapAfter)radioSnapAfterGroup.getSelectedToggle().getUserData()); // 撮影後設定
 		config.setIsCopyToClipboard(checkClipboard.isSelected()); // クリップボード保存の有無
 
 		// カスタムキーの設定を保存する
@@ -307,7 +353,7 @@ public class MainViewController {
 		comboTriggerType.getSelectionModel().selectFirst();
 		comboFormatType.getSelectionModel().selectFirst();
 		comboSnapArea.getSelectionModel().selectFirst();
-		comboSnapAfter.getSelectionModel().selectFirst();
+		radioSnapAfterGroup.selectToggle(radioSnapAfterNothing);
 
 		checkClipboard.setSelected(true); // チェックをつける
 		labelStatus.setText("ステータス: 入力値を初期化しました");
