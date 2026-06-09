@@ -20,10 +20,6 @@ public class SnapAfterService {
 	 */
 	public void execute(SnapAfter snapAfter, Path path) {
 		switch (snapAfter) {
-		case TOAST:
-			showToast(path);
-			break;
-
 		case OPEN_IMAGE:
 			openImage(path);
 			break;
