@@ -21,6 +21,7 @@ VBox {
 	-fx-alignment: baseline_left;
 }
 
+/** 現在の設定値をラベル表示する */
 .current-value {
     -fx-background-color: #e8f0fe;
     -fx-background-radius: 12;
@@ -32,3 +33,16 @@ VBox {
     -fx-font-weight: bold;
 }
 
+/** .top-bar上でタブヘッダー右に重ねて表示 */
+.top-bar {
+    -fx-alignment: center-left;
+    -fx-spacing: 8;
+    -fx-padding: 8 15 3 3; /* 上右下左 */
+}
+
+/** 言語ボックスのサイズ指定 */
+.language-combo {
+    -fx-pref-width: 85;
+    -fx-pref-height: 24;
+    -fx-font-size: 11px;
+}

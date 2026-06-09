@@ -19,6 +19,7 @@ import com.github.rebi0395.instantsnap.exception.ServiceException;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.model.bean.KeyCombinationBean;
 import com.github.rebi0395.instantsnap.model.enums.FormatType;
+import com.github.rebi0395.instantsnap.model.enums.LanguageType;
 import com.github.rebi0395.instantsnap.model.enums.SnapAfter;
 import com.github.rebi0395.instantsnap.model.enums.SnapArea;
 import com.github.rebi0395.instantsnap.model.enums.TriggerType;
@@ -63,6 +64,7 @@ public class PropertiesRepository {
 			properties.load(reader);
 
 			// -- プロパティから読み取った情報をセット -- 
+			config.setLanguageType(LanguageType.parseOrDefault(properties.getProperty(PROPERTY_LANGUAGE)));
 			config.setSavePath(properties.getProperty(PROPERTY_SAVE_PATH));
 			config.setTriggerType(TriggerType.parseOrDefault(properties.getProperty(PROPERTY_TRIGGER)));
 
@@ -89,11 +91,11 @@ public class PropertiesRepository {
 	 * @throws ServiceException
 	 */
 	public void save(ConfigBean config) throws ServiceException {
-
 		checkAndResetProperties(); // プロパティファイルの実在チェック
 
 		// 更新したいキーと値のペアをMapに格納する
 		Map<String, String> updateMap = new HashMap<>();
+		updateMap.put(PROPERTY_LANGUAGE, config.getLanguageType().getValue());
 		updateMap.put(PROPERTY_SAVE_PATH, config.getSavePath());
 		updateMap.put(PROPERTY_TRIGGER, config.getTriggerType().getValue());
 		updateMap.put(PROPERTY_SNAP_AREA, config.getSnapArea().getValue());
@@ -113,33 +115,37 @@ public class PropertiesRepository {
 
 			String line;
 			while ((line = reader.readLine()) != null) {
-
-				line = stripSafe(line); // 余分なスペース除去
-				int index = line.indexOf("="); // イコールの箇所を取得(一文字目が0とする)
-
-				// "=" より左側にキー名が存在するとき 
-				if (index > 0) {
-					String key = line.substring(0, index); // "="の左側の文字取得
-					String value = updateMap.get(key);
-
-					if (value != null) {
-						// keyがupdateMapに存在したら更新
-						writer.write(key + "=" + value);
-					} else {
-						// 取得した行のまま書き写し
-						writer.write(line);
-					}
-				} else {
+				// 余分なスペース除去（空白は書き込まない）
+				line = stripSafe(line);
+				// 何文字目に "=" があるかを取得する (一文字目が0とする)
+				int index = line.indexOf("=");
+				// コメント行は先に処理
+				if (line.startsWith("#") || index <= 0) {
 					writer.write(line);
+					writer.newLine();
+					continue;
+				}
+
+				String key = line.substring(0, index); // "="の左側の文字を取得
+				String value = updateMap.get(key);
+				// 常にindex > 0
+				if (value != null) {
+					writer.write(key + "=" + value); // keyがupdateMapに存在したら更新
+				} else {
+					writer.write(line); // 取得した行のまま書き写し
 				}
 				writer.newLine(); // 文末改行
 			}
-
-			// 一時ファイルを元ファイルに置換する
-			Files.move(TEMP_PATH, PROPERTIES_PATH, StandardCopyOption.REPLACE_EXISTING);
-
 		} catch (IOException e) {
 			throw new ServiceException("プロパティファイルの書き込みに失敗しました", e);
+		}
+
+		// readerとwriterは閉じてから処理する
+		try {
+			// 一時ファイルを元ファイルに置換する
+			Files.move(TEMP_PATH, PROPERTIES_PATH, StandardCopyOption.REPLACE_EXISTING);
+		} catch (IOException e) {
+			throw new ServiceException("プロパティファイルの生成に失敗しました", e);
 		}
 	}
 
@@ -175,6 +181,9 @@ public class PropertiesRepository {
 	// 初期化時の文章をソース側で保持 改行コードを統一
 	private static final String DEFAULT_CONTENT = """
 			#InstantSnap Settings
+
+			#言語を指定してください
+			language=ja
 
 			#保存先パスを指定してください
 			savePath=./screenshots/
