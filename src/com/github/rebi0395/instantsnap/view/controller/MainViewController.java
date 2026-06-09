@@ -8,6 +8,7 @@ import com.github.rebi0395.instantsnap.common.NativeKeyCodeConverter;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.model.bean.KeyCombinationBean;
 import com.github.rebi0395.instantsnap.model.enums.FormatType;
+import com.github.rebi0395.instantsnap.model.enums.LanguageType;
 import com.github.rebi0395.instantsnap.model.enums.SnapAfter;
 import com.github.rebi0395.instantsnap.model.enums.SnapArea;
 import com.github.rebi0395.instantsnap.model.enums.TriggerType;
@@ -57,6 +58,11 @@ public class MainViewController {
 	/** 適応中の撮影後設定を表示するラベル */
 	@FXML
 	private Label labelSnapAfter;
+
+	// -- 言語設定 --
+	/** 撮影ショートカットキーを選択するコンボボックス */
+	@FXML
+	private ComboBox<LanguageType> comboLanguageType;
 
 	// -- 基本設定項目 --
 	/** カスタムキー設定のキー入力を受け付けるテキストフィールド */
@@ -109,7 +115,6 @@ public class MainViewController {
 		comboTriggerType.valueProperty().addListener((obs, oldType, newType) -> {
 			updateCustomKeyFieldState();
 		});
-
 		// カスタムキーのテキストフィールドを監視するリスナー
 		textInputKey.textProperty().addListener((obs, oldVal, newVal) -> {
 			updateCustomKeyFieldState();
@@ -119,13 +124,21 @@ public class MainViewController {
 		inputCustomKey(textInputKey);
 
 		// -- ユーザー設定値のセット -- 
+
+		// 言語設定のリストをセット
+		comboLanguageType.getItems().addAll(LanguageType.values());
+		// コンバーターにて設定しているEnumsからdisplaynameを取得可能になる
+		comboLanguageType.setConverter(LanguageType.toConverter());
+		comboLanguageType.setValue(config.getLanguageType());
+		registerLanguageChangeListener(); // 言語切り替え時の処理を設定
+
 		// 保存先のフォルダを取得し、テキストフィールドにセット
 		config.getSavePath();
 		textFilePath.setText(config.getSavePath());
 
 		// ショートカットキーのリストをセット
 		comboTriggerType.getItems().addAll(TriggerType.values());
-		comboTriggerType.setConverter(TriggerType.toConverter()); // コンバーターにより	Enumsをdisplaynameで変換が可能になる
+		comboTriggerType.setConverter(TriggerType.toConverter());
 		comboTriggerType.setValue(config.getTriggerType());
 
 		// カスタムキーの取得
@@ -138,8 +151,8 @@ public class MainViewController {
 		}
 
 		// 修飾キー
-		checkAlt.setSelected(customKeys.isUseAlt());
 		checkCtrl.setSelected(customKeys.isUseCtrl());
+		checkAlt.setSelected(customKeys.isUseAlt());
 		checkShift.setSelected(customKeys.isUseShift());
 
 		// 撮影範囲のリストをセット
@@ -166,6 +179,24 @@ public class MainViewController {
 	}
 
 	/**
+	 * 言語設定が変更されたときのリスナーを登録する
+	 * 言語設定のみプロパティファイルを更新し、uiの表示言語切り替える(未実装)
+	 */
+	private void registerLanguageChangeListener() {
+		comboLanguageType.valueProperty().addListener((obs, oldVal, newVal) -> {
+			if (newVal == null || newVal == oldVal) {
+				return;
+			}
+
+			ConfigBean config = coordinator.getConfigBean();
+			config.setLanguageType(newVal);
+			coordinator.save(); // 内部では全項目更新
+
+			//TODO リソースバンドル読み取り処理
+		});
+	}
+
+	/**
 	 * 保存先フォルダ選択ボタン押下時、ディレクトリフォルダを選択させる
 	 */
 	@FXML
@@ -179,7 +210,7 @@ public class MainViewController {
 	}
 
 	/**
-	 * カスタムキーの入力処理を行う
+	 * カスタムキーの入力処理を行う、リスナーを登録する
 	 * @param textField テキストフィールド
 	 */
 	public void inputCustomKey(TextField textField) {
@@ -221,8 +252,8 @@ public class MainViewController {
 		textInputKey.setDisable(!isCustom);
 
 		// Custom設定かつ、カスタムキーのテキストフィールドに値があれば活性
-		checkAlt.setDisable(!(isCustom && hasKey));
 		checkCtrl.setDisable(!(isCustom && hasKey));
+		checkAlt.setDisable(!(isCustom && hasKey));
 		checkShift.setDisable(!(isCustom && hasKey));
 	}
 
@@ -234,6 +265,7 @@ public class MainViewController {
 
 		ConfigBean config = coordinator.getConfigBean();
 		// configに値をセット
+		config.setLanguageType(comboLanguageType.getValue()); // 言語設定
 		config.setSavePath(textFilePath.getText()); // 保存パス
 		config.setTriggerType(comboTriggerType.getValue()); // トリガーキー
 		config.setSnapArea(comboSnapArea.getValue()); // 撮影範囲
@@ -244,15 +276,15 @@ public class MainViewController {
 		// カスタムキーの設定を保存する
 		KeyCombinationBean customKeys = config.getCustomKeyBean();
 		customKeys.setTriggerKey(nativeCode); // 保持しているキーコードをいれる
-		customKeys.setUseAlt(checkAlt.isSelected());
 		customKeys.setUseCtrl(checkCtrl.isSelected());
+		customKeys.setUseAlt(checkAlt.isSelected());
 		customKeys.setUseShift(checkShift.isSelected());
 
 		// 文字列を更新する
 		updateSettingLabels(config, customKeys);
 
 		// configを更新し、司令塔クラスに返す
-		coordinator.save(config);
+		coordinator.save();
 		labelStatus.setText("ステータス: 設定を反映しました。");
 	}
 
@@ -266,11 +298,12 @@ public class MainViewController {
 
 		// カスタムキーの設定をリセットする
 		textInputKey.clear();
-		checkAlt.setSelected(false);
 		checkCtrl.setSelected(false);
+		checkAlt.setSelected(false);
 		checkShift.setSelected(false);
 
 		// 各コンボボックスを一番上にリセット
+		comboLanguageType.getSelectionModel().selectFirst();
 		comboTriggerType.getSelectionModel().selectFirst();
 		comboFormatType.getSelectionModel().selectFirst();
 		comboSnapArea.getSelectionModel().selectFirst();
