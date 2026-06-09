@@ -11,10 +11,10 @@ public enum SnapAfter implements BaseEnum {
 
 	/** 何もしない(デフォルト値) */
 	NOTHING("0", "Nothing"),
-	/** 撮影後、通知を送付する */
-	TOAST("1", "Toast Notification"),
-	/** 保存した画像ファイルを開く */
-	OPEN_IMAGE("2", "Open Image");
+	/** 画像を開く */
+	OPEN_IMAGE("1", "Open Image"),
+	/** ペイントを開く */
+	OPEN_PAINT("2", "Open Paint");
 
 	/** プロパティファイルと紐つく値 */
 	private final String value;
