@@ -1,14 +1,23 @@
-.section-title {
-    -fx-font-size: 14px;
+
+/** 項目のメインタイトル文字のサイズ指定、太字にする */
+.section-main-title {
+    -fx-font-size: 15px;
     -fx-font-weight: bold;
-	-fx-pref-width: 120;
 }
 
+/** 項目のタイトル文字をサイズ指定、太字にする */
+.section-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+/** テキストフィールド、コンボボックス、ボタン横幅統一 */
 .text-field, .combo-box, .button {
     -fx-pref-width: 200px;
 }
 
-VBox {
+/** 小項目の区切り */
+.section-border {
     -fx-background-color: #f8f8f8;
     -fx-padding: 15;
     -fx-border-color: #ddd;
@@ -16,6 +25,7 @@ VBox {
     -fx-background-radius: 5;
 }
 
+/** 項目のヘッダーを整形する */
 .setting-header {
 	-fx-spacing: 15; 
 	-fx-alignment: baseline_left;
@@ -45,6 +55,17 @@ VBox {
     -fx-pref-width: 85;
     -fx-pref-height: 24;
     -fx-font-size: 11px;
+}
+
+
+.output-switch-row {
+    -fx-spacing: 90px;
+    -fx-alignment: center-left;
+}
+
+.output-switch-item {
+    -fx-spacing: 10px;
+    -fx-alignment: center-left;
 }
 
 /* =========================
