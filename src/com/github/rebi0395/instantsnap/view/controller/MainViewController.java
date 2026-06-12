@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.rebi0395.instantsnap.app.InstantSnapCoordinator;
 import com.github.rebi0395.instantsnap.common.AppLogger;
 import com.github.rebi0395.instantsnap.common.NativeKeyCodeConverter;
@@ -68,7 +69,15 @@ public class MainViewController {
 	@FXML
 	private ComboBox<LanguageType> comboLanguageType;
 
-	// -- 基本設定項目 --
+	// -- 撮影設定 --
+	/** 撮影ショートカットキーを選択するコンボボックス */
+	@FXML
+	private ComboBox<TriggerType> comboTriggerType;
+
+	/** 撮影範囲を選択するコンボボックス */
+	@FXML
+	private ComboBox<SnapArea> comboSnapArea;
+
 	/** カスタムキー設定のキー入力を受け付けるテキストフィールド */
 	@FXML
 	private TextField textInputKey;
@@ -82,9 +91,14 @@ public class MainViewController {
 	@FXML
 	private CheckBox checkShift;
 
-	/** 撮影ショートカットキーを選択するコンボボックス */
+	// -- 出力設定 --
+	/** 画像を保存する設定のチェックボックス */
 	@FXML
-	private ComboBox<TriggerType> comboTriggerType;
+	private CheckBox checkSaveImage;
+
+	/** クリップボードに画像を保存するチェックボックス */
+	@FXML
+	private CheckBox checkClipboard;
 
 	/** 保存先のフォルダを表示するテキストフィールド */
 	@FXML
@@ -94,28 +108,30 @@ public class MainViewController {
 	@FXML
 	private ComboBox<FormatType> comboFormatType;
 
-	/** 撮影範囲を選択するコンボボックス */
-	@FXML
-	private ComboBox<SnapArea> comboSnapArea;
-
+	// -- 撮影後設定 --
 	/** 撮影後設定を選択するラジオボタンをグループ化するトグルボタン */
 	@FXML
 	private final ToggleGroup radioSnapAfterGroup = new ToggleGroup();
 	/** 撮影後設定を選択するラジオボタンの一つ「何もしない」 */
 	@FXML
-	private RadioButton	radioSnapAfterNothing;
+	private RadioButton radioSnapAfterNothing;
 	/** 撮影後設定を選択するラジオボタンの一つ「画像を開く」 */
 	@FXML
-	private RadioButton	radioSnapAfterOpenImage;
+	private RadioButton radioSnapAfterOpenImage;
 	/** 撮影後設定を選択するラジオボタンの一つ「ペイントで開く」 */
 	@FXML
-	private RadioButton	radioSnapAfterOpenPaint;
-	
+	private RadioButton radioSnapAfterOpenPaint;
+	/** snapAfterとラジオボタンを紐付けるマップ */
 	private Map<SnapAfter, RadioButton> snapAfterRadioMap;
 
-	/** クリップボードに画像を保存するチェックボックス */
+	// -- 通知設定 --
+	/** 通知表示設定のチェックボックス */
 	@FXML
-	private CheckBox checkClipboard;
+	private CheckBox checkNotification;
+
+	/** 通知音設定のチェックボックス */
+	@FXML
+	private CheckBox checkSound;
 
 	/**
 	 * 初期化処理。FXMLファイルの要素を取り込んだ後に呼び出す
@@ -138,59 +154,63 @@ public class MainViewController {
 		// カスタムキーのテキストフィールドの挙動を設定
 		inputCustomKey(textInputKey);
 
-		// -- ユーザー設定値のセット -- 
-
-		// 言語設定のリストをセット
+		// ～～ ユーザー設定値のセット ～～ 
+		// 言語設定のリスト、コンバーター(変換ルール)、初期設定値をセット
 		comboLanguageType.getItems().addAll(LanguageType.values());
-		// コンバーターにて設定しているEnumsからdisplaynameを取得可能になる
 		comboLanguageType.setConverter(LanguageType.toConverter());
 		comboLanguageType.setValue(config.getLanguageType());
 		registerLanguageChangeListener(); // 言語切り替え時の処理を設定
 
-		// 保存先のフォルダを取得し、テキストフィールドにセット
-		config.getSavePath();
-		textFilePath.setText(config.getSavePath());
+		// -- 撮影設定 --
 
-		// ショートカットキーのリストをセット
+		// ショートカットキーのリスト、コンバーター(変換ルール)、初期設定値をセット
 		comboTriggerType.getItems().addAll(TriggerType.values());
 		comboTriggerType.setConverter(TriggerType.toConverter());
 		comboTriggerType.setValue(config.getTriggerType());
-
 		// カスタムキーの取得
 		KeyCombinationBean customKeys = config.getCustomKeyBean();
 		// トリガーキーの保持、名前変換
 		nativeCode = customKeys.getTriggerKey(); // nativeキーコードを保持
 		if (!(nativeCode == VC_UNDEFINED)) {
-			// 未定義でない場合、テキストフィールドにセットする
-			textInputKey.setText(getKeyText(nativeCode));
+			// 未定義でない場合、テキストフィールドにキーの名前をセットする
+			textInputKey.setText(NativeKeyEvent.getKeyText(nativeCode));
 		}
-
-		// 修飾キー
+		// 修飾キーの初期値を設定
 		checkCtrl.setSelected(customKeys.isUseCtrl());
 		checkAlt.setSelected(customKeys.isUseAlt());
 		checkShift.setSelected(customKeys.isUseShift());
-
-		// 撮影範囲のリストをセット
+		// 撮影範囲のリスト、コンバーター(変換ルール)、初期設定値をセット
 		comboSnapArea.getItems().addAll(SnapArea.values());
 		comboSnapArea.setConverter(SnapArea.toConverter()); // コンバーターにより	Enumsをdisplaynameで変換が可能になる
 		comboSnapArea.setValue(config.getSnapArea());
 
-		// 拡張子のリストをセット
+		// -- 出力設定 --
+
+		// 画像保存の有無を設定するチェックボックスをセット
+		checkSaveImage.setSelected(config.getIsSaveImage());
+		// クリップボードに画像をするかのチェックボックスをセット
+		checkClipboard.setSelected(config.getIsCopyToClipboard());
+		// 保存先のフォルダを取得し、テキストフィールドにセット
+		config.getSavePath();
+		textFilePath.setText(config.getSavePath());
+		// 拡張子のリスト、コンバーター(変換ルール)、初期設定値をセット
 		comboFormatType.getItems().addAll(FormatType.values());
 		comboFormatType.setConverter(FormatType.toConverter());
 		comboFormatType.setValue(config.getFormatType());
-		
-		// ラジオボタンの初期設定
+
+		// -- 撮影後設定 --
+
+		// 撮影後設定のラジオボタンの初期設定
 		snapAfterRadioMap = createSnapAfterRadioMap(); // 紐付けマップ作成
 		setupAfterRadioButtons(snapAfterRadioMap); // ラジオボタンの初期設定
 		radioSnapAfterGroup.selectToggle(snapAfterRadioMap.get(config.getSnapAfter())); // 初期選択
-		
-		// クリップボードに画像をするかのチェックボックスをセット
-		checkClipboard.setSelected(config.getIsCopyToClipboard());
+		// 通知表示設定のチェックボックスを設定する
+		checkNotification.setSelected(config.getIsShowNotification());
+		// 撮影音のチェックボックスを設定する
+		checkSound.setSelected(config.getIsSoundEnabled());
 
-		// -- 文字列反映 --
+		// -- 適用設定表示ラベルの反映 --
 		updateSettingLabels(config, customKeys);
-
 	}
 
 	/**
@@ -271,7 +291,7 @@ public class MainViewController {
 		checkAlt.setDisable(!(isCustom && hasKey));
 		checkShift.setDisable(!(isCustom && hasKey));
 	}
-	
+
 	/**
 	 * SnapAfterと各種ラジオボタンを紐付けたマップを作成する
 	 * @return SnapAfterと各種ラジオボタンを紐付けたマップ
@@ -284,7 +304,7 @@ public class MainViewController {
 		snapAfterRadioMap.put(SnapAfter.OPEN_PAINT, radioSnapAfterOpenPaint);
 		return snapAfterRadioMap;
 	}
-	
+
 	/**
 	 * 撮影後設定のラジオボタンに、ラジオボタンのグループ化、
 	 * SnapAfterのEnumのセット、表示名の設定を行う
@@ -294,9 +314,9 @@ public class MainViewController {
 
 		// SnapAfterとRadioButtonの組み合わせを一つずつ取得し、ラジオボタンに各種設定をしていく
 		for (Map.Entry<SnapAfter, RadioButton> entry : snapAfterRadioMap.entrySet()) {
-			SnapAfter snapAfter = entry.getKey(); 
+			SnapAfter snapAfter = entry.getKey();
 			RadioButton radioButton = entry.getValue();
-			
+
 			radioButton.setToggleGroup(radioSnapAfterGroup);
 			radioButton.setUserData(snapAfter);
 			radioButton.setText(snapAfter.getDisplayName());
@@ -310,21 +330,28 @@ public class MainViewController {
 	public void onApplyConfig() {
 
 		ConfigBean config = coordinator.getConfigBean();
-		// configに値をセット
 		config.setLanguageType(comboLanguageType.getValue()); // 言語設定
-		config.setSavePath(textFilePath.getText()); // 保存パス
+
+		// -- 撮影設定 --
 		config.setTriggerType(comboTriggerType.getValue()); // トリガーキー
 		config.setSnapArea(comboSnapArea.getValue()); // 撮影範囲
-		config.setFormatType(comboFormatType.getValue()); // 拡張子
-		config.setSnapAfter((SnapAfter)radioSnapAfterGroup.getSelectedToggle().getUserData()); // 撮影後設定
-		config.setIsCopyToClipboard(checkClipboard.isSelected()); // クリップボード保存の有無
-
-		// カスタムキーの設定を保存する
+		// カスタムキー
 		KeyCombinationBean customKeys = config.getCustomKeyBean();
 		customKeys.setTriggerKey(nativeCode); // 保持しているキーコードをいれる
 		customKeys.setUseCtrl(checkCtrl.isSelected());
 		customKeys.setUseAlt(checkAlt.isSelected());
 		customKeys.setUseShift(checkShift.isSelected());
+
+		// -- 出力設定 --
+		config.setIsSaveImage(checkSaveImage.isSelected()); // 画像保存の有無
+		config.setIsCopyToClipboard(checkClipboard.isSelected()); // クリップボード保存の有無
+		config.setSavePath(textFilePath.getText()); // 保存パス
+		config.setFormatType(comboFormatType.getValue()); // 拡張子
+
+		// -- 撮影後設定 --
+		config.setSnapAfter((SnapAfter) radioSnapAfterGroup.getSelectedToggle().getUserData()); // 撮影後設定
+		config.setIsShowNotification(checkNotification.isSelected()); // 通知表示の有無
+		config.setIsSoundEnabled(checkSound.isSelected()); // 撮影音を鳴らす有無
 
 		// 文字列を更新する
 		updateSettingLabels(config, customKeys);
@@ -339,23 +366,26 @@ public class MainViewController {
 	 */
 	@FXML
 	public void onResetConfig() {
-		// フォルダパスをデフォルトに設定
-		textFilePath.setText(DEFAULT_SAVE_PATH);
-
+		// -- 撮影設定 --
+		comboTriggerType.getSelectionModel().selectFirst();
+		comboSnapArea.getSelectionModel().selectFirst();
 		// カスタムキーの設定をリセットする
 		textInputKey.clear();
 		checkCtrl.setSelected(false);
 		checkAlt.setSelected(false);
 		checkShift.setSelected(false);
 
-		// 各コンボボックスを一番上にリセット
-		comboLanguageType.getSelectionModel().selectFirst();
-		comboTriggerType.getSelectionModel().selectFirst();
+		// -- 出力設定 --
+		checkSaveImage.setSelected(true); // チェックを入れる
+		checkClipboard.setSelected(true); // チェックを入れる
+		textFilePath.setText(DEFAULT_SAVE_PATH); // フォルダパスをデフォルトに設定
 		comboFormatType.getSelectionModel().selectFirst();
-		comboSnapArea.getSelectionModel().selectFirst();
-		radioSnapAfterGroup.selectToggle(radioSnapAfterNothing);
 
-		checkClipboard.setSelected(true); // チェックをつける
+		// -- 撮影後設定 --
+		radioSnapAfterGroup.selectToggle(radioSnapAfterNothing);
+		checkNotification.setSelected(false);
+		checkSound.setSelected(false);
+
 		labelStatus.setText("ステータス: 入力値を初期化しました");
 	}
 
