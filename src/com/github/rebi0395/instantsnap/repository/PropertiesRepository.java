@@ -35,7 +35,7 @@ import static com.github.rebi0395.instantsnap.common.StrCheckUtil.*;
 public class PropertiesRepository {
 
 	/** プロパティのファイルパス */
-	private static final Path PROPERTIES_PATH = Paths.get(CONFIG_FILE_NAME);
+	private static final Path PROPERTIES_PATH = Paths.get(OPTION_FILE_NAME);
 
 	/** プロパティファイルの一時保存パス */
 	private static final Path TEMP_PATH = PROPERTIES_PATH.resolveSibling(PROPERTIES_PATH.getFileName() + ".tmp");
@@ -69,23 +69,25 @@ public class PropertiesRepository {
 
 			// 撮影設定
 			config.setTriggerType(TriggerType.parseOrDefault(properties.getProperty(PROPERTY_TRIGGER)));
+			config.setSnapArea(SnapArea.parseOrDefault(properties.getProperty(PROPERTY_SNAP_AREA)));
+
+			// 出力設定
+			config.setIsSaveImage(isStrTrue(properties.getProperty(PROPERTY_SAVE_IMAGE_ENABLED)));
+			config.setIsCopyToClipboard(isStrTrue(properties.getProperty(PROPERTY_CLIPBOARD_ENABLED)));
+			config.setSavePath(properties.getProperty(PROPERTY_SAVE_PATH));
+			config.setFormatType(FormatType.parseOrDefault(properties.getProperty(PROPERTY_FORMAT)));
+
+			// 撮影後設定
+			config.setSnapAfter(SnapAfter.parseOrDefault(properties.getProperty(PROPERTY_SNAP_AFTER)));
+			config.setIsShowNotification(isStrTrue(properties.getProperty(PROPERTY_NOTIFICATION_ENABLED)));
+			config.setIsSoundEnabled(isStrTrue(properties.getProperty(PROPERTY_SOUND_ENABLED)));
+
 			// カスタムキー
 			KeyCombinationBean customKeys = config.getCustomKeyBean();
 			customKeys.setTriggerKey(toNativeKeyCode(properties.getProperty(PROPERTY_CUSTOM_KEY)));
 			customKeys.setUseAlt(isStrTrue(properties.getProperty(PROPERTY_USE_ALT)));
 			customKeys.setUseCtrl(isStrTrue(properties.getProperty(PROPERTY_USE_CTRL)));
 			customKeys.setUseShift(isStrTrue(properties.getProperty(PROPERTY_USE_SHIFT)));
-			config.setSnapArea(SnapArea.parseOrDefault(properties.getProperty(PROPERTY_SNAP_AREA)));
-
-			// 出力設定
-			config.setIsSaveImage(isStrTrue(properties.getProperty(PROPERTY_CLIPBOARD_ENABLED)));
-			config.setIsCopyToClipboard(isStrTrue(properties.getProperty(PROPERTY_CLIPBOARD_ENABLED)));
-			config.setSavePath(properties.getProperty(PROPERTY_SAVE_PATH));
-
-			config.setFormatType(FormatType.parseOrDefault(properties.getProperty(PROPERTY_FORMAT)));
-
-			// 撮影後設定
-			config.setSnapAfter(SnapAfter.parseOrDefault(properties.getProperty(PROPERTY_SNAP_AFTER)));
 
 		} catch (IOException ie) {
 			throw new ServiceException("プロパティファイルの読み込みに失敗しました", ie);
@@ -103,12 +105,20 @@ public class PropertiesRepository {
 		// 更新したいキーと値のペアをMapに格納する
 		Map<String, String> updateMap = new HashMap<>();
 		updateMap.put(PROPERTY_LANGUAGE, config.getLanguageType().getValue());
-		updateMap.put(PROPERTY_SAVE_PATH, config.getSavePath());
+		// 撮影設定
 		updateMap.put(PROPERTY_TRIGGER, config.getTriggerType().getValue());
 		updateMap.put(PROPERTY_SNAP_AREA, config.getSnapArea().getValue());
-		updateMap.put(PROPERTY_FORMAT, config.getFormatType().getValue());
-		updateMap.put(PROPERTY_SNAP_AFTER, config.getSnapAfter().getValue());
+
+		// 出力設定
+		updateMap.put(PROPERTY_SAVE_IMAGE_ENABLED, String.valueOf(config.getIsSaveImage()));
 		updateMap.put(PROPERTY_CLIPBOARD_ENABLED, String.valueOf(config.getIsCopyToClipboard()));
+		updateMap.put(PROPERTY_SAVE_PATH, config.getSavePath());
+		updateMap.put(PROPERTY_FORMAT, config.getFormatType().getValue());
+
+		// 撮影後設定, 通知設定
+		updateMap.put(PROPERTY_SNAP_AFTER, config.getSnapAfter().getValue());
+		updateMap.put(PROPERTY_NOTIFICATION_ENABLED, String.valueOf(config.getIsShowNotification()));
+		updateMap.put(PROPERTY_SOUND_ENABLED, String.valueOf(config.getIsSoundEnabled()));
 
 		// -- カスタムキーの設定 --
 		KeyCombinationBean customKeys = config.getCustomKeyBean();

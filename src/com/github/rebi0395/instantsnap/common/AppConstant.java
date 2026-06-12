@@ -10,7 +10,7 @@ public final class AppConstant {
 	}
 
 	// -- プロパティファイル --
-	public static final String CONFIG_FILE_NAME = "config.properties";
+	public static final String OPTION_FILE_NAME = "config.properties";
 
 	// -- プロパティの項目名 --
 	public static final String PROPERTY_LANGUAGE = "language";
