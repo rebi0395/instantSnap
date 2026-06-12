@@ -64,21 +64,28 @@ public class PropertiesRepository {
 			properties.load(reader);
 
 			// -- プロパティから読み取った情報をセット -- 
+			// 言語設定
 			config.setLanguageType(LanguageType.parseOrDefault(properties.getProperty(PROPERTY_LANGUAGE)));
-			config.setSavePath(properties.getProperty(PROPERTY_SAVE_PATH));
-			config.setTriggerType(TriggerType.parseOrDefault(properties.getProperty(PROPERTY_TRIGGER)));
 
-			// カスタムキーの設定
+			// 撮影設定
+			config.setTriggerType(TriggerType.parseOrDefault(properties.getProperty(PROPERTY_TRIGGER)));
+			// カスタムキー
 			KeyCombinationBean customKeys = config.getCustomKeyBean();
 			customKeys.setTriggerKey(toNativeKeyCode(properties.getProperty(PROPERTY_CUSTOM_KEY)));
 			customKeys.setUseAlt(isStrTrue(properties.getProperty(PROPERTY_USE_ALT)));
 			customKeys.setUseCtrl(isStrTrue(properties.getProperty(PROPERTY_USE_CTRL)));
 			customKeys.setUseShift(isStrTrue(properties.getProperty(PROPERTY_USE_SHIFT)));
-
 			config.setSnapArea(SnapArea.parseOrDefault(properties.getProperty(PROPERTY_SNAP_AREA)));
+
+			// 出力設定
+			config.setIsSaveImage(isStrTrue(properties.getProperty(PROPERTY_CLIPBOARD_ENABLED)));
+			config.setIsCopyToClipboard(isStrTrue(properties.getProperty(PROPERTY_CLIPBOARD_ENABLED)));
+			config.setSavePath(properties.getProperty(PROPERTY_SAVE_PATH));
+
 			config.setFormatType(FormatType.parseOrDefault(properties.getProperty(PROPERTY_FORMAT)));
+
+			// 撮影後設定
 			config.setSnapAfter(SnapAfter.parseOrDefault(properties.getProperty(PROPERTY_SNAP_AFTER)));
-			config.setIsCopyToClipboard(isStrTrue(properties.getProperty(PROPERTY_COPY_TO_CLIPBOARD)));
 
 		} catch (IOException ie) {
 			throw new ServiceException("プロパティファイルの読み込みに失敗しました", ie);
@@ -101,7 +108,7 @@ public class PropertiesRepository {
 		updateMap.put(PROPERTY_SNAP_AREA, config.getSnapArea().getValue());
 		updateMap.put(PROPERTY_FORMAT, config.getFormatType().getValue());
 		updateMap.put(PROPERTY_SNAP_AFTER, config.getSnapAfter().getValue());
-		updateMap.put(PROPERTY_COPY_TO_CLIPBOARD, String.valueOf(config.getIsCopyToClipboard()));
+		updateMap.put(PROPERTY_CLIPBOARD_ENABLED, String.valueOf(config.getIsCopyToClipboard()));
 
 		// -- カスタムキーの設定 --
 		KeyCombinationBean customKeys = config.getCustomKeyBean();
@@ -185,9 +192,7 @@ public class PropertiesRepository {
 			#言語を指定してください
 			language=ja
 
-			#保存先パスを指定してください
-			savePath=./screenshots/
-
+			#～～ 撮影設定 ～～#
 			#スクショ発動キーの選択
 			#1 -> shift + printscreen(デフォルト), 2 -> printscreen
 			#3 -> F10, 4 -> カスタムキー
@@ -195,11 +200,11 @@ public class PropertiesRepository {
 
 			#カスタムメインキー設定 -- triggerを4にした上でキーコードを記載してください
 			#未使用な場合は、0
-			customKey=0
+			customKey=21
 
 			#カスタムキーのコンビネーションキー設定 -- 使用する場合はtrue メインキー必須
-			useAlt=false
-			useCtrl=false
+			useAlt=true
+			useCtrl=true
 			useShift=false
 
 			#撮影範囲の選択
@@ -207,15 +212,29 @@ public class PropertiesRepository {
 			#3 -> メインモニター, 4 -> 全てのモニター
 			snapArea=1
 
-			#拡張子の選択 png、jpg、bmp、gifのいずれかを記載してください(デフォルト：png)
-			format=png
+			#～～ 出力設定 ～～#
+			#画像を保存する（有効にする場合は"true"と記載してください）
+			saveImageEnabled=true
 
+			#クリップボードにコピーする（有効にする場合は"true"と記載してください）
+			clipboardEnabled=true
+
+			#保存先パスを指定してください
+			savePath=C:/Instantsnap画像保存先
+
+			#拡張子の選択 png、jpg、bmp、gifのいずれかを記載してください(デフォルト：png)
+			format=jpg
+
+			#～～ 撮影後、通知設定 ～～#
 			#撮影後に行う処理を選択
 			#1 -> 通知を表示する, 2 -> 画像ファイルを開く, 0, 未記入等 -> 何もしない(デフォルト)
 			snapAfter=0
 
-			#撮影後、クリップボードにコピーする設定です。使用する場合は"true"と記載してください
-			copyToClipboard=true
+			#撮影時、通知を表示する（有効にする場合は"true"と記載してください）
+			notificationEnabled=false
 
-			""".replace("\r\n", "\n").replace("\n", System.lineSeparator());
+			#撮影時、音を鳴らして撮影する（有効にする場合は"true"と記載してください）
+			soundEnabled=false
+
+						""".replace("\r\n", "\n").replace("\n", System.lineSeparator());
 }
