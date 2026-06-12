@@ -71,7 +71,7 @@
 											</columnConstraints>	
 											<VBox spacing="10" GridPane.columnIndex="0">
 												<HBox spacing="10" styleClass="output-switch-row, output-switch-item">
-													<CheckBox text="画像を保存する" styleClass="switch-check-box" />
+													<CheckBox fx:id="checkSaveImage" text="画像を保存する" styleClass="switch-check-box" />
 													<Label text="有効" styleClass="current-value"/>
 												</HBox>
 											</VBox>
@@ -133,12 +133,12 @@
 													<Label text="通知表示" styleClass="section-title"/>
 													<Label text="有効" styleClass="current-value"/>
 												</HBox>
-												<CheckBox fx:id="checkShowNotification" text="通知を表示する"/>
+												<CheckBox fx:id="checkNotification" text="通知を表示する"/>
 												<HBox styleClass="setting-header">
 													<Label text="撮影音　" styleClass="section-title"/>
 													<Label text="無効" styleClass="current-value"/>
 												</HBox>
-												<CheckBox fx:id="checkSnapSound" text="撮影音を有効にする"/>
+												<CheckBox fx:id="checkSound" text="撮影音を有効にする"/>
 											</VBox>
 										</GridPane>
 									</VBox>
