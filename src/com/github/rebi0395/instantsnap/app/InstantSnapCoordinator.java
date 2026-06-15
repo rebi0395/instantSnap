@@ -10,6 +10,7 @@ import com.github.rebi0395.instantsnap.exception.ServiceException;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.repository.PropertiesRepository;
 import com.github.rebi0395.instantsnap.service.KeyEventListener;
+import com.github.rebi0395.instantsnap.service.SnapAfterService;
 import com.github.rebi0395.instantsnap.service.SnapAreaResolver;
 import com.github.rebi0395.instantsnap.service.SoundPlayer;
 import com.github.rebi0395.instantsnap.service.TakeSnapService;
@@ -25,13 +26,16 @@ public class InstantSnapCoordinator implements KeyEventListener {
 	/** ユーザーの設定値 */
 	private ConfigBean config;
 	/** プロパティファイルのリポジトリ */
-	private PropertiesRepository editor;
+	private PropertiesRepository repository;
+
 	/** 撮影トリガーの管理クラス */
 	private TriggerKeyManager keyManager;
 	/** 撮影範囲を解決するクラス */
 	private SnapAreaResolver areaResolver;
-	/** 撮影処理クラス */
-	private TakeSnapService takeSnap;
+	/** 全体の撮影処理クラス */
+	private TakeSnapService takeSnapService;
+	/** 撮影後の処理クラス */
+	private SnapAfterService afterService;
 	/** 効果音再生クラス */
 	private SoundPlayer soundPlayer;
 
@@ -54,15 +58,15 @@ public class InstantSnapCoordinator implements KeyEventListener {
 		try {
 			// ユーザーの設定値をプロパティファイルを読み込み初期化
 			this.config = new ConfigBean();
-			this.editor = new PropertiesRepository();
-			editor.read(config);
+			this.repository = new PropertiesRepository();
+			repository.read(config);
 
-			// サービスクラスはfacadeクラスのみ生成する
+			// サービスクラスのインスタンスを生成する
 			this.keyManager = new TriggerKeyManager(config, this);
 			this.areaResolver = new SnapAreaResolver();
 			this.soundPlayer = new SoundPlayer();
-			
-			this.takeSnap = new TakeSnapService(areaResolver, soundPlayer);
+			this.afterService = new SnapAfterService();
+			this.takeSnapService = new TakeSnapService(areaResolver, soundPlayer, afterService);
 
 			// キー監視開始
 			keyManager.activate();
@@ -82,7 +86,7 @@ public class InstantSnapCoordinator implements KeyEventListener {
 	public void save() {
 		try {
 			synchronized (configLock) { // 排他制御
-				editor.save(config); // プロパティファイルを更新
+				repository.save(config); // プロパティファイルを更新
 			}
 			// チェック済例外
 		} catch (ServiceException e) {
@@ -122,7 +126,7 @@ public class InstantSnapCoordinator implements KeyEventListener {
 			synchronized (configLock) { // 排他制御
 				try {
 					// 撮影処理
-					takeSnap.execute(config);
+					takeSnapService.execute(config);
 
 				} catch (ServiceException e) {
 					log.error("スクリーンショットの撮影または保存に失敗しました", e);
