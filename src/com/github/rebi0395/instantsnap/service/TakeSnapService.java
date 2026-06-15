@@ -11,7 +11,6 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -100,13 +99,22 @@ public class TakeSnapService {
 	 * @throws IOException
 	 */
 	private Path resolveSaveDirectory(ConfigBean config) throws IOException {
-		Path dir = Paths.get(config.getSavePath());
+		
+		if (!config.getIsSaveImage()) {
+			// 画像保存しない場合
+			Path tmpDir = Path.of(TMP_SAVE_PATH);
+		}
+		
+		
+		
+		
+		Path dir = Path.of(config.getSavePath());
 		// 実在チェック、ディレクトリチェック
 		if (Files.exists(dir)) {
 			if (!Files.isDirectory(dir)) {
 				// 保存先フォルダがフォルダでない場合、デフォルト値を設定する
 				config.setSavePath(DEFAULT_SAVE_PATH);
-				dir = Paths.get(config.getSavePath());
+				dir = Path.of(config.getSavePath());
 				Files.createDirectories(dir); // 念押しで再生成する
 				log.warn("画像保存先が不正のため、画像保存先をデフォルト（" + DEFAULT_SAVE_PATH + "）に設定しました");
 			}
