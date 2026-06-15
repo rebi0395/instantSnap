@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,7 +34,7 @@ import static com.github.rebi0395.instantsnap.common.StrCheckUtil.*;
 public class PropertiesRepository {
 
 	/** プロパティのファイルパス */
-	private static final Path PROPERTIES_PATH = Paths.get(OPTION_FILE_NAME);
+	private static final Path PROPERTIES_PATH = Path.of(OPTION_FILE_NAME);
 
 	/** プロパティファイルの一時保存パス */
 	private static final Path TEMP_PATH = PROPERTIES_PATH.resolveSibling(PROPERTIES_PATH.getFileName() + ".tmp");

@@ -31,17 +31,21 @@ public final class AppConstant {
 	public static final String PROPERTY_SOUND_ENABLED = "soundEnabled";
 	public static final String PROPERTY_NOTIFICATION_ENABLED = "notificationEnabled";
 
-	// -- 保存先ファイルのデフォルト値 --
+	/** 保存先ディレクトリのデフォルト値 */
 	public static final String DEFAULT_SAVE_PATH = "./screenshots/";
+	
+	/** 一時保存先ディレクトリ */
+	public static final String TMP_SAVE_PATH = "./tmp/";
 
-	// -- アイコンのpngファイル --
+	/** アイコンのpngファイル */
 	public static final String ICON_APP = "/icon/instantsnap.png";
 
-	// -- FXMLファイル --
+	/** メインウィンドウのFXMLファイル */
 	public static final String FXML_MAIN_VIEW = "/com/github/rebi0395/instantsnap/view/fxml/MainView.fxml";
+	/** 終了ダイアログのFXMLファイル */
 	public static final String FXML_EXIT_DIALOG = "/com/github/rebi0395/instantsnap/view/fxml/ExitDialog.fxml";
 
-	// -- CSSファイル --
+	/** メインウィンドウのCSSファイル */
 	public static final String CSS_MAIN = "/com/github/rebi0395/instantsnap/view/css/main.css";
 
 }
