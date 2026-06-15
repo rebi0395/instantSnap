@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import com.github.rebi0395.instantsnap.common.ImageTransferable;
 import com.github.rebi0395.instantsnap.exception.ServiceException;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
+import com.github.rebi0395.instantsnap.model.enums.SnapAfter;
 
 /**
  * 画面の撮影処理を行うクラス
@@ -30,19 +31,25 @@ public class TakeSnapService {
 
 	/** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(TakeSnapService.class);
+
 	/** 撮影範囲を解決するためのインスタンス */
 	private final SnapAreaResolver areaResolver;
 	/** 効果音を再生するためのインスタンス */
 	private final SoundPlayer soundPlayer;
+	/** 撮影後処理を行うインスタンス */
+	private final SnapAfterService afterService;
 
 	/**
 	 * コンストラクタ
 	 * @param areaResolver 撮影範囲を解決するインスタンス
 	 * @param soundPlayer 効果音を再生するためのインスタンス
+	 * @param afterService 撮影後処理を行うインスタンス
 	 */
-	public TakeSnapService(SnapAreaResolver areaResolver, SoundPlayer soundPlayer) {
+	public TakeSnapService(SnapAreaResolver areaResolver,
+			SoundPlayer soundPlayer, SnapAfterService afterService) {
 		this.areaResolver = areaResolver;
 		this.soundPlayer = soundPlayer;
+		this.afterService = afterService;
 	}
 
 	/**
@@ -51,6 +58,11 @@ public class TakeSnapService {
 	 * @throws ServiceException
 	 */
 	public void execute(ConfigBean config) throws ServiceException {
+		if (!hasResultAction(config)) {
+			// 行うべきアクションが設定されていない場合、早期リターン
+			return;
+		}
+
 		try {
 			// 画面サイズを取得
 			Rectangle snapSize = areaResolver.resolveArea(config.getSnapArea());
@@ -59,34 +71,37 @@ public class TakeSnapService {
 			Robot robot = new Robot();
 			BufferedImage snap = robot.createScreenCapture(snapSize);
 
-			// ファイル名作成(yyyyMMdd_HHmmss.SSS)
-			LocalDateTime now = LocalDateTime.now();
-			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd.HHmmss.SSS");
-			String systemTime = now.format(dtf);
-			String fileName = systemTime + "." + config.getFormatType().getValue();
-			
-			// 保存先パス設定
-			Path dir = resolveSaveDirectory(config);
-			Path targetPath = dir.resolve(fileName);
+			Path targetPath = null;
+			// 画像保存、または撮影後処理で画像ファイルが必要な場合のみ、ファイルに保存する
+			if (config.getIsSaveImage() || config.getSnapAfter() != SnapAfter.NOTHING) {
+				// ファイル名作成(yyyyMMdd_HHmmss.SSS)
+				LocalDateTime now = LocalDateTime.now();
+				DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd.HHmmss.SSS");
+				String systemTime = now.format(dtf);
+				String fileName = systemTime + "." + config.getFormatType().getValue();
 
-			// 画像保存が有効であれば、保存する
-			if (config.getIsSaveImage()) {
-				saveImage(snap, targetPath, config); // 保存したファイルの絶対パス
+				// ディレクトリを確認し、保存パスを確定
+				Path dir = resolveSaveDirectory(config); // 画像保存をしない場合は、一時保存パスを取得する
+				targetPath = dir.resolve(fileName);
+
+				// 画像を保存
+				saveImage(snap, config.getFormatType().getValue(), targetPath);
 			}
 
 			// クリップボードコピーが有効であれば、クリップボードに保存する
 			if (config.getIsCopyToClipboard()) {
 				copyToClipboard(snap);
 			}
-			
+
 			// 撮影音設定が有効であれば、鳴らす
 			if (config.getIsSoundEnabled()) {
 				soundPlayer.playShutterSound();
 			}
 
-			// 撮影後、ディレクトリなどを開く
-			SnapAfterService afterService = new SnapAfterService();
-			afterService.execute(config.getSnapAfter(), targetPath);
+			// 撮影後設定が「何もしない」でないとき、撮影後処理を実行する
+			if (config.getSnapAfter() != SnapAfter.NOTHING && targetPath != null) {
+				afterService.execute(config.getSnapAfter(), targetPath);
+			}
 
 		} catch (AWTException | IOException e) {
 			throw new ServiceException("スクリーンショットの撮影に失敗しました", e);
@@ -94,45 +109,70 @@ public class TakeSnapService {
 	}
 
 	/**
-	 * 設定された画像保存先パスがディレクトリフォルダであるか解決する
-	 * @param image 画像データ
+	 * スクショ起動キー押下後、行うべきアクションがあるかを確認する
+	 * 画像を保存しない、クリップボードに保存しない、撮影後に「何もしない」を
+	 * 全て選択している場合のみ、falseを返却する
+	 * 
+	 * @param config ユーザー設定値
+	 * @return スクショ起動キー押下後、行うべきアクションがあればtrue / なければ false
+	 */
+	private boolean hasResultAction(ConfigBean config) {
+		return config.getIsSaveImage()
+				|| config.getIsCopyToClipboard()
+				|| (config.getSnapAfter() != SnapAfter.NOTHING);
+	}
+
+	/**
+	 * 設定された画像保存先パスが、ディレクトリであるか確認する
+	 * 不正であれば、デフォルトのディレクトリパスを返却する
+	 * 画像保存しない場合は、一時保存ファイル用のディレクトリパスを返却する
+	 * 
+	 * @param config ユーザー設定値
+	 * @return 画像保存先ディレクトリ
 	 * @throws IOException
 	 */
 	private Path resolveSaveDirectory(ConfigBean config) throws IOException {
-		
-		if (!config.getIsSaveImage()) {
-			// 画像保存しない場合
+
+		if (!config.getIsSaveImage() && config.getSnapAfter() != SnapAfter.NOTHING) {
+			// 画像保存をしない、かつ、撮影後設定が「何もしない」でない場合
+			// 一時保存ファイルのディレクトリパスを返却する
 			Path tmpDir = Path.of(TMP_SAVE_PATH);
-		}
-		
-		
-		
-		
-		Path dir = Path.of(config.getSavePath());
-		// 実在チェック、ディレクトリチェック
-		if (Files.exists(dir)) {
-			if (!Files.isDirectory(dir)) {
-				// 保存先フォルダがフォルダでない場合、デフォルト値を設定する
-				config.setSavePath(DEFAULT_SAVE_PATH);
-				dir = Path.of(config.getSavePath());
-				Files.createDirectories(dir); // 念押しで再生成する
-				log.warn("画像保存先が不正のため、画像保存先をデフォルト（" + DEFAULT_SAVE_PATH + "）に設定しました");
-			}
+			Files.createDirectories(tmpDir);
+			return tmpDir;
+
 		} else {
-			// ファイルがない場合、自動で作成する
-			Files.createDirectories(dir);
-			log.warn("画像保存先パスが見つからないため、フォルダを自動生成しました");
+			Path dir = Path.of(config.getSavePath());
+			// 実在チェック、ディレクトリチェック
+			if (Files.exists(dir)) {
+				if (!Files.isDirectory(dir)) {
+					// 保存先フォルダがフォルダでない場合、デフォルト値を設定する
+					config.setSavePath(DEFAULT_SAVE_PATH);
+					dir = Path.of(config.getSavePath());
+					Files.createDirectories(dir); // 念押しで再生成する
+					log.warn("画像保存先が不正のため、画像保存先をデフォルト({})に設定しました", DEFAULT_SAVE_PATH);
+				}
+			} else {
+				// ファイルがない場合、自動で作成する
+				Files.createDirectories(dir);
+				log.warn("画像保存先パスが見つからないため、フォルダを自動生成しました");
+			}
+			return dir;
 		}
-		return dir;
 	}
 
 	/**
 	 * 画像データを指定したフォルダに保存する。
+	 * 
 	 * @param image 画像データ
+	 * @param format ファイルの拡張子
+	 * @param targetPath 保存先パス
 	 * @throws IOException
 	 */
-	private void saveImage(BufferedImage snap, Path targetPath, ConfigBean config) throws IOException {
-		ImageIO.write(snap, config.getFormatType().getValue(), targetPath.toFile());
+	private void saveImage(BufferedImage image, String format, Path targetPath) throws IOException {
+		boolean written = ImageIO.write(image, format, targetPath.toFile());
+		if (!written) {
+			throw new IOException("対応していない画像形式です: " + format);
+		}
 		log.info("スクリーンショットの画像保存に成功しました");
 	}
 
@@ -144,7 +184,7 @@ public class TakeSnapService {
 	private void copyToClipboard(BufferedImage image) {
 		ImageTransferable transferable = new ImageTransferable(image); // コンストラクタで画像を登録する
 		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard(); // クリップボード取得
-		int retry = 0; // 試行回数
+		int retry = 1; // 試行回数
 		Exception stackTrace = null; // catch時のスタックトレースを保持する 
 		while (retry <= 3) { // 試行は3回まで
 			retry++;
