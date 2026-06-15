@@ -55,7 +55,7 @@ public class ConfigBean {
 		// -- 出力設定
 		this.isSaveImage = true;
 		this.isCopyToClipboard = true;
-		this.savePath = DEFAULT_SAVE_PATH;
+		this.savePath = DEFAULT_SAVE_DIR;
 		this.formatType = FormatType.PNG;
 
 		// -- 撮影後、通知設定
@@ -175,7 +175,7 @@ public class ConfigBean {
 	 */
 	public void setSavePath(String savePath) {
 		if (isBlankSafe(savePath)) {
-			this.savePath = DEFAULT_SAVE_PATH;
+			this.savePath = DEFAULT_SAVE_DIR;
 		} else {
 			this.savePath = savePath.strip().replace("\\", "/");
 		}

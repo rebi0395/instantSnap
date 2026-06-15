@@ -378,7 +378,7 @@ public class MainViewController {
 		// -- 出力設定 --
 		checkSaveImage.setSelected(true); // チェックを入れる
 		checkClipboard.setSelected(true); // チェックを入れる
-		textFilePath.setText(DEFAULT_SAVE_PATH); // フォルダパスをデフォルトに設定
+		textFilePath.setText(DEFAULT_SAVE_DIR); // フォルダパスをデフォルトに設定
 		comboFormatType.getSelectionModel().selectFirst();
 
 		// -- 撮影後設定 --
