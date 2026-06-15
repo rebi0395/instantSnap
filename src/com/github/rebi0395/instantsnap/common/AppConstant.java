@@ -32,10 +32,10 @@ public final class AppConstant {
 	public static final String PROPERTY_NOTIFICATION_ENABLED = "notificationEnabled";
 
 	/** 保存先ディレクトリのデフォルト値 */
-	public static final String DEFAULT_SAVE_PATH = "./screenshots/";
+	public static final String DEFAULT_SAVE_DIR = "./screenshots/";
 	
 	/** 一時保存先ディレクトリ */
-	public static final String TMP_SAVE_PATH = "./tmp/";
+	public static final String TMP_SAVE_DIR = "./tmp/";
 
 	/** アイコンのpngファイル */
 	public static final String ICON_APP = "/icon/instantsnap.png";

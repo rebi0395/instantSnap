@@ -136,7 +136,7 @@ public class TakeSnapService {
 		if (!config.getIsSaveImage() && config.getSnapAfter() != SnapAfter.NOTHING) {
 			// 画像保存をしない、かつ、撮影後設定が「何もしない」でない場合
 			// 一時保存ファイルのディレクトリパスを返却する
-			Path tmpDir = Path.of(TMP_SAVE_PATH);
+			Path tmpDir = Path.of(TMP_SAVE_DIR);
 			Files.createDirectories(tmpDir);
 			return tmpDir;
 
@@ -146,10 +146,10 @@ public class TakeSnapService {
 			if (Files.exists(dir)) {
 				if (!Files.isDirectory(dir)) {
 					// 保存先フォルダがフォルダでない場合、デフォルト値を設定する
-					config.setSavePath(DEFAULT_SAVE_PATH);
+					config.setSavePath(DEFAULT_SAVE_DIR);
 					dir = Path.of(config.getSavePath());
 					Files.createDirectories(dir); // 念押しで再生成する
-					log.warn("画像保存先が不正のため、画像保存先をデフォルト({})に設定しました", DEFAULT_SAVE_PATH);
+					log.warn("画像保存先が不正のため、画像保存先をデフォルト({})に設定しました", DEFAULT_SAVE_DIR);
 				}
 			} else {
 				// ファイルがない場合、自動で作成する
