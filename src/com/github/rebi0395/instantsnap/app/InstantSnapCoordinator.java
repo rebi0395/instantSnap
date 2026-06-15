@@ -11,6 +11,7 @@ import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.repository.PropertiesRepository;
 import com.github.rebi0395.instantsnap.service.KeyEventListener;
 import com.github.rebi0395.instantsnap.service.SnapAreaResolver;
+import com.github.rebi0395.instantsnap.service.SoundPlayer;
 import com.github.rebi0395.instantsnap.service.TakeSnapService;
 import com.github.rebi0395.instantsnap.service.TriggerKeyManager;
 
@@ -31,6 +32,8 @@ public class InstantSnapCoordinator implements KeyEventListener {
 	private SnapAreaResolver areaResolver;
 	/** 撮影処理クラス */
 	private TakeSnapService takeSnap;
+	/** 効果音再生クラス */
+	private SoundPlayer soundPlayer;
 
 	/** スレッドセーフに撮影処理を呼び出すためのクラス */
 	private final ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -57,7 +60,9 @@ public class InstantSnapCoordinator implements KeyEventListener {
 			// サービスクラスはfacadeクラスのみ生成する
 			this.keyManager = new TriggerKeyManager(config, this);
 			this.areaResolver = new SnapAreaResolver();
-			this.takeSnap = new TakeSnapService(areaResolver);
+			this.soundPlayer = new SoundPlayer();
+			
+			this.takeSnap = new TakeSnapService(areaResolver, soundPlayer);
 
 			// キー監視開始
 			keyManager.activate();
@@ -101,6 +106,7 @@ public class InstantSnapCoordinator implements KeyEventListener {
 			status = 1;
 		} finally {
 			executor.shutdown(); // 撮影処理の終了
+			soundPlayer.close(); // 音声リソースの開放
 			Platform.exit(); // 画面を閉じる
 			System.exit(status); // アプリのロジックの終了
 		}

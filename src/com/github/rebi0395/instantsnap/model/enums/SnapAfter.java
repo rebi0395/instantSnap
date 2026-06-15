@@ -10,11 +10,11 @@ import javafx.util.StringConverter;
 public enum SnapAfter implements BaseEnum {
 
 	/** 何もしない(デフォルト値) */
-	NOTHING("0", "Nothing"),
+	NOTHING("0", "何もしない"),
 	/** 画像を開く */
-	OPEN_IMAGE("1", "Open Image"),
-	/** ペイントを開く */
-	OPEN_PAINT("2", "Open Paint");
+	OPEN_IMAGE("1", "画像を開く"),
+	/** ペイントで開く */
+	OPEN_PAINT("2", "ペイントで開く");
 
 	/** プロパティファイルと紐つく値 */
 	private final String value;

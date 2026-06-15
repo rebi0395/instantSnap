@@ -28,18 +28,22 @@ import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
  * 画面の撮影処理を行うクラス
  */
 public class TakeSnapService {
-	
+
 	/** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(TakeSnapService.class);
 	/** 撮影範囲を解決するためのインスタンス */
 	private final SnapAreaResolver areaResolver;
-	
+	/** 効果音を再生するためのインスタンス */
+	private final SoundPlayer soundPlayer;
+
 	/**
 	 * コンストラクタ
 	 * @param areaResolver 撮影範囲を解決するインスタンス
+	 * @param soundPlayer 効果音を再生するためのインスタンス
 	 */
-	public TakeSnapService(SnapAreaResolver areaResolver) {
+	public TakeSnapService(SnapAreaResolver areaResolver, SoundPlayer soundPlayer) {
 		this.areaResolver = areaResolver;
+		this.soundPlayer = soundPlayer;
 	}
 
 	/**
@@ -51,51 +55,79 @@ public class TakeSnapService {
 		try {
 			// 画面サイズを取得
 			Rectangle snapSize = areaResolver.resolveArea(config.getSnapArea());
-			
+
 			// 撮影
 			Robot robot = new Robot();
 			BufferedImage snap = robot.createScreenCapture(snapSize);
-			
+
 			// ファイル名作成(yyyyMMdd_HHmmss.SSS)
 			LocalDateTime now = LocalDateTime.now();
 			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd.HHmmss.SSS");
 			String systemTime = now.format(dtf);
 			String fileName = systemTime + "." + config.getFormatType().getValue();
 			
-			// 保存
-			Path dir = Paths.get(config.getSavePath());
-			// 実在チェック、ディレクトリチェック
-			if (Files.exists(dir)){
-				if (!Files.isDirectory(dir)) {
-					// 保存先フォルダがフォルダでない場合、デフォルト値を設定する
-					config.setSavePath(DEFAULT_SAVE_PATH);
-					dir = Paths.get(config.getSavePath());
-					Files.createDirectories(dir); // 念押しで再生成する
-					log.warn("画像保存先が不正のため、画像保存先をデフォルト（" + DEFAULT_SAVE_PATH + "）に設定しました");
-				}
-			} else {
-				// ファイルがない場合、自動で作成する
-				Files.createDirectories(dir);
-				log.warn("画像保存先パスが見つからないため、ファルダを自動生成しました");
+			// 保存先パス設定
+			Path dir = resolveSaveDirectory(config);
+			Path targetPath = dir.resolve(fileName);
+
+			// 画像保存が有効であれば、保存する
+			if (config.getIsSaveImage()) {
+				saveImage(snap, targetPath, config); // 保存したファイルの絶対パス
 			}
-			Path target = dir.resolve(fileName);
-			ImageIO.write(snap, config.getFormatType().toString(), target.toFile());
-			log.info("スクリーンショットの撮影に成功しました");
-			
-			// 撮影後、ディレクトリなどを開く
-			SnapAfterService afterService = new SnapAfterService ();
-			afterService.execute(config.getSnapAfter(), target);
-			
-			// 設定が有効であれば、クリップボードに画像を保存する
+
+			// クリップボードコピーが有効であれば、クリップボードに保存する
 			if (config.getIsCopyToClipboard()) {
 				copyToClipboard(snap);
 			}
 			
+			// 撮影音設定が有効であれば、鳴らす
+			if (config.getIsSoundEnabled()) {
+				soundPlayer.playShutterSound();
+			}
+
+			// 撮影後、ディレクトリなどを開く
+			SnapAfterService afterService = new SnapAfterService();
+			afterService.execute(config.getSnapAfter(), targetPath);
+
 		} catch (AWTException | IOException e) {
 			throw new ServiceException("スクリーンショットの撮影に失敗しました", e);
 		}
 	}
-	
+
+	/**
+	 * 設定された画像保存先パスがディレクトリフォルダであるか解決する
+	 * @param image 画像データ
+	 * @throws IOException
+	 */
+	private Path resolveSaveDirectory(ConfigBean config) throws IOException {
+		Path dir = Paths.get(config.getSavePath());
+		// 実在チェック、ディレクトリチェック
+		if (Files.exists(dir)) {
+			if (!Files.isDirectory(dir)) {
+				// 保存先フォルダがフォルダでない場合、デフォルト値を設定する
+				config.setSavePath(DEFAULT_SAVE_PATH);
+				dir = Paths.get(config.getSavePath());
+				Files.createDirectories(dir); // 念押しで再生成する
+				log.warn("画像保存先が不正のため、画像保存先をデフォルト（" + DEFAULT_SAVE_PATH + "）に設定しました");
+			}
+		} else {
+			// ファイルがない場合、自動で作成する
+			Files.createDirectories(dir);
+			log.warn("画像保存先パスが見つからないため、フォルダを自動生成しました");
+		}
+		return dir;
+	}
+
+	/**
+	 * 画像データを指定したフォルダに保存する。
+	 * @param image 画像データ
+	 * @throws IOException
+	 */
+	private void saveImage(BufferedImage snap, Path targetPath, ConfigBean config) throws IOException {
+		ImageIO.write(snap, config.getFormatType().getValue(), targetPath.toFile());
+		log.info("スクリーンショットの画像保存に成功しました");
+	}
+
 	/**
 	 * クリップボードに画像データを保存する。
 	 * クリップボードロック等で失敗時、3回まで試行する
@@ -119,7 +151,7 @@ public class TakeSnapService {
 					Thread.sleep(50); // 50ms置いて再送
 				} catch (InterruptedException ie) {
 					Thread.currentThread().interrupt(); // 割り込みを復元
-	                return; // 再送
+					return; // 再送
 				}
 			}
 		}
