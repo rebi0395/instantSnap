@@ -7,6 +7,7 @@ import java.util.Map;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.rebi0395.instantsnap.app.InstantSnapCoordinator;
 import com.github.rebi0395.instantsnap.common.AppLogger;
+import com.github.rebi0395.instantsnap.common.MessageManager;
 import com.github.rebi0395.instantsnap.common.NativeKeyCodeConverter;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.model.bean.KeyCombinationBean;
@@ -36,6 +37,8 @@ public class MainViewController {
 
 	/** サービスクラスの司令塔クラス */
 	private InstantSnapCoordinator coordinator;
+	/** メッセージの多言語変換クラス */
+	private MessageManager mm;
 	/** nativeキーコードを保持する変数 */
 	private int nativeCode;
 
@@ -63,7 +66,23 @@ public class MainViewController {
 	/** 適応中の撮影後設定を表示するラベル */
 	@FXML
 	private Label labelSnapAfter;
-
+	
+	/** 画像を保存する設定の有効/無効を表示するラベル */
+	@FXML
+	private Label labelSaveImage;
+	
+	/** クリップボードに保存する設定の有効/無効を表示するラベル */
+	@FXML
+	private Label labelClipboard;
+	
+	/** 通知を表示する設定の有効/無効を表示するラベル */
+	@FXML
+	private Label labelNotification;
+	
+	/** 撮影音を鳴らす設定の有効/無効を表示するラベル */
+	@FXML
+	private Label labelSound;
+	
 	// -- 言語設定 --
 	/** 撮影ショートカットキーを選択するコンボボックス */
 	@FXML
@@ -139,7 +158,8 @@ public class MainViewController {
 	@FXML
 	public void initialize() {
 
-		ConfigBean config = coordinator.getConfigBean();
+		ConfigBean config = coordinator.getConfigBean(); // 設定値保持クラス
+		this.mm = new MessageManager(config.getLanguageType()); // メッセージ変換クラス
 
 		// -- 活性・非活性の動的な制御の登録 -- 
 		// ショートカットキーのリストを監視するリスナー
@@ -224,10 +244,12 @@ public class MainViewController {
 			}
 
 			ConfigBean config = coordinator.getConfigBean();
-			config.setLanguageType(newVal);
+			config.setLanguageType(newVal); // 最新の言語設定をセット
 			coordinator.save(); // 内部では全項目更新
+			
+			mm.changeLanguage(config.getLanguageType()); // リソースバンドルを読み直す
+			updateSettingLabels(config, config.getCustomKeyBean()); // ラベル更新
 
-			//TODO リソースバンドル読み取り処理
 		});
 	}
 
@@ -395,12 +417,22 @@ public class MainViewController {
 	 * @param customKeys ユーザーのカスタムキーの設定値
 	 */
 	public void updateSettingLabels(ConfigBean config, KeyCombinationBean customKeys) {
+		
+		// -- 撮影設定
 		labelKeyCombination
 				.setText(config.getTriggerType().resolveKeyCombination(customKeys).resolveKeyCombinationName());
+		labelSnapArea.setText(config.getSnapArea().getDisplayName());
+		
+		// -- 出力設定
+		labelSaveImage.setText(mm.getEnabledMessage(config.getIsSaveImage()));
+		labelClipboard.setText(mm.getEnabledMessage(config.getIsCopyToClipboard()));
 		labelFilePath.setText(config.getSavePath());
 		labelFormatType.setText(config.getFormatType().getDisplayName());
-		labelSnapArea.setText(config.getSnapArea().getDisplayName());
+
+		// -- 撮影後設定
 		labelSnapAfter.setText(config.getSnapAfter().getDisplayName());
+		labelNotification.setText(mm.getEnabledMessage(config.getIsShowNotification()));
+		labelSound.setText(mm.getEnabledMessage(config.getIsSoundEnabled()));
 	}
 
 	/**
