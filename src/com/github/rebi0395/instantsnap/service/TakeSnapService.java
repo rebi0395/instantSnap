@@ -63,6 +63,10 @@ public class TakeSnapService {
 			return;
 		}
 
+		// 成功フラグ
+		boolean isImageSaved = false;
+		boolean isClipboardCopied = false;
+
 		try {
 			// 画面サイズを取得
 			Rectangle snapSize = areaResolver.resolveArea(config.getSnapArea());
@@ -84,18 +88,18 @@ public class TakeSnapService {
 					// 一時保存なら、ファイル名を分かりやすくする
 					fileName = "temporary_" + fileName;
 				}
-				
+
 				// ディレクトリを確認し、保存パスを確定
 				Path dir = resolveSaveDirectory(config); // 画像保存をしない場合は、一時保存パスを取得する
 				targetPath = dir.resolve(fileName);
 
 				// 画像を保存
-				saveImage(snap, config.getFormatType().getValue(), targetPath);
+				isClipboardCopied = saveImage(snap, config.getFormatType().getValue(), targetPath);
 			}
 
 			// クリップボードコピーが有効であれば、クリップボードに保存する
 			if (config.getIsCopyToClipboard()) {
-				copyToClipboard(snap);
+				isClipboardCopied = copyToClipboard(snap);
 			}
 
 			// 撮影音設定が有効であれば、鳴らす
@@ -171,44 +175,48 @@ public class TakeSnapService {
 	 * @param image 画像データ
 	 * @param format ファイルの拡張子
 	 * @param targetPath 保存先パス
+	 * @return true: 成功 / false: 失敗
 	 * @throws IOException
 	 */
-	private void saveImage(BufferedImage image, String format, Path targetPath) throws IOException {
-		boolean written = ImageIO.write(image, format, targetPath.toFile());
-		if (!written) {
+	private boolean saveImage(BufferedImage image, String format, Path targetPath) throws IOException {
+		boolean isWritten = ImageIO.write(image, format, targetPath.toFile());
+		if (!isWritten) {
 			throw new IOException("対応していない画像形式です: " + format);
 		}
 		log.info("スクリーンショットの画像保存に成功しました");
+		return isWritten;
 	}
 
 	/**
 	 * クリップボードに画像データを保存する。
 	 * クリップボードロック等で失敗時、3回まで試行する
 	 * @param image 画像データ
+	 * @return true: 成功 / false: 失敗
 	 */
-	private void copyToClipboard(BufferedImage image) {
+	private boolean copyToClipboard(BufferedImage image) {
 		ImageTransferable transferable = new ImageTransferable(image); // コンストラクタで画像を登録する
 		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard(); // クリップボード取得
-		int retry = 1; // 試行回数
-		Exception stackTrace = null; // catch時のスタックトレースを保持する 
-		while (retry <= 3) { // 試行は3回まで
-			retry++;
+		Exception lastException = null; // catch時のスタックトレースを保持する
+
+		for (int retry = 1; retry <= 3; retry++) { // 試行は3回まで
 			try {
 				clipboard.setContents(transferable, null); // ownerは不要のためnull
 				// 保存成功時の処理
 				log.info("クリップボードに画像を保存しました");
-				return; // メソッドを終了する
+				return true; // メソッドを終了する
 			} catch (Exception e) {
-				stackTrace = e; // スタックトレースを保存
+				lastException = e; // スタックトレースを保存
 				try {
 					Thread.sleep(50); // 50ms置いて再送
 				} catch (InterruptedException ie) {
-					Thread.currentThread().interrupt(); // 割り込みを復元
-					return; // 再送
+					log.warn("クリップボードに保存の再試行中に割り込みが発生しました" ,ie);
+					return false;
 				}
 			}
 		}
+
 		// 保存失敗時、ログを出す
-		log.error("クリップボードへの画像保存に失敗しました", stackTrace);
+		log.error("クリップボードへの画像保存に失敗しました", lastException);
+		return false;
 	}
 }
