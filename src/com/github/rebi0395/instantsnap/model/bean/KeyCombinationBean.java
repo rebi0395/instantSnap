@@ -35,9 +35,15 @@ public class KeyCombinationBean {
 		StringBuilder blilder = new StringBuilder();
 
 		// 修飾キーを用いるとき、文字列を結合する
-		if (useCtrl) blilder.append("Ctrl + ");
-		if (useAlt) blilder.append("Alt + ");
-		if (useShift) blilder.append("Shift + ");
+		if (useCtrl) {
+			blilder.append("Ctrl + ");
+		}
+		if (useAlt) {
+			blilder.append("Alt + ");
+		}
+		if (useShift) {
+			blilder.append("Shift + ");
+		}
 		blilder.append(getKeyText(triggerKey));
 
 		return blilder.toString();
