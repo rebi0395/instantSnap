@@ -72,13 +72,13 @@
 											<VBox spacing="10" GridPane.columnIndex="0">
 												<HBox spacing="10" styleClass="output-switch-row, output-switch-item">
 													<CheckBox fx:id="checkSaveImage" text="画像を保存する" styleClass="switch-check-box" />
-													<Label text="有効" styleClass="current-value"/>
+													<Label fx:id="labelSaveImage" styleClass="current-value"/>
 												</HBox>
 											</VBox>
 											<VBox spacing="10" GridPane.columnIndex="1">
 												<HBox spacing="10" styleClass="output-switch-row, output-switch-item">
 													<CheckBox fx:id="checkClipboard" text="クリップボードに保存する" styleClass="switch-check-box"/>
-													<Label text="有効" styleClass="current-value"/>
+													<Label fx:id="labelClipboard" styleClass="current-value"/>
 												</HBox>
 											</VBox>
 										</GridPane>
@@ -131,12 +131,12 @@
 											<VBox spacing="8" GridPane.columnIndex="1">
 												<HBox styleClass="setting-header">
 													<Label text="通知表示" styleClass="section-title"/>
-													<Label text="有効" styleClass="current-value"/>
+													<Label fx:id="labelNotification" styleClass="current-value"/>
 												</HBox>
 												<CheckBox fx:id="checkNotification" text="通知を表示する"/>
 												<HBox styleClass="setting-header">
 													<Label text="撮影音　" styleClass="section-title"/>
-													<Label text="無効" styleClass="current-value"/>
+													<Label fx:id="labelSound" styleClass="current-value"/>
 												</HBox>
 												<CheckBox fx:id="checkSound" text="撮影音を有効にする"/>
 											</VBox>
