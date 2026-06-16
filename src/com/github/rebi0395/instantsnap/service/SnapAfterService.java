@@ -24,6 +24,10 @@ public class SnapAfterService {
 			openImage(path);
 			break;
 
+		case OPEN_PAINT:
+			openPaint(path);
+			break;
+
 		default:
 			return; // 何もしない	
 		}
@@ -36,6 +40,30 @@ public class SnapAfterService {
 	public void showToast(Path path) {
 	}
 	// TODO viewクラスに依頼する処理を書く
+
+	/**
+	 * スクリーンショット撮影後、画像ファイルを開きます
+	 * @param path 保存した画像のパス
+	 */
+	public void openImage(Path path) {
+		try {
+			Desktop.getDesktop().open(path.toAbsolutePath().toFile());
+		} catch (Exception e) {
+			log.warn("Failed to open directory. (画像を開くのに失敗しました)", e);
+		}
+	}
+
+	/**
+	 * スクリーンショット撮影後、ペイントで画像ファイルを開きます
+	 * @param path 保存した画像のパス
+	 */
+	public void openPaint(Path path) {
+		try {
+			new ProcessBuilder("mspaint", path.toAbsolutePath().toString()).start();
+		} catch (Exception e) {
+			log.warn("ペイントで画像を開くのに失敗しました", e);
+		}
+	}
 
 	/**
 	 * 通知トースト押下時、画像の保存先ファイルを、スクリーンショットを選択状態で開きます
@@ -58,18 +86,6 @@ public class SnapAfterService {
 		} catch (Exception e) {
 			// ログを出して例外を握りつぶす
 			log.warn("Failed to open directory. (ディレクトリを開くのに失敗しました)", e);
-		}
-	}
-
-	/**
-	 * スクリーンショット撮影後、画像ファイルを開きます
-	 * @param path 保存した画像のパス
-	 */
-	public void openImage(Path path) {
-		try {
-			Desktop.getDesktop().open(path.toAbsolutePath().toFile());
-		} catch (Exception e) {
-			log.warn("Failed to open directory. (画像を開くのに失敗しました)", e);
 		}
 	}
 }
