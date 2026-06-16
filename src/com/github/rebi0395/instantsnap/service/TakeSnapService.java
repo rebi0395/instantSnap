@@ -80,6 +80,11 @@ public class TakeSnapService {
 				String systemTime = now.format(dtf);
 				String fileName = systemTime + "." + config.getFormatType().getValue();
 
+				if (!config.getIsSaveImage()) {
+					// 一時保存なら、ファイル名を分かりやすくする
+					fileName = "temporary_" + fileName;
+				}
+				
 				// ディレクトリを確認し、保存パスを確定
 				Path dir = resolveSaveDirectory(config); // 画像保存をしない場合は、一時保存パスを取得する
 				targetPath = dir.resolve(fileName);
