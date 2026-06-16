@@ -14,6 +14,7 @@ import com.github.rebi0395.instantsnap.service.SnapAfterService;
 import com.github.rebi0395.instantsnap.service.SnapAreaResolver;
 import com.github.rebi0395.instantsnap.service.SoundPlayer;
 import com.github.rebi0395.instantsnap.service.TakeSnapService;
+import com.github.rebi0395.instantsnap.service.TmpFolderService;
 import com.github.rebi0395.instantsnap.service.TriggerKeyManager;
 
 import javafx.application.Platform;
@@ -27,6 +28,8 @@ public class InstantSnapCoordinator implements KeyEventListener {
 	private ConfigBean config;
 	/** プロパティファイルのリポジトリ */
 	private PropertiesRepository repository;
+	/** 一時保存ディレクトリの管理クラス */
+	private TmpFolderService tmpFolder;
 
 	/** 撮影トリガーの管理クラス */
 	private TriggerKeyManager keyManager;
@@ -61,6 +64,10 @@ public class InstantSnapCoordinator implements KeyEventListener {
 			this.repository = new PropertiesRepository();
 			repository.read(config);
 
+			// 一時保存ファイルのリセット
+			this.tmpFolder = new TmpFolderService(); 
+			tmpFolder.cleanTmpDirectory();
+			
 			// サービスクラスのインスタンスを生成する
 			this.keyManager = new TriggerKeyManager(config, this);
 			this.areaResolver = new SnapAreaResolver();
@@ -111,6 +118,7 @@ public class InstantSnapCoordinator implements KeyEventListener {
 		} finally {
 			executor.shutdown(); // 撮影処理の終了
 			soundPlayer.close(); // 音声リソースの開放
+			tmpFolder.cleanTmpDirectory(); // 一時保存ファイルの削除
 			Platform.exit(); // 画面を閉じる
 			System.exit(status); // アプリのロジックの終了
 		}
