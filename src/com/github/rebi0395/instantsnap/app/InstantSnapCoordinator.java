@@ -25,22 +25,21 @@ import javafx.application.Platform;
 public class InstantSnapCoordinator implements KeyEventListener {
 
 	/** ユーザーの設定値 */
-	private ConfigBean config;
+	private final ConfigBean config;
 	/** プロパティファイルのリポジトリ */
-	private PropertiesRepository repository;
+	private final PropertiesRepository repository;
 	/** 一時保存ディレクトリの管理クラス */
-	private TmpFolderService tmpFolder;
-
-	/** 撮影トリガーの管理クラス */
-	private TriggerKeyManager keyManager;
+	private final TmpFolderService tmpFolder;
 	/** 撮影範囲を解決するクラス */
-	private SnapAreaResolver areaResolver;
-	/** 全体の撮影処理クラス */
-	private TakeSnapService takeSnapService;
+	private final SnapAreaResolver areaResolver;
 	/** 撮影後の処理クラス */
-	private SnapAfterService afterService;
+	private final SnapAfterService afterService;
 	/** 効果音再生クラス */
-	private SoundPlayer soundPlayer;
+	private final SoundPlayer soundPlayer;
+	/** 撮影トリガーの管理クラス */
+	private final TriggerKeyManager keyManager;
+	/** 全体の撮影処理クラス */
+	private final TakeSnapService takeSnapService;
 
 	/** スレッドセーフに撮影処理を呼び出すためのクラス */
 	private final ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -51,6 +50,18 @@ public class InstantSnapCoordinator implements KeyEventListener {
 
 	/** コンストラクタ 初期化処理を実行する */
 	public InstantSnapCoordinator() {
+		// インスタンスを生成
+		this.config = new ConfigBean();
+		this.repository = new PropertiesRepository();
+		this.tmpFolder = new TmpFolderService();
+		this.areaResolver = new SnapAreaResolver();
+		this.afterService = new SnapAfterService();
+		this.soundPlayer = new SoundPlayer();
+
+		// 依存性の注入があるクラス
+		this.keyManager = new TriggerKeyManager(config, this);
+		this.takeSnapService = new TakeSnapService(areaResolver, soundPlayer, afterService);
+
 		init();
 	}
 
@@ -60,29 +71,17 @@ public class InstantSnapCoordinator implements KeyEventListener {
 	public void init() {
 		try {
 			// ユーザーの設定値をプロパティファイルを読み込み初期化
-			this.config = new ConfigBean();
-			this.repository = new PropertiesRepository();
 			repository.read(config);
-
 			// 一時保存ファイルのリセット
-			this.tmpFolder = new TmpFolderService(); 
 			tmpFolder.cleanTmpDirectory();
-			
-			// サービスクラスのインスタンスを生成する
-			this.keyManager = new TriggerKeyManager(config, this);
-			this.areaResolver = new SnapAreaResolver();
-			this.soundPlayer = new SoundPlayer();
-			this.afterService = new SnapAfterService();
-			this.takeSnapService = new TakeSnapService(areaResolver, soundPlayer, afterService);
-
 			// キー監視開始
 			keyManager.activate();
 
-			// チェック済例外
 		} catch (ServiceException e) {
+			// チェック済例外
 			log.error("アプリの初期化に失敗しました", e);
-			// 非チェック例外
 		} catch (Exception e) {
+			// 非チェック例外
 			log.error("想定外のエラーが発生しました", e);
 		}
 	}
