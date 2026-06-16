@@ -119,7 +119,6 @@ public class InstantSnapCoordinator implements KeyEventListener {
 			soundPlayer.close(); // 音声リソースの開放
 			tmpFolder.cleanTmpDirectory(); // 一時保存ファイルの削除
 			Platform.exit(); // 画面を閉じる
-			System.exit(status); // アプリのロジックの終了
 		}
 	}
 
