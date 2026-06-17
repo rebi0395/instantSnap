@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 
 import com.github.rebi0395.instantsnap.view.controller.ExitDialogController;
 import com.github.rebi0395.instantsnap.view.controller.MainViewController;
+import com.github.rebi0395.instantsnap.view.presenter.SnapNotificationPresenter;
+
 import static com.github.rebi0395.instantsnap.common.AppConstant.*;
 
 import javafx.application.Application;
@@ -26,6 +28,10 @@ public class InstantSnapApp extends Application {
 
 	/** 司令塔クラス */
 	private InstantSnapCoordinator coordinator;
+
+	/** 通知表示クラス */
+	private SnapNotificationPresenter sPresenter;
+
 	/** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(InstantSnapApp.class);
 
@@ -35,8 +41,11 @@ public class InstantSnapApp extends Application {
 	@Override
 	public void start(Stage stage) {
 		try {
+			// 通知表示クラスを生成する
+			this.sPresenter = new SnapNotificationPresenter(stage);			
+			
 			// サービスクラスの司令塔クラスを生成し、初期化処理を行う
-			this.coordinator = new InstantSnapCoordinator();
+			this.coordinator = new InstantSnapCoordinator(sPresenter);
 
 			// コントローラを生成
 			MainViewController mainController = new MainViewController();

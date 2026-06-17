@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import com.github.rebi0395.instantsnap.exception.ServiceException;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
+import com.github.rebi0395.instantsnap.model.bean.SnapResultBean;
 import com.github.rebi0395.instantsnap.repository.PropertiesRepository;
 import com.github.rebi0395.instantsnap.service.KeyEventListener;
 import com.github.rebi0395.instantsnap.service.SnapAfterService;
@@ -16,6 +17,7 @@ import com.github.rebi0395.instantsnap.service.SoundPlayer;
 import com.github.rebi0395.instantsnap.service.TakeSnapService;
 import com.github.rebi0395.instantsnap.service.TmpFolderService;
 import com.github.rebi0395.instantsnap.service.TriggerKeyManager;
+import com.github.rebi0395.instantsnap.view.presenter.SnapNotificationPresenter;
 
 import javafx.application.Platform;
 
@@ -40,6 +42,9 @@ public class InstantSnapCoordinator implements KeyEventListener {
 	private final TriggerKeyManager keyManager;
 	/** 全体の撮影処理クラス */
 	private final TakeSnapService takeSnapService;
+	/** 撮影通知を表示するクラス */ 
+	private final SnapNotificationPresenter sPresenter;
+	
 
 	/** スレッドセーフに撮影処理を呼び出すためのクラス */
 	private final ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -49,7 +54,7 @@ public class InstantSnapCoordinator implements KeyEventListener {
 	private static final Logger log = LoggerFactory.getLogger(InstantSnapCoordinator.class);
 
 	/** コンストラクタ 初期化処理を実行する */
-	public InstantSnapCoordinator() {
+	public InstantSnapCoordinator(SnapNotificationPresenter sPresenter) {
 		// インスタンスを生成
 		this.config = new ConfigBean();
 		this.repository = new PropertiesRepository();
@@ -61,6 +66,9 @@ public class InstantSnapCoordinator implements KeyEventListener {
 		// 依存性の注入があるクラス
 		this.keyManager = new TriggerKeyManager(config, this);
 		this.takeSnapService = new TakeSnapService(areaResolver, soundPlayer, afterService);
+		
+		// Stage情報を持つクラス
+		this.sPresenter = sPresenter;
 
 		init();
 	}
@@ -132,7 +140,7 @@ public class InstantSnapCoordinator implements KeyEventListener {
 			synchronized (configLock) { // 排他制御
 				try {
 					// 撮影処理
-					takeSnapService.execute(config);
+					SnapResultBean result = takeSnapService.execute(config);
 
 				} catch (ServiceException e) {
 					log.error("スクリーンショットの撮影または保存に失敗しました", e);
