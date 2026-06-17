@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import com.github.rebi0395.instantsnap.common.ImageTransferable;
 import com.github.rebi0395.instantsnap.exception.ServiceException;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
+import com.github.rebi0395.instantsnap.model.bean.SnapResultBean;
 import com.github.rebi0395.instantsnap.model.enums.SnapAfter;
 
 /**
@@ -57,15 +58,14 @@ public class TakeSnapService {
 	 * @param config ユーザーの設定値
 	 * @throws ServiceException
 	 */
-	public void execute(ConfigBean config) throws ServiceException {
+	public SnapResultBean execute(ConfigBean config) throws ServiceException {
 		if (!hasResultAction(config)) {
 			// 行うべきアクションが設定されていない場合、早期リターン
-			return;
+			return new SnapResultBean();
 		}
 
-		// 成功フラグ
-		boolean isImageSaved = false;
-		boolean isClipboardCopied = false;
+		SnapResultBean resultBean = new SnapResultBean(); // 結果クラスを作成
+		boolean result; // 一時格納変数
 
 		try {
 			// 画面サイズを取得
@@ -94,12 +94,18 @@ public class TakeSnapService {
 				targetPath = dir.resolve(fileName);
 
 				// 画像を保存
-				isClipboardCopied = saveImage(snap, config.getFormatType().getValue(), targetPath);
+				result = saveImage(snap, config.getFormatType().getValue(), targetPath);
+				// 結果を格納
+				resultBean.setTargetPath(targetPath);
+				resultBean.setIsImageSaved(result);
 			}
 
 			// クリップボードコピーが有効であれば、クリップボードに保存する
 			if (config.getIsCopyToClipboard()) {
-				isClipboardCopied = copyToClipboard(snap);
+				// クリップボード保存
+				result = copyToClipboard(snap);
+				// 結果を格納
+				resultBean.setIsClipboardCopied(result);
 			}
 
 			// 撮影音設定が有効であれば、鳴らす
@@ -115,6 +121,7 @@ public class TakeSnapService {
 		} catch (AWTException | IOException e) {
 			throw new ServiceException("スクリーンショットの撮影に失敗しました", e);
 		}
+		return resultBean;
 	}
 
 	/**
@@ -209,7 +216,7 @@ public class TakeSnapService {
 				try {
 					Thread.sleep(50); // 50ms置いて再送
 				} catch (InterruptedException ie) {
-					log.warn("クリップボードに保存の再試行中に割り込みが発生しました" ,ie);
+					log.warn("クリップボードに保存の再試行中に割り込みが発生しました", ie);
 					return false;
 				}
 			}

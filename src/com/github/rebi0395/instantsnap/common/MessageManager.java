@@ -8,15 +8,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.rebi0395.instantsnap.model.enums.LanguageType;
+import static com.github.rebi0395.instantsnap.common.MessageKeyConstant.*;
 
 public class MessageManager {
 
 	/** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(MessageManager.class);
-	
-	/** 言語別プロパティファイルの格納先 */
-	private static final String BASE_NAME = "i18n.messages";
-	
+		
 	/** リソースバンドル */
 	private ResourceBundle bundle;
 	
@@ -24,12 +22,6 @@ public class MessageManager {
 	public MessageManager(LanguageType languageType) {
 		changeLanguage(languageType);
 	}
-	
-	// -- メッセージキー定数 -- 
- 	/** ラベルの有効を表示するメッセージキー */
-	public static final String LABEL_ENABLED = "label.enabled";
-	/** ラベルで無効を表示するメッセージキー */
-	public static final String LABEL_DISABLED = "label.disabled";
 	
 	/**
 	 * ユーザーの言語設定から、リソースバンドルを取得する
