@@ -33,6 +33,9 @@ import javafx.scene.input.KeyEvent;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 
+/**
+ * メイン画面のコントローラクラス
+ */
 public class MainViewController {
 
 	/** サービスクラスの司令塔クラス */
