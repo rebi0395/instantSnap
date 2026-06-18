@@ -30,7 +30,7 @@ public class InstantSnapApp extends Application {
 	private InstantSnapCoordinator coordinator;
 
 	/** 通知表示クラス */
-	private SnapNotificationPresenter sPresenter;
+	private SnapNotificationPresenter notificationPresenter;
 
 	/** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(InstantSnapApp.class);
@@ -42,10 +42,10 @@ public class InstantSnapApp extends Application {
 	public void start(Stage stage) {
 		try {
 			// 通知表示クラスを生成する
-			this.sPresenter = new SnapNotificationPresenter(stage);			
+			this.notificationPresenter = new SnapNotificationPresenter(stage);			
 			
 			// サービスクラスの司令塔クラスを生成し、初期化処理を行う
-			this.coordinator = new InstantSnapCoordinator(sPresenter);
+			this.coordinator = new InstantSnapCoordinator(notificationPresenter);
 
 			// コントローラを生成
 			MainViewController mainController = new MainViewController();
@@ -85,7 +85,7 @@ public class InstantSnapApp extends Application {
 			log.error("InstantSnapの起動に失敗しました", e);
 
 			if (coordinator != null) {
-				coordinator.exit(1);
+				coordinator.exit();
 			} else {
 				System.exit(1);
 			}
@@ -119,12 +119,12 @@ public class InstantSnapApp extends Application {
 			dialog.showAndWait();
 
 			if (exitController.getResult()) {
-				coordinator.exit(0);
+				coordinator.exit();
 			}
 
 		} catch (Exception e) {
 			log.error("表示終了ダイアログの表示に失敗しました", e);
-			coordinator.exit(1);
+			coordinator.exit();
 		}
 	}
 }

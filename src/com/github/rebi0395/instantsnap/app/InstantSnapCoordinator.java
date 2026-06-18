@@ -113,15 +113,12 @@ public class InstantSnapCoordinator implements KeyEventListener {
 
 	/**
 	 * アプリを終了する
-	 * 
-	 * @param status 終了コード。正常終了は0、異常終了は1
 	 */
-	public void exit(int status) {
+	public void exit() {
 		try {
 			keyManager.deactivate(); // キー監視の停止
 		} catch (ServiceException e) {
 			log.error("Instant Snapの終了処理に失敗しました", e);
-			status = 1;
 		} finally {
 			executor.shutdown(); // 撮影処理の終了
 			soundPlayer.close(); // 音声リソースの開放
@@ -154,7 +151,7 @@ public class InstantSnapCoordinator implements KeyEventListener {
 	 */
 	@Override
 	public void requestExit() {
-		exit(0); // アプリを正常終了させる
+		exit(); // アプリを正常終了させる
 	}
 
 	/**
