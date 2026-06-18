@@ -34,20 +34,12 @@ public class SnapAfterService {
 	}
 
 	/**
-	 * 通知トースト押下時、画像の保存先ファイルを、スクリーンショットを選択状態で開きます
-	 * @param path 保存した画像のパス
-	 */
-	public void showToast(Path path) {
-	}
-	// TODO viewクラスに依頼する処理を書く
-
-	/**
 	 * スクリーンショット撮影後、画像ファイルを開きます
-	 * @param path 保存した画像のパス
+	 * @param targetPath 保存した画像のパス
 	 */
-	public void openImage(Path path) {
+	public void openImage(Path targetPath) {
 		try {
-			Desktop.getDesktop().open(path.toAbsolutePath().toFile());
+			Desktop.getDesktop().open(targetPath.toAbsolutePath().toFile());
 		} catch (Exception e) {
 			log.warn("Failed to open directory. (画像を開くのに失敗しました)", e);
 		}
@@ -55,21 +47,21 @@ public class SnapAfterService {
 
 	/**
 	 * スクリーンショット撮影後、ペイントで画像ファイルを開きます
-	 * @param path 保存した画像のパス
+	 * @param targetPath 保存した画像のパス
 	 */
-	public void openPaint(Path path) {
+	public void openPaint(Path targetPath) {
 		try {
-			new ProcessBuilder("mspaint", path.toAbsolutePath().toString()).start();
+			new ProcessBuilder("mspaint", targetPath.toAbsolutePath().toString()).start();
 		} catch (Exception e) {
 			log.warn("ペイントで画像を開くのに失敗しました", e);
 		}
 	}
 
 	/**
-	 * 通知トースト押下時、画像の保存先ファイルを、スクリーンショットを選択状態で開きます
-	 * @param path 保存した画像のパス
+	 * 画像の保存先ファイルを、スクリーンショットを選択状態で開きます
+	 * @param targetPath 保存した画像のパス
 	 */
-	public void openDirectory(Path path) {
+	public void openDirectory(Path targetPath) {
 		try {
 			String os = System.getProperty("os.name").toLowerCase();
 			// windowの場合、コマンドを直接叩いて実行する
@@ -78,10 +70,10 @@ public class SnapAfterService {
 						"cmd", "/c", // コマンドプロンプト起動
 						"start", "", // ウィンドウタイトルは空で指定
 						"explorer.exe", // エクスプローラー起動
-						"/select," + path.toAbsolutePath() // 絶対パスのファイルを選択状態にする
+						"/select," + targetPath.toAbsolutePath() // 絶対パスのファイルを選択状態にする
 				).start();
 			} else {
-				Desktop.getDesktop().open(path.getParent().toFile());
+				Desktop.getDesktop().open(targetPath.getParent().toFile());
 			}
 		} catch (Exception e) {
 			// ログを出して例外を握りつぶす

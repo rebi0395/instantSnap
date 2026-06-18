@@ -43,7 +43,7 @@ public class InstantSnapCoordinator implements KeyEventListener {
 	/** 全体の撮影処理クラス */
 	private final TakeSnapService takeSnapService;
 	/** 撮影通知を表示するクラス */ 
-	private final SnapNotificationPresenter sPresenter;
+	private final SnapNotificationPresenter notificationPresenter;
 	
 
 	/** スレッドセーフに撮影処理を呼び出すためのクラス */
@@ -54,7 +54,7 @@ public class InstantSnapCoordinator implements KeyEventListener {
 	private static final Logger log = LoggerFactory.getLogger(InstantSnapCoordinator.class);
 
 	/** コンストラクタ 初期化処理を実行する */
-	public InstantSnapCoordinator(SnapNotificationPresenter sPresenter) {
+	public InstantSnapCoordinator(SnapNotificationPresenter notificationPresenter) {
 		// インスタンスを生成
 		this.config = new ConfigBean();
 		this.repository = new PropertiesRepository();
@@ -68,7 +68,7 @@ public class InstantSnapCoordinator implements KeyEventListener {
 		this.takeSnapService = new TakeSnapService(areaResolver, soundPlayer, afterService);
 		
 		// Stage情報を持つクラス
-		this.sPresenter = sPresenter;
+		this.notificationPresenter = notificationPresenter;
 
 		init();
 	}
@@ -138,6 +138,11 @@ public class InstantSnapCoordinator implements KeyEventListener {
 				try {
 					// 撮影処理
 					SnapResultBean result = takeSnapService.execute(config);
+					// 通知表示が有効な場合、表示
+					if (config.getIsShowNotification()) {
+						notificationPresenter.show(result, afterService);
+					}
+					
 
 				} catch (ServiceException e) {
 					log.error("スクリーンショットの撮影または保存に失敗しました", e);

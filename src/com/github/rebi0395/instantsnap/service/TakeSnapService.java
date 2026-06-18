@@ -78,6 +78,7 @@ public class TakeSnapService {
 			Path targetPath = null;
 			// 画像保存、または撮影後処理で画像ファイルが必要な場合のみ、ファイルに保存する
 			if (config.getIsSaveImage() || config.getSnapAfter() != SnapAfter.NOTHING) {
+
 				// ファイル名作成(yyyyMMdd_HHmmss.SSS)
 				LocalDateTime now = LocalDateTime.now();
 				DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd.HHmmss.SSS");
@@ -85,7 +86,7 @@ public class TakeSnapService {
 				String fileName = systemTime + "." + config.getFormatType().getValue();
 
 				if (!config.getIsSaveImage()) {
-					// 一時保存なら、ファイル名を分かりやすくする
+					// 一時保存なら、ファイル名の先頭をつけ、分かりやすくする
 					fileName = "temporary_" + fileName;
 				}
 
@@ -95,9 +96,18 @@ public class TakeSnapService {
 
 				// 画像を保存
 				result = saveImage(snap, config.getFormatType().getValue(), targetPath);
+
 				// 結果を格納
-				resultBean.setTargetPath(targetPath);
-				resultBean.setIsImageSaved(result);
+				if (result) {
+					resultBean.setTargetPath(targetPath);
+					if (config.getIsSaveImage()) {
+						// 画像保存時
+						resultBean.setIsImageSaved(true);
+					} else {
+						// 一時保存時
+						resultBean.setIsTmpSaved(true);
+					}
+				}
 			}
 
 			// クリップボードコピーが有効であれば、クリップボードに保存する
