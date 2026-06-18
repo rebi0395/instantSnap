@@ -1,13 +1,13 @@
 package com.github.rebi0395.instantsnap.app;
 
-import java.awt.Toolkit;
 import java.io.InputStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.rebi0395.instantsnap.view.controller.ExitDialogController;
+import com.github.rebi0395.instantsnap.exception.ServiceException;
 import com.github.rebi0395.instantsnap.view.controller.MainViewController;
+import com.github.rebi0395.instantsnap.view.presenter.ExitDialogPresenter;
 import com.github.rebi0395.instantsnap.view.presenter.SnapNotificationPresenter;
 
 import static com.github.rebi0395.instantsnap.common.AppConstant.*;
@@ -17,9 +17,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 
 /**
  * JavaFXの起動を行うアプリケーションクラス
@@ -32,6 +30,9 @@ public class InstantSnapApp extends Application {
 	/** 通知表示クラス */
 	private SnapNotificationPresenter notificationPresenter;
 
+	/** 終了ダイアログクラス */
+	private ExitDialogPresenter exitDialogPresenter;
+
 	/** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(InstantSnapApp.class);
 
@@ -41,10 +42,13 @@ public class InstantSnapApp extends Application {
 	@Override
 	public void start(Stage stage) {
 		try {
-			// 通知表示クラスを生成する
-			this.notificationPresenter = new SnapNotificationPresenter(stage);			
-			
-			// サービスクラスの司令塔クラスを生成し、初期化処理を行う
+			// 通知表示クラスを生成
+			this.notificationPresenter = new SnapNotificationPresenter(stage);
+
+			// 終了ダイアログ表示クラスを生成
+			this.exitDialogPresenter = new ExitDialogPresenter();
+
+			// 司令塔クラスを生成し、初期化処理を行う
 			this.coordinator = new InstantSnapCoordinator(notificationPresenter);
 
 			// コントローラを生成
@@ -61,10 +65,17 @@ public class InstantSnapApp extends Application {
 			// シーン (ウィンドウのファイル、横幅、高さを設定)
 			Scene scene = new Scene(mainRoot, 600, 900);
 
-			// ウィンドウを閉じるとアプリを終了させるため、確認ウィンドウを表示する
+			// ウィンドウを閉じようとすると、確認ウィンドウを表示する処理を登録
 			stage.setOnCloseRequest(event -> {
 				event.consume(); // ウィンドウの閉じる動作を止める
-				showExitDialog(stage); //確認ダイアログ表示
+				try {
+					boolean isEnd = exitDialogPresenter.show(stage);
+					if (isEnd) {
+						coordinator.exit();
+					}
+				} catch (ServiceException e) {
+					coordinator.exit();
+				}
 			});
 
 			// アイコンを設定する
@@ -89,42 +100,6 @@ public class InstantSnapApp extends Application {
 			} else {
 				System.exit(1);
 			}
-		}
-	}
-
-	/**
-	 * 終了確認ダイアログを表示する
-	 *
-	 * @param owner 親ウィンドウ
-	 */
-	private void showExitDialog(Stage owner) {
-		try {
-			ExitDialogController exitController = new ExitDialogController();
-
-			FXMLLoader exitLoader = new FXMLLoader(getClass().getResource(FXML_EXIT_DIALOG));
-			exitLoader.setController(exitController);
-
-			Parent exitRoot = exitLoader.load();
-
-			Stage dialog = new Stage();
-			dialog.initOwner(owner);
-			dialog.initModality(Modality.APPLICATION_MODAL);
-			dialog.setResizable(false);
-			dialog.initStyle(StageStyle.UTILITY);
-			dialog.setScene(new Scene(exitRoot));
-			dialog.setTitle("確認");
-
-			Toolkit.getDefaultToolkit().beep();
-
-			dialog.showAndWait();
-
-			if (exitController.getResult()) {
-				coordinator.exit();
-			}
-
-		} catch (Exception e) {
-			log.error("表示終了ダイアログの表示に失敗しました", e);
-			coordinator.exit();
 		}
 	}
 }
