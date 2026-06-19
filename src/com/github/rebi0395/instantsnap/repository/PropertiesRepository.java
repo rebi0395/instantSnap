@@ -211,8 +211,8 @@ public class PropertiesRepository {
 
 			#～～ 撮影設定 ～～#
 			#スクショ発動キーの選択
-			#1 -> shift + printscreen(デフォルト), 2 -> printscreen
-			#3 -> F10, 4 -> カスタムキー
+			#1 -> shift + printscreen(デフォルト), 2 -> Ctrl + Shift + S
+			#3 -> F9, 4 -> カスタムキー
 			trigger=1
 
 			#カスタムメインキー設定 -- triggerを4にした上でキーコードを記載してください
@@ -258,5 +258,6 @@ public class PropertiesRepository {
 			#撮影音を鳴らして撮影する（有効にする場合は"true"と記載してください）
 			soundSnapEnabled=false
 
-												""".replace("\r\n", "\n").replace("\n", System.lineSeparator());
+															""".replace("\r\n", "\n").replace("\n",
+			System.lineSeparator());
 }

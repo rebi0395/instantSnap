@@ -424,8 +424,8 @@ public class MainViewController {
 		// -- 撮影後設定 --
 		radioSnapAfterGroup.selectToggle(radioSnapAfterNothing);
 		checkNotification.setSelected(true);
-		checkNotificationSound.setSelected(false);
-		checkSnapSound.setSelected(true);
+		checkNotificationSound.setSelected(true);
+		checkSnapSound.setSelected(false);
 
 		labelStatus.setText("ステータス: 入力値を初期化しました");
 	}
