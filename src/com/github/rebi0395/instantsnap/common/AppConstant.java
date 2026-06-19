@@ -10,35 +10,57 @@ public final class AppConstant {
 	}
 
 	// -- プロパティファイル --
-	public static final String CONFIG_FILE_NAME = "config.properties";
-	
+	public static final String OPTION_FILE_NAME = "config.properties";
+
 	// -- プロパティの項目名 --
+	/** プロパティ 言語設定 */
 	public static final String PROPERTY_LANGUAGE = "language";
-	public static final String PROPERTY_SAVE_PATH = "savePath";
+	/** プロパティ トリガーキー設定 */
 	public static final String PROPERTY_TRIGGER = "trigger";
+	/** プロパティ カスタムキー */
 	public static final String PROPERTY_CUSTOM_KEY = "customKey";
+	/** プロパティ Altキー */
 	public static final String PROPERTY_USE_ALT = "useAlt";
+	/** プロパティ Ctrlキー */
 	public static final String PROPERTY_USE_CTRL = "useCtrl";
+	/** プロパティ Shiftキー */
 	public static final String PROPERTY_USE_SHIFT = "useShift";
+	/** プロパティ 撮影範囲 */
 	public static final String PROPERTY_SNAP_AREA = "snapArea";
+	/** プロパティ 画像保存をするか */
+	public static final String PROPERTY_SAVE_IMAGE_ENABLED = "saveImageEnabled";
+	/** プロパティ クリップボードコピーをするか */
+	public static final String PROPERTY_CLIPBOARD_ENABLED = "clipboardEnabled";
+	/** プロパティ 保存パス */
+	public static final String PROPERTY_SAVE_PATH = "savePath";
+	/** プロパティ 拡張子 */
 	public static final String PROPERTY_FORMAT = "format";
-	public static final String PROPERTY_SNAP_AFTER = "snapAfter";
-	public static final String PROPERTY_COPY_TO_CLIPBOARD = "copyToClipboard";
+	/** プロパティ 撮影後アクション */
+	public static final String PROPERTY_AFTER_SNAP_ACTION = "afterSnapAction";
+	/** プロパティ 通知を表示するか */
+	public static final String PROPERTY_NOTIFICATION_ENABLED = "notificationEnabled";
+	/** プロパティ 撮影音を有効にするか */
+	public static final String PROPERTY_SOUND_SNAP_ENABLED = "soundSnapEnabled";
+	/** プロパティ 通知音を有効にするか */
+	public static final String PROPERTY_SOUND_NOTIFICATION_ENABLED = "soundNotificationEnabled";
 
-	// -- 保存先ファイルのデフォルト値 --
-	public static final String DEFAULT_SAVE_PATH = "./screenshots/";
-	
-	// -- アイコンのpngファイル --
+	/** 保存先ディレクトリのデフォルト値 */
+	public static final String DEFAULT_SAVE_DIR = "./screenshots/";
+
+	/** 一時保存先ディレクトリ */
+	public static final String TMP_SAVE_DIR = "./tmp/";
+
+	/** アイコンのpngファイル */
 	public static final String ICON_APP = "/icon/instantsnap.png";
-	
-	// -- FXMLファイル --
-	public static final String FXML_MAIN_VIEW = 
-			"/com/github/rebi0395/instantsnap/view/fxml/MainView.fxml";
-	public static final String FXML_EXIT_DIALOG = 
-			"/com/github/rebi0395/instantsnap/view/fxml/ExitDialog.fxml";
 
-	// -- CSSファイル --
-	public static final String CSS_MAIN = 
-			"/com/github/rebi0395/instantsnap/view/css/main.css";
-	
+	/** メインウィンドウのFXMLファイル */
+	public static final String FXML_MAIN_VIEW = "/com/github/rebi0395/instantsnap/view/fxml/MainView.fxml";
+	/** 終了ダイアログのFXMLファイル */
+	public static final String FXML_EXIT_DIALOG = "/com/github/rebi0395/instantsnap/view/fxml/ExitDialog.fxml";
+	/** 通知画面のFXMLファイル */
+	public static final String FXML_NOTIFICATION = "/com/github/rebi0395/instantsnap/view/fxml/SnapNotification.fxml";
+
+	/** メインウィンドウのCSSファイル */
+	public static final String CSS_MAIN = "/com/github/rebi0395/instantsnap/view/css/main.css";
+
 }
