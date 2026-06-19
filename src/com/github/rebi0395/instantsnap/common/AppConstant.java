@@ -27,7 +27,7 @@ public final class AppConstant {
 	public static final String PROPERTY_SAVE_PATH = "savePath";
 	public static final String PROPERTY_FORMAT = "format";
 
-	public static final String PROPERTY_SNAP_AFTER = "snapAfter";
+	public static final String PROPERTY_AFTER_SNAP_ACTION = "afterSnapAction";
 	public static final String PROPERTY_SOUND_ENABLED = "soundEnabled";
 	public static final String PROPERTY_NOTIFICATION_ENABLED = "notificationEnabled";
 

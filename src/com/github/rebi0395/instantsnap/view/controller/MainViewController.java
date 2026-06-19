@@ -7,14 +7,14 @@ import java.util.Map;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.rebi0395.instantsnap.app.InstantSnapCoordinator;
 import com.github.rebi0395.instantsnap.common.AppLogger;
-import com.github.rebi0395.instantsnap.common.MessageManager;
+import com.github.rebi0395.instantsnap.common.MessageKeyConverter;
 import com.github.rebi0395.instantsnap.common.NativeKeyCodeConverter;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.model.bean.KeyCombinationBean;
 import com.github.rebi0395.instantsnap.model.enums.FormatType;
 import com.github.rebi0395.instantsnap.model.enums.LanguageType;
-import com.github.rebi0395.instantsnap.model.enums.SnapAfter;
-import com.github.rebi0395.instantsnap.model.enums.SnapArea;
+import com.github.rebi0395.instantsnap.model.enums.AfterSnapActionType;
+import com.github.rebi0395.instantsnap.model.enums.SnapAreaType;
 import com.github.rebi0395.instantsnap.model.enums.TriggerType;
 
 import static com.github.rebi0395.instantsnap.common.AppConstant.*;
@@ -41,7 +41,7 @@ public class MainViewController {
 	/** サービスクラスの司令塔クラス */
 	private InstantSnapCoordinator coordinator;
 	/** メッセージの多言語変換クラス */
-	private MessageManager mm;
+	private MessageKeyConverter converter;
 	/** nativeキーコードを保持する変数 */
 	private int nativeCode;
 
@@ -98,7 +98,7 @@ public class MainViewController {
 
 	/** 撮影範囲を選択するコンボボックス */
 	@FXML
-	private ComboBox<SnapArea> comboSnapArea;
+	private ComboBox<SnapAreaType> comboSnapArea;
 
 	/** カスタムキー設定のキー入力を受け付けるテキストフィールド */
 	@FXML
@@ -144,7 +144,7 @@ public class MainViewController {
 	@FXML
 	private RadioButton radioSnapAfterOpenPaint;
 	/** snapAfterとラジオボタンを紐付けるマップ */
-	private Map<SnapAfter, RadioButton> snapAfterRadioMap;
+	private Map<AfterSnapActionType, RadioButton> snapAfterRadioMap;
 
 	// -- 通知設定 --
 	/** 通知表示設定のチェックボックス */
@@ -162,7 +162,7 @@ public class MainViewController {
 	public void initialize() {
 
 		ConfigBean config = coordinator.getConfigBean(); // 設定値保持クラス
-		this.mm = new MessageManager(config.getLanguageType()); // メッセージ変換クラス
+		this.converter = new MessageKeyConverter(config.getLanguageType()); // メッセージ変換クラス
 
 		// -- 活性・非活性の動的な制御の登録 -- 
 		// ショートカットキーのリストを監視するリスナー
@@ -203,9 +203,9 @@ public class MainViewController {
 		checkAlt.setSelected(customKeys.isUseAlt());
 		checkShift.setSelected(customKeys.isUseShift());
 		// 撮影範囲のリスト、コンバーター(変換ルール)、初期設定値をセット
-		comboSnapArea.getItems().addAll(SnapArea.values());
-		comboSnapArea.setConverter(SnapArea.toConverter()); // コンバーターにより	Enumsをdisplaynameで変換が可能になる
-		comboSnapArea.setValue(config.getSnapArea());
+		comboSnapArea.getItems().addAll(SnapAreaType.values());
+		comboSnapArea.setConverter(SnapAreaType.toConverter()); // コンバーターにより	Enumsをdisplaynameで変換が可能になる
+		comboSnapArea.setValue(config.getSnapAreaType());
 
 		// -- 出力設定 --
 
@@ -226,7 +226,7 @@ public class MainViewController {
 		// 撮影後設定のラジオボタンの初期設定
 		snapAfterRadioMap = createSnapAfterRadioMap(); // 紐付けマップ作成
 		setupAfterRadioButtons(snapAfterRadioMap); // ラジオボタンの初期設定
-		radioSnapAfterGroup.selectToggle(snapAfterRadioMap.get(config.getSnapAfter())); // 初期選択
+		radioSnapAfterGroup.selectToggle(snapAfterRadioMap.get(config.getAfterSnapActionType())); // 初期選択
 		// 通知表示設定のチェックボックスを設定する
 		checkNotification.setSelected(config.getIsShowNotification());
 		// 撮影音のチェックボックスを設定する
@@ -250,7 +250,7 @@ public class MainViewController {
 			config.setLanguageType(newVal); // 最新の言語設定をセット
 			coordinator.save(); // 内部では全項目更新
 			
-			mm.changeLanguage(config.getLanguageType()); // リソースバンドルを読み直す
+			converter.changeLanguage(config.getLanguageType()); // リソースバンドルを読み直す
 			updateSettingLabels(config, config.getCustomKeyBean()); // ラベル更新
 
 		});
@@ -321,12 +321,12 @@ public class MainViewController {
 	 * SnapAfterと各種ラジオボタンを紐付けたマップを作成する
 	 * @return SnapAfterと各種ラジオボタンを紐付けたマップ
 	 */
-	private Map<SnapAfter, RadioButton> createSnapAfterRadioMap() {
+	private Map<AfterSnapActionType, RadioButton> createSnapAfterRadioMap() {
 		// 
-		Map<SnapAfter, RadioButton> snapAfterRadioMap = new HashMap<SnapAfter, RadioButton>();
-		snapAfterRadioMap.put(SnapAfter.NOTHING, radioSnapAfterNothing);
-		snapAfterRadioMap.put(SnapAfter.OPEN_IMAGE, radioSnapAfterOpenImage);
-		snapAfterRadioMap.put(SnapAfter.OPEN_PAINT, radioSnapAfterOpenPaint);
+		Map<AfterSnapActionType, RadioButton> snapAfterRadioMap = new HashMap<AfterSnapActionType, RadioButton>();
+		snapAfterRadioMap.put(AfterSnapActionType.NONE, radioSnapAfterNothing);
+		snapAfterRadioMap.put(AfterSnapActionType.OPEN_IMAGE, radioSnapAfterOpenImage);
+		snapAfterRadioMap.put(AfterSnapActionType.OPEN_PAINT, radioSnapAfterOpenPaint);
 		return snapAfterRadioMap;
 	}
 
@@ -335,16 +335,16 @@ public class MainViewController {
 	 * SnapAfterのEnumのセット、表示名の設定を行う
 	 * @param snapAfterRadioMap SnapAfterと各種ラジオボタンを紐付けたマップ
 	 */
-	private void setupAfterRadioButtons(Map<SnapAfter, RadioButton> snapAfterRadioMap) {
+	private void setupAfterRadioButtons(Map<AfterSnapActionType, RadioButton> snapAfterRadioMap) {
 
 		// SnapAfterとRadioButtonの組み合わせを一つずつ取得し、ラジオボタンに各種設定をしていく
-		for (Map.Entry<SnapAfter, RadioButton> entry : snapAfterRadioMap.entrySet()) {
-			SnapAfter snapAfter = entry.getKey();
+		for (Map.Entry<AfterSnapActionType, RadioButton> entry : snapAfterRadioMap.entrySet()) {
+			AfterSnapActionType afterSnapActionType = entry.getKey();
 			RadioButton radioButton = entry.getValue();
 
 			radioButton.setToggleGroup(radioSnapAfterGroup);
-			radioButton.setUserData(snapAfter);
-			radioButton.setText(snapAfter.getDisplayName());
+			radioButton.setUserData(afterSnapActionType);
+			radioButton.setText(afterSnapActionType.getDisplayName());
 		}
 	}
 
@@ -359,7 +359,7 @@ public class MainViewController {
 
 		// -- 撮影設定 --
 		config.setTriggerType(comboTriggerType.getValue()); // トリガーキー
-		config.setSnapArea(comboSnapArea.getValue()); // 撮影範囲
+		config.setSnapAreaType(comboSnapArea.getValue()); // 撮影範囲
 		// カスタムキー
 		KeyCombinationBean customKeys = config.getCustomKeyBean();
 		customKeys.setTriggerKey(nativeCode); // 保持しているキーコードをいれる
@@ -374,7 +374,7 @@ public class MainViewController {
 		config.setFormatType(comboFormatType.getValue()); // 拡張子
 
 		// -- 撮影後設定 --
-		config.setSnapAfter((SnapAfter) radioSnapAfterGroup.getSelectedToggle().getUserData()); // 撮影後設定
+		config.setAfterSnapActionType((AfterSnapActionType) radioSnapAfterGroup.getSelectedToggle().getUserData()); // 撮影後設定
 		config.setIsShowNotification(checkNotification.isSelected()); // 通知表示の有無
 		config.setIsSoundEnabled(checkSound.isSelected()); // 撮影音を鳴らす有無
 
@@ -424,18 +424,18 @@ public class MainViewController {
 		// -- 撮影設定
 		labelKeyCombination
 				.setText(config.getTriggerType().resolveKeyCombination(customKeys).resolveKeyCombinationName());
-		labelSnapArea.setText(config.getSnapArea().getDisplayName());
+		labelSnapArea.setText(config.getSnapAreaType().getDisplayName());
 		
 		// -- 出力設定
-		labelSaveImage.setText(mm.getEnabledMessage(config.getIsSaveImage()));
-		labelClipboard.setText(mm.getEnabledMessage(config.getIsCopyToClipboard()));
+		labelSaveImage.setText(converter.getEnabledMessage(config.getIsSaveImage()));
+		labelClipboard.setText(converter.getEnabledMessage(config.getIsCopyToClipboard()));
 		labelFilePath.setText(config.getSavePath());
 		labelFormatType.setText(config.getFormatType().getDisplayName());
 
 		// -- 撮影後設定
-		labelSnapAfter.setText(config.getSnapAfter().getDisplayName());
-		labelNotification.setText(mm.getEnabledMessage(config.getIsShowNotification()));
-		labelSound.setText(mm.getEnabledMessage(config.getIsSoundEnabled()));
+		labelSnapAfter.setText(config.getAfterSnapActionType().getDisplayName());
+		labelNotification.setText(converter.getEnabledMessage(config.getIsShowNotification()));
+		labelSound.setText(converter.getEnabledMessage(config.getIsSoundEnabled()));
 	}
 
 	/**

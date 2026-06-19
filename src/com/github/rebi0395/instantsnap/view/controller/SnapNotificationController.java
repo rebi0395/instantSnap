@@ -45,7 +45,7 @@ public class SnapNotificationController {
 		labelMessage.setText(String.join(System.lineSeparator(), messages));
 
 		// 閉じるラベルを押下で通知を閉じるアクションを設定
-		labelClose.setCursor(Cursor.HAND);
+		labelClose.setCursor(Cursor.HAND); // マウスカーソルを手の形にする
 		labelClose.setOnMouseClicked(event -> {
 			event.consume();
 			closeAction.run();
@@ -62,7 +62,7 @@ public class SnapNotificationController {
 			labelOpenFolder.setVisible(true);
 			labelOpenFolder.setManaged(true);
 			// 外枠クリックでフォルダを開くアクションを設定
-			rootNotification.setCursor(Cursor.HAND);
+			rootNotification.setCursor(Cursor.HAND); // マウスカーソルを手の形にする
 			rootNotification.setOnMouseClicked(event -> {
 				openAction.run();
 			});

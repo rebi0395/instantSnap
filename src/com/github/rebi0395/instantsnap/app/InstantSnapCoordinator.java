@@ -9,10 +9,12 @@ import org.slf4j.LoggerFactory;
 import com.github.rebi0395.instantsnap.exception.ServiceException;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.model.bean.SnapResultBean;
+import com.github.rebi0395.instantsnap.model.enums.AfterSnapActionType;
 import com.github.rebi0395.instantsnap.repository.PropertiesRepository;
 import com.github.rebi0395.instantsnap.service.KeyEventListener;
-import com.github.rebi0395.instantsnap.service.SnapAfterService;
+import com.github.rebi0395.instantsnap.service.FileOpenService;
 import com.github.rebi0395.instantsnap.service.SnapAreaResolver;
+import com.github.rebi0395.instantsnap.service.SnapSaveService;
 import com.github.rebi0395.instantsnap.service.SoundPlayer;
 import com.github.rebi0395.instantsnap.service.TakeSnapService;
 import com.github.rebi0395.instantsnap.service.TmpFolderService;
@@ -26,32 +28,36 @@ import javafx.application.Platform;
  */
 public class InstantSnapCoordinator implements KeyEventListener {
 
+	/** ロガー */
+	private static final Logger log = LoggerFactory.getLogger(InstantSnapCoordinator.class);
+
 	/** ユーザーの設定値 */
 	private final ConfigBean config;
 	/** プロパティファイルのリポジトリ */
 	private final PropertiesRepository repository;
 	/** 一時保存ディレクトリの管理クラス */
 	private final TmpFolderService tmpFolder;
-	/** 撮影範囲を解決するクラス */
-	private final SnapAreaResolver areaResolver;
-	/** 撮影後の処理クラス */
-	private final SnapAfterService afterService;
-	/** 効果音再生クラス */
-	private final SoundPlayer soundPlayer;
 	/** 撮影トリガーの管理クラス */
 	private final TriggerKeyManager keyManager;
+
+	/** 撮影範囲を解決するクラス */
+	private final SnapAreaResolver areaResolver;
+	/** 画像を保存するクラス */
+	private final SnapSaveService saveService;
 	/** 全体の撮影処理クラス */
 	private final TakeSnapService takeSnapService;
-	/** 撮影通知を表示するクラス */ 
+
+	/** ファイルを開くクラス */
+	private final FileOpenService fileOpenService;
+	/** 効果音再生クラス */
+	private final SoundPlayer soundPlayer;
+	/** 撮影通知を表示するクラス */
 	private final SnapNotificationPresenter notificationPresenter;
-	
 
 	/** スレッドセーフに撮影処理を呼び出すためのクラス */
 	private final ExecutorService executor = Executors.newSingleThreadExecutor();
 	/** 設定値の保存処理と、撮影処理の同時呼び出しを防止するオブジェクト */
 	private final Object configLock = new Object();
-	/** ロガー */
-	private static final Logger log = LoggerFactory.getLogger(InstantSnapCoordinator.class);
 
 	/** コンストラクタ 初期化処理を実行する */
 	public InstantSnapCoordinator(SnapNotificationPresenter notificationPresenter) {
@@ -60,13 +66,14 @@ public class InstantSnapCoordinator implements KeyEventListener {
 		this.repository = new PropertiesRepository();
 		this.tmpFolder = new TmpFolderService();
 		this.areaResolver = new SnapAreaResolver();
-		this.afterService = new SnapAfterService();
+		this.saveService = new SnapSaveService();
+		this.fileOpenService = new FileOpenService();
 		this.soundPlayer = new SoundPlayer();
 
 		// 依存性の注入があるクラス
 		this.keyManager = new TriggerKeyManager(config, this);
-		this.takeSnapService = new TakeSnapService(areaResolver, soundPlayer, afterService);
-		
+		this.takeSnapService = new TakeSnapService(areaResolver, saveService);
+
 		// Stage情報を持つクラス
 		this.notificationPresenter = notificationPresenter;
 
@@ -134,19 +141,52 @@ public class InstantSnapCoordinator implements KeyEventListener {
 	public void requestSnap() {
 		// 別スレッド立ち上げ
 		executor.submit(() -> {
+			SnapResultBean result;
+
+			// 撮影後、使う変数
+			boolean soundEnabled;
+			boolean showNotification;
+			AfterSnapActionType afterSnapActionType;
+
 			synchronized (configLock) { // 排他制御
 				try {
 					// 撮影処理
-					SnapResultBean result = takeSnapService.execute(config);
-					// 通知表示が有効な場合、表示
-					if (config.getIsShowNotification()) {
-						notificationPresenter.show(result, afterService);
-					}
-					
+					result = takeSnapService.execute(config);
 
-				} catch (ServiceException e) {
+					// ロック中に設定値を退避する
+					soundEnabled = config.getIsSoundEnabled();
+					showNotification = config.getIsShowNotification();
+					afterSnapActionType = config.getAfterSnapActionType();
+
+				} catch (Exception e) {
 					log.error("スクリーンショットの撮影または保存に失敗しました", e);
+					return;
 				}
+			}
+
+			// 撮影結果がない場合、早期リターン
+			if (!result.hasResult()) {
+				return;
+			}
+
+			try {
+				// 撮影音が有効な場合
+				if (soundEnabled) {
+					soundPlayer.playShutterSound();
+				}
+
+				// 通知表示が有効な場合
+				if (showNotification) {
+					notificationPresenter.show(result, fileOpenService);
+				}
+
+				// 撮影後アクションを実行
+				if (result.getTargetPath() != null) {
+					fileOpenService.execute(afterSnapActionType, result.getTargetPath());
+				}
+
+			} catch (Exception e) {
+				log.error("撮影後処理に失敗しました", e);
 			}
 		});
 	}

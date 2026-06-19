@@ -9,7 +9,7 @@ import java.awt.Rectangle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.rebi0395.instantsnap.model.enums.SnapArea;
+import com.github.rebi0395.instantsnap.model.enums.SnapAreaType;
 import com.sun.jna.platform.win32.User32;
 import com.sun.jna.platform.win32.WinDef.HWND;
 import com.sun.jna.platform.win32.WinDef.RECT;
@@ -33,8 +33,8 @@ public class SnapAreaResolver {
 	 * @param resolver 撮影範囲を特定するクラス
 	 * @return 撮影範囲の座標
 	 */
-	public Rectangle resolveArea(SnapArea snapArea) {
-		switch (snapArea) {
+	public Rectangle resolveArea(SnapAreaType snapAreaType) {
+		switch (snapAreaType) {
 		case ACTIVE_WINDOW:
 			return getActiveWindowArea();
 
@@ -126,6 +126,7 @@ public class SnapAreaResolver {
 					return device;
 				}
 			}
+			// ウインドウの属しているモニターが見つからない場合、メインモニターを返却
 			if (ge.getScreenDevices().length > 0) {
 				return ge.getScreenDevices()[0];
 			}

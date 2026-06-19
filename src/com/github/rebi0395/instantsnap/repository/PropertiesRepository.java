@@ -19,8 +19,8 @@ import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.model.bean.KeyCombinationBean;
 import com.github.rebi0395.instantsnap.model.enums.FormatType;
 import com.github.rebi0395.instantsnap.model.enums.LanguageType;
-import com.github.rebi0395.instantsnap.model.enums.SnapAfter;
-import com.github.rebi0395.instantsnap.model.enums.SnapArea;
+import com.github.rebi0395.instantsnap.model.enums.AfterSnapActionType;
+import com.github.rebi0395.instantsnap.model.enums.SnapAreaType;
 import com.github.rebi0395.instantsnap.model.enums.TriggerType;
 
 import static com.github.rebi0395.instantsnap.common.NativeKeyCodeConverter.*;
@@ -70,7 +70,7 @@ public class PropertiesRepository {
 
 			// 撮影設定
 			config.setTriggerType(TriggerType.parseOrDefault(properties.getProperty(PROPERTY_TRIGGER)));
-			config.setSnapArea(SnapArea.parseOrDefault(properties.getProperty(PROPERTY_SNAP_AREA)));
+			config.setSnapAreaType(SnapAreaType.parseOrDefault(properties.getProperty(PROPERTY_SNAP_AREA)));
 
 			// 出力設定
 			config.setIsSaveImage(isStrTrue(properties.getProperty(PROPERTY_SAVE_IMAGE_ENABLED)));
@@ -79,7 +79,7 @@ public class PropertiesRepository {
 			config.setFormatType(FormatType.parseOrDefault(properties.getProperty(PROPERTY_FORMAT)));
 
 			// 撮影後設定
-			config.setSnapAfter(SnapAfter.parseOrDefault(properties.getProperty(PROPERTY_SNAP_AFTER)));
+			config.setAfterSnapActionType(AfterSnapActionType.parseOrDefault(properties.getProperty(PROPERTY_AFTER_SNAP_ACTION)));
 			config.setIsShowNotification(isStrTrue(properties.getProperty(PROPERTY_NOTIFICATION_ENABLED)));
 			config.setIsSoundEnabled(isStrTrue(properties.getProperty(PROPERTY_SOUND_ENABLED)));
 
@@ -108,7 +108,7 @@ public class PropertiesRepository {
 		updateMap.put(PROPERTY_LANGUAGE, config.getLanguageType().getValue());
 		// 撮影設定
 		updateMap.put(PROPERTY_TRIGGER, config.getTriggerType().getValue());
-		updateMap.put(PROPERTY_SNAP_AREA, config.getSnapArea().getValue());
+		updateMap.put(PROPERTY_SNAP_AREA, config.getSnapAreaType().getValue());
 
 		// 出力設定
 		updateMap.put(PROPERTY_SAVE_IMAGE_ENABLED, String.valueOf(config.getIsSaveImage()));
@@ -117,7 +117,7 @@ public class PropertiesRepository {
 		updateMap.put(PROPERTY_FORMAT, config.getFormatType().getValue());
 
 		// 撮影後設定, 通知設定
-		updateMap.put(PROPERTY_SNAP_AFTER, config.getSnapAfter().getValue());
+		updateMap.put(PROPERTY_AFTER_SNAP_ACTION, config.getAfterSnapActionType().getValue());
 		updateMap.put(PROPERTY_NOTIFICATION_ENABLED, String.valueOf(config.getIsShowNotification()));
 		updateMap.put(PROPERTY_SOUND_ENABLED, String.valueOf(config.getIsSoundEnabled()));
 
@@ -239,7 +239,7 @@ public class PropertiesRepository {
 			#～～ 撮影後、通知設定 ～～#
 			#撮影後に行う処理を選択
 			#1 -> 通知を表示する, 2 -> 画像ファイルを開く, 0, 未記入等 -> 何もしない(デフォルト)
-			snapAfter=0
+			afterSnapAction=0
 
 			#撮影時、通知を表示する（有効にする場合は"true"と記載してください）
 			notificationEnabled=false

@@ -7,14 +7,16 @@ import javafx.util.StringConverter;
 /**
  * 撮影後の挙動パターンを定義するクラス
  */
-public enum SnapAfter implements BaseEnum {
+public enum AfterSnapActionType implements BaseEnum {
 
 	/** 何もしない(デフォルト値) */
-	NOTHING("0", "何もしない"),
+	NONE("0", "何もしない"),
 	/** 画像を開く */
 	OPEN_IMAGE("1", "画像を開く"),
 	/** ペイントで開く */
-	OPEN_PAINT("2", "ペイントで開く");
+	OPEN_PAINT("2", "ペイントで開く"),
+	/** ペイントで開く */
+	SAVE_TO_TMP("3", "一時保存フォルダに保存");
 
 	/** プロパティファイルと紐つく値 */
 	private final String value;
@@ -22,7 +24,7 @@ public enum SnapAfter implements BaseEnum {
 	private final String displayName;
 
 	/** コンストラクタ */
-	SnapAfter(String value, String displayName) {
+	AfterSnapActionType(String value, String displayName) {
 		this.value = value;
 		this.displayName = displayName;
 	}
@@ -44,20 +46,20 @@ public enum SnapAfter implements BaseEnum {
 	}
 
 	/**
-	 * プロパティファイルの値から対応する SnapAfter を取得する。
+	 * プロパティファイルの値から対応する AfterSnapActionType を取得する。
 	 * 不正な値が指定された場合は デフォルト値を返し、ログを出力する。
 	 * @param raw プロパティファイルと紐つく値
-	 * @return 対応する SnapAfter、またはデフォルトの SnapAfter
+	 * @return 対応する AfterSnapActionType、またはデフォルトの AfterSnapActionType
 	 */
-	public static SnapAfter parseOrDefault(String raw) {
-		return BaseEnum.parseOrDefault(SnapAfter.class, raw, NOTHING, PROPERTY_SNAP_AFTER);
+	public static AfterSnapActionType parseOrDefault(String raw) {
+		return BaseEnum.parseOrDefault(AfterSnapActionType.class, raw, NONE, PROPERTY_AFTER_SNAP_ACTION);
 	}
 
 	/**
 	 * 列挙型と文字列を相互変換する	JavaFXコンバーターを取得する
-	 * @return SnapAfter と文字列を交互変換するJavaFXコンバーター
+	 * @return AfterSnapActionType と文字列を交互変換するJavaFXコンバーター
 	 */
-	public static StringConverter<SnapAfter> toConverter() {
-		return BaseEnum.toConverter(SnapAfter.class, NOTHING);
+	public static StringConverter<AfterSnapActionType> toConverter() {
+		return BaseEnum.toConverter(AfterSnapActionType.class, NONE);
 	}
 }

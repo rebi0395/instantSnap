@@ -6,8 +6,8 @@ import static com.github.kwhat.jnativehook.keyboard.NativeKeyEvent.*;
 
 import com.github.rebi0395.instantsnap.model.enums.FormatType;
 import com.github.rebi0395.instantsnap.model.enums.LanguageType;
-import com.github.rebi0395.instantsnap.model.enums.SnapAfter;
-import com.github.rebi0395.instantsnap.model.enums.SnapArea;
+import com.github.rebi0395.instantsnap.model.enums.AfterSnapActionType;
+import com.github.rebi0395.instantsnap.model.enums.SnapAreaType;
 import com.github.rebi0395.instantsnap.model.enums.TriggerType;
 
 /**
@@ -22,7 +22,7 @@ public class ConfigBean {
 	/** 撮影カスタムキーの保存クラス */
 	private KeyCombinationBean customKeyBean;
 	/** 撮影範囲 */
-	private SnapArea snapArea;
+	private SnapAreaType snapAreaType;
 
 	/** 画像を保存する (trueで保存する) */
 	private boolean isSaveImage;
@@ -34,7 +34,7 @@ public class ConfigBean {
 	private FormatType formatType;
 
 	/** 撮影後設定 */
-	private SnapAfter snapAfter;
+	private AfterSnapActionType afterSnapActionType;
 	/** 撮影後、通知を表示する設定（trueで有効） */
 	private boolean isShowNotification;
 	/** 撮影音を鳴らす設定（trueで有効） */
@@ -50,7 +50,7 @@ public class ConfigBean {
 		// -- 撮影設定
 		this.triggerType = TriggerType.SHIFT_PRINTSCREEN;
 		this.customKeyBean = new KeyCombinationBean(VC_UNDEFINED, false, false, false);
-		this.snapArea = SnapArea.ACTIVE_WINDOW;
+		this.snapAreaType = SnapAreaType.ACTIVE_WINDOW;
 
 		// -- 出力設定
 		this.isSaveImage = true;
@@ -59,7 +59,7 @@ public class ConfigBean {
 		this.formatType = FormatType.PNG;
 
 		// -- 撮影後、通知設定
-		this.snapAfter = SnapAfter.NOTHING;
+		this.afterSnapActionType = AfterSnapActionType.NONE;
 		this.isShowNotification = false;
 		this.isSoundEnabled = true;
 	}
@@ -116,16 +116,16 @@ public class ConfigBean {
 	 * 撮影範囲を取得する
 	 * @return snapMode
 	 */
-	public SnapArea getSnapArea() {
-		return snapArea;
+	public SnapAreaType getSnapAreaType() {
+		return snapAreaType;
 	}
 
 	/**
 	 * 撮影範囲をセットする
 	 * @param area 撮影範囲
 	 */
-	public void setSnapArea(SnapArea area) {
-		this.snapArea = area;
+	public void setSnapAreaType(SnapAreaType area) {
+		this.snapAreaType = area;
 	}
 
 	/**
@@ -199,18 +199,18 @@ public class ConfigBean {
 
 	/**
 	 * 撮影後設定を取得する
-	 * @return snapAfter 撮影後設定
+	 * @return afterSnapActionType 撮影後設定
 	 */
-	public SnapAfter getSnapAfter() {
-		return snapAfter;
+	public AfterSnapActionType getAfterSnapActionType() {
+		return afterSnapActionType;
 	}
 
 	/**
 	 * 撮影後設定をセットする
-	 * @param snapAfter 撮影後設定
+	 * @param afterSnapActionType 撮影後設定
 	 */
-	public void setSnapAfter(SnapAfter snapAfter) {
-		this.snapAfter = snapAfter;
+	public void setAfterSnapActionType(AfterSnapActionType afterSnapActionType) {
+		this.afterSnapActionType = afterSnapActionType;
 	}
 
 	/**
