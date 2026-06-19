@@ -20,15 +20,19 @@ public class TakeSnapService {
 	private final SnapAreaResolver areaResolver;
 	/** 画像を保存するインスタンス */
 	private final SnapSaveService saveService;
+	/** 音声を再生するインスタンス */
+	private SoundPlayer soundPlayer;
 
 	/**
 	 * コンストラクタ
 	 * @param areaResolver 撮影範囲を解決するインスタンス
 	 * @param saveService 画像を保存するインスタンス
+	 * @param soundPlayer 音声を再生するインスタンス
 	 */
-	public TakeSnapService(SnapAreaResolver areaResolver, SnapSaveService saveService) {
+	public TakeSnapService(SnapAreaResolver areaResolver, SnapSaveService saveService, SoundPlayer soundPlayer) {
 		this.areaResolver = areaResolver;
 		this.saveService = saveService;
+		this.soundPlayer = soundPlayer;
 	}
 
 	/**
@@ -53,6 +57,11 @@ public class TakeSnapService {
 			// 撮影
 			Robot robot = new Robot();
 			BufferedImage snap = robot.createScreenCapture(snapSize);
+
+			// カメラのシャッター音が有効なら、鳴らす
+			if (config.getIsSnapSoundEnabled()) {
+				soundPlayer.playShutterSound();
+			}
 
 			// 保存処理
 			saveService.save(config, snap, resultBean);

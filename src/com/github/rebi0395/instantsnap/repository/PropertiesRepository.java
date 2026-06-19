@@ -49,7 +49,7 @@ public class PropertiesRepository {
 	}
 
 	//TODO 不足キー追加処理
-	
+
 	/**
 	 * プロパティファイルの読み取りを行います
 	 * @param config 設定保持クラス
@@ -79,9 +79,14 @@ public class PropertiesRepository {
 			config.setFormatType(FormatType.parseOrDefault(properties.getProperty(PROPERTY_FORMAT)));
 
 			// 撮影後設定
-			config.setAfterSnapActionType(AfterSnapActionType.parseOrDefault(properties.getProperty(PROPERTY_AFTER_SNAP_ACTION)));
+			config.setAfterSnapActionType(
+					AfterSnapActionType.parseOrDefault(properties.getProperty(PROPERTY_AFTER_SNAP_ACTION)));
 			config.setIsShowNotification(isStrTrue(properties.getProperty(PROPERTY_NOTIFICATION_ENABLED)));
-			config.setIsSoundEnabled(isStrTrue(properties.getProperty(PROPERTY_SOUND_ENABLED)));
+
+			// サウンド設定
+			config.setIsSnapSoundEnabled(isStrTrue(properties.getProperty(PROPERTY_SOUND_SNAP_ENABLED)));
+			config.setIsNotificationSoundEnabled(
+					isStrTrue(properties.getProperty(PROPERTY_SOUND_NOTIFICATION_ENABLED)));
 
 			// カスタムキー
 			KeyCombinationBean customKeys = config.getCustomKeyBean();
@@ -119,7 +124,8 @@ public class PropertiesRepository {
 		// 撮影後設定, 通知設定
 		updateMap.put(PROPERTY_AFTER_SNAP_ACTION, config.getAfterSnapActionType().getValue());
 		updateMap.put(PROPERTY_NOTIFICATION_ENABLED, String.valueOf(config.getIsShowNotification()));
-		updateMap.put(PROPERTY_SOUND_ENABLED, String.valueOf(config.getIsSoundEnabled()));
+		updateMap.put(PROPERTY_SOUND_SNAP_ENABLED, String.valueOf(config.getIsSnapSoundEnabled()));
+		updateMap.put(PROPERTY_SOUND_NOTIFICATION_ENABLED, String.valueOf(config.getIsNotificationSoundEnabled()));
 
 		// -- カスタムキーの設定 --
 		KeyCombinationBean customKeys = config.getCustomKeyBean();
@@ -211,21 +217,21 @@ public class PropertiesRepository {
 
 			#カスタムメインキー設定 -- triggerを4にした上でキーコードを記載してください
 			#未使用な場合は、0
-			customKey=21
+			customKey=30
 
 			#カスタムキーのコンビネーションキー設定 -- 使用する場合はtrue メインキー必須
-			useAlt=true
+			useAlt=false
 			useCtrl=true
-			useShift=false
+			useShift=true
 
 			#撮影範囲の選択
 			#1 -> アクティブウィンドウ(デフォルト), 2 -> アクティブモニター
 			#3 -> メインモニター, 4 -> 全てのモニター
-			snapArea=1
+			snapArea=2
 
 			#～～ 出力設定 ～～#
 			#画像を保存する（有効にする場合は"true"と記載してください）
-			saveImageEnabled=true
+			saveImageEnabled=false
 
 			#クリップボードにコピーする（有効にする場合は"true"と記載してください）
 			clipboardEnabled=true
@@ -236,16 +242,21 @@ public class PropertiesRepository {
 			#拡張子の選択 png、jpg、bmp、gifのいずれかを記載してください(デフォルト：png)
 			format=jpg
 
-			#～～ 撮影後、通知設定 ～～#
+			#～～ 撮影後設定 ～～#
 			#撮影後に行う処理を選択
-			#1 -> 通知を表示する, 2 -> 画像ファイルを開く, 0, 未記入等 -> 何もしない(デフォルト)
-			afterSnapAction=0
+			#1 -> 通知を表示する, 2 -> 画像ファイルを開く,
+			#3 -> 一時保存ファイルに保存する, 0, 未記入等 -> 何もしない(デフォルト)
+			afterSnapAction=3
 
 			#撮影時、通知を表示する（有効にする場合は"true"と記載してください）
-			notificationEnabled=false
+			notificationEnabled=true
 
-			#撮影時、音を鳴らして撮影する（有効にする場合は"true"と記載してください）
-			soundEnabled=false
+			#～～ サウンド設定 ～～#
+			#通知音を有効にする（有効にする場合は"true"と記載してください）
+			soundNotificationEnabled=true
 
-						""".replace("\r\n", "\n").replace("\n", System.lineSeparator());
+			#撮影音を鳴らして撮影する（有効にする場合は"true"と記載してください）
+			soundSnapEnabled=true
+
+									""".replace("\r\n", "\n").replace("\n", System.lineSeparator());
 }

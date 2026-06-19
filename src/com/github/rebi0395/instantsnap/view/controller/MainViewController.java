@@ -81,10 +81,14 @@ public class MainViewController {
 	/** 通知を表示する設定の有効/無効を表示するラベル */
 	@FXML
 	private Label labelNotification;
+
+	/** 通知音を鳴らす設定の有効/無効を表示するラベル */
+	@FXML
+	private Label labelNotificationSound;
 	
 	/** 撮影音を鳴らす設定の有効/無効を表示するラベル */
 	@FXML
-	private Label labelSound;
+	private Label labelSnapSound;
 	
 	// -- 言語設定 --
 	/** 撮影ショートカットキーを選択するコンボボックス */
@@ -143,6 +147,9 @@ public class MainViewController {
 	/** 撮影後設定を選択するラジオボタンの一つ「ペイントで開く」 */
 	@FXML
 	private RadioButton radioSnapAfterOpenPaint;
+	/** 撮影後設定を選択するラジオボタンの一つ「一時保存フォルダに保存」 */
+	@FXML
+	private RadioButton radioSnapAfterSaveToTmp;
 	/** snapAfterとラジオボタンを紐付けるマップ */
 	private Map<AfterSnapActionType, RadioButton> snapAfterRadioMap;
 
@@ -153,7 +160,11 @@ public class MainViewController {
 
 	/** 通知音設定のチェックボックス */
 	@FXML
-	private CheckBox checkSound;
+	private CheckBox checkNotificationSound;
+	
+	/** 撮影音設定のチェックボックス */
+	@FXML
+	private CheckBox checkSnapSound;
 
 	/**
 	 * 初期化処理。FXMLファイルの要素を取り込んだ後に呼び出す
@@ -224,13 +235,15 @@ public class MainViewController {
 		// -- 撮影後設定 --
 
 		// 撮影後設定のラジオボタンの初期設定
-		snapAfterRadioMap = createSnapAfterRadioMap(); // 紐付けマップ作成
+		snapAfterRadioMap = createAfterSnapActionRadioMap(); // 紐付けマップ作成
 		setupAfterRadioButtons(snapAfterRadioMap); // ラジオボタンの初期設定
 		radioSnapAfterGroup.selectToggle(snapAfterRadioMap.get(config.getAfterSnapActionType())); // 初期選択
 		// 通知表示設定のチェックボックスを設定する
 		checkNotification.setSelected(config.getIsShowNotification());
+		// 通知音のチェックボックスを設定する
+		checkNotificationSound.setSelected(config.getIsNotificationSoundEnabled());
 		// 撮影音のチェックボックスを設定する
-		checkSound.setSelected(config.getIsSoundEnabled());
+		checkSnapSound.setSelected(config.getIsSnapSoundEnabled());
 
 		// -- 適用設定表示ラベルの反映 --
 		updateSettingLabels(config, customKeys);
@@ -321,13 +334,14 @@ public class MainViewController {
 	 * SnapAfterと各種ラジオボタンを紐付けたマップを作成する
 	 * @return SnapAfterと各種ラジオボタンを紐付けたマップ
 	 */
-	private Map<AfterSnapActionType, RadioButton> createSnapAfterRadioMap() {
+	private Map<AfterSnapActionType, RadioButton> createAfterSnapActionRadioMap() {
 		// 
-		Map<AfterSnapActionType, RadioButton> snapAfterRadioMap = new HashMap<AfterSnapActionType, RadioButton>();
-		snapAfterRadioMap.put(AfterSnapActionType.NONE, radioSnapAfterNothing);
-		snapAfterRadioMap.put(AfterSnapActionType.OPEN_IMAGE, radioSnapAfterOpenImage);
-		snapAfterRadioMap.put(AfterSnapActionType.OPEN_PAINT, radioSnapAfterOpenPaint);
-		return snapAfterRadioMap;
+		Map<AfterSnapActionType, RadioButton> afterSnapActionRadioMap = new HashMap<AfterSnapActionType, RadioButton>();
+		afterSnapActionRadioMap.put(AfterSnapActionType.NONE, radioSnapAfterNothing);
+		afterSnapActionRadioMap.put(AfterSnapActionType.OPEN_IMAGE, radioSnapAfterOpenImage);
+		afterSnapActionRadioMap.put(AfterSnapActionType.OPEN_PAINT, radioSnapAfterOpenPaint);
+		afterSnapActionRadioMap.put(AfterSnapActionType.SAVE_TO_TMP, radioSnapAfterSaveToTmp);
+		return afterSnapActionRadioMap;
 	}
 
 	/**
@@ -376,7 +390,8 @@ public class MainViewController {
 		// -- 撮影後設定 --
 		config.setAfterSnapActionType((AfterSnapActionType) radioSnapAfterGroup.getSelectedToggle().getUserData()); // 撮影後設定
 		config.setIsShowNotification(checkNotification.isSelected()); // 通知表示の有無
-		config.setIsSoundEnabled(checkSound.isSelected()); // 撮影音を鳴らす有無
+		config.setIsNotificationSoundEnabled(checkNotificationSound.isSelected()); // 通知音を鳴らす有無
+		config.setIsSnapSoundEnabled(checkSnapSound.isSelected()); // 撮影音を鳴らす有無
 
 		// 文字列を更新する
 		updateSettingLabels(config, customKeys);
@@ -408,8 +423,9 @@ public class MainViewController {
 
 		// -- 撮影後設定 --
 		radioSnapAfterGroup.selectToggle(radioSnapAfterNothing);
-		checkNotification.setSelected(false);
-		checkSound.setSelected(false);
+		checkNotification.setSelected(true);
+		checkNotificationSound.setSelected(false);
+		checkSnapSound.setSelected(true);
 
 		labelStatus.setText("ステータス: 入力値を初期化しました");
 	}
@@ -435,7 +451,8 @@ public class MainViewController {
 		// -- 撮影後設定
 		labelSnapAfter.setText(config.getAfterSnapActionType().getDisplayName());
 		labelNotification.setText(converter.getEnabledMessage(config.getIsShowNotification()));
-		labelSound.setText(converter.getEnabledMessage(config.getIsSoundEnabled()));
+		labelNotificationSound.setText(converter.getEnabledMessage(config.getIsNotificationSoundEnabled()));
+		labelSnapSound.setText(converter.getEnabledMessage(config.getIsSnapSoundEnabled()));
 	}
 
 	/**

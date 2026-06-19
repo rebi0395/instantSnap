@@ -33,8 +33,8 @@ public class FileOpenService {
 			openPaint(path);
 			break;
 
-		default:
-			return; // 何もしない	
+		case SAVE_TO_TMP, NONE:
+			return;	// 何もしない
 		}
 	}
 

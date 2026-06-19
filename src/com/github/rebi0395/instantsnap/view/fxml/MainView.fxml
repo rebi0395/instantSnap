@@ -125,6 +125,7 @@
 												<RadioButton fx:id="radioSnapAfterNothing"/>
 												<RadioButton fx:id="radioSnapAfterOpenImage"/>
 												<RadioButton fx:id="radioSnapAfterOpenPaint"/>
+												<RadioButton fx:id="radioSnapAfterSaveToTmp"/>
 											</VBox>
 									
 											<!-- 右側：通知表示 -->
@@ -133,12 +134,20 @@
 													<Label text="通知表示" styleClass="section-title"/>
 													<Label fx:id="labelNotification" styleClass="current-value"/>
 												</HBox>
-												<CheckBox fx:id="checkNotification" text="通知を表示する"/>
-												<HBox styleClass="setting-header">
-													<Label text="撮影音　" styleClass="section-title"/>
-													<Label fx:id="labelSound" styleClass="current-value"/>
+												<HBox spacing="10" styleClass="output-switch-row, output-switch-item">
+													<CheckBox fx:id="checkNotification" text="通知を表示する" styleClass="switch-check-box"/>
 												</HBox>
-												<CheckBox fx:id="checkSound" text="撮影音を有効にする"/>
+												<HBox styleClass="setting-header">
+													<Label text="サウンド設定" styleClass="section-title"/>
+												</HBox>
+												<HBox spacing="10" styleClass="output-switch-row, output-switch-item">
+													<CheckBox fx:id="checkSnapSound" text="通知音を有効にする"/>
+													<Label fx:id="labelSnapSound" styleClass="current-value"/>
+												</HBox>
+												<HBox spacing="10" styleClass="output-switch-row, output-switch-item">
+													<CheckBox fx:id="checkNotificationSound" text="撮影音を有効にする"/>
+													<Label fx:id="labelNotificationSound" styleClass="current-value"/>
+												</HBox>
 											</VBox>
 										</GridPane>
 									</VBox>

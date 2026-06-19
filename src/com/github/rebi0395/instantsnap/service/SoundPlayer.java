@@ -1,6 +1,8 @@
 package com.github.rebi0395.instantsnap.service;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
@@ -17,12 +19,22 @@ public class SoundPlayer implements AutoCloseable {
 	/** シャッター音のパス */
 	private static final String SHUTTER_SOUND_PATH = "/sounds/camera_shutter.wav";
 
+	/** 通知音のパス */
+	private static final String NOTIFICATION_SOUND_PATH = "/sounds/notification.wav";
+
 	/** シャッター音のClip */
 	private Clip shutterClip;
+
+	/** 通知音のClip */
+	private Clip notificationClip;
+
+	/** 音声Clip一覧 */
+	private List<Clip> clipList = new ArrayList<>();
 
 	/** コンストラクタ 音声をClip形式でロードする */
 	public SoundPlayer() {
 		shutterClip = loadClip(SHUTTER_SOUND_PATH);
+		notificationClip = loadClip(NOTIFICATION_SOUND_PATH);
 	}
 
 	/**
@@ -31,17 +43,26 @@ public class SoundPlayer implements AutoCloseable {
 	public void playShutterSound() {
 		play(shutterClip);
 	}
+	
+	/**
+	 * カメラのシャッター音を再生する
+	 */
+	public void playNotificationSound() {
+		play(notificationClip);
+	}
 
 	/**
 	 * 音声リソースを開放する
 	 */
 	@Override
 	public void close() {
-		if (shutterClip != null) {
-			shutterClip.close();
-			shutterClip = null;
-			log.info("音声リソースの開放に成功しました");
+		for (Clip clip : clipList) {
+			if (clip != null && clip.isOpen()) {
+				clip.close();
+			}
 		}
+		clipList.clear();
+		log.info("音声リソースの開放に成功しました");
 	}
 
 	/**
@@ -49,7 +70,7 @@ public class SoundPlayer implements AutoCloseable {
 	 * @param clip 再生する音声ファイルのclip
 	 */
 	private synchronized void play(Clip clip) {
-		if (clip == null) {
+		if (clip == null || !clip.isOpen()) {
 			// clipがなければなにもしない
 			return;
 		}
@@ -79,13 +100,24 @@ public class SoundPlayer implements AutoCloseable {
 			return null;
 		}
 		try (AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(url)) {
-			Clip clip = AudioSystem.getClip();
-			clip.open(audioInputStream);
+			Clip clip = AudioSystem.getClip(); // クリップ取得
+			clip.open(audioInputStream); // audioInputStreamを紐付け、音声操作を可能にする
+			addList(clip); // クリップリストに加える
 			return clip;
 
 		} catch (Exception e) {
 			log.warn("音声ファイルの読み込みに失敗しました:{}", path, e);
 			return null;
+		}
+	}
+
+	/**
+	 * clipをclip一覧に加える
+	 * @param clip
+	 */
+	private void addList(Clip clip) {
+		if (clip != null) {
+			clipList.add(clip);
 		}
 	}
 }
