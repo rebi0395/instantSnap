@@ -38,6 +38,7 @@ public class TakeSnapService {
 	/**
 	 * 撮影処理を実行する
 	 * @param config ユーザーの設定値
+	 * @return 撮影処理結果
 	 * @throws ServiceException
 	 */
 	public SnapResultBean execute(ConfigBean config) throws ServiceException {
@@ -64,9 +65,10 @@ public class TakeSnapService {
 			}
 
 			// 保存処理
-			saveService.save(config, snap, resultBean);
+			saveService.saveImage(config, snap, resultBean);
+			saveService.copyToClipboard(config, snap, resultBean);
 
-		} catch (AWTException | IOException e) {
+		} catch (AWTException e) {
 			throw new ServiceException("スクリーンショットの撮影に失敗しました", e);
 		}
 		return resultBean;
