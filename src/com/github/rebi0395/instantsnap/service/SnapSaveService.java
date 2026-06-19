@@ -94,11 +94,12 @@ public class SnapSaveService {
 	 * 一時保存かを返す
 	 *
 	 * @param config ユーザー設定値
-	 * @return 画像保存OFF、かつ撮影後アクションありの場合 true
+	 * @return 撮影後アクションが一時保存。または
+	 * 画像保存OFF、かつ撮影後アクションありの場合 true
 	 */
 	public boolean isTemporarySave(ConfigBean config) {
-		return !config.getIsSaveImage()
-				&& config.getAfterSnapActionType() != AfterSnapActionType.NONE;
+		return config.getAfterSnapActionType() == AfterSnapActionType.SAVE_TO_TMP || 
+				(!config.getIsSaveImage() && config.getAfterSnapActionType() != AfterSnapActionType.NONE);
 	}
 
 	/**

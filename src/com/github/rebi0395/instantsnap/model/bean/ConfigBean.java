@@ -38,7 +38,9 @@ public class ConfigBean {
 	/** 撮影後、通知を表示する設定（trueで有効） */
 	private boolean isShowNotification;
 	/** 撮影音を鳴らす設定（trueで有効） */
-	private boolean isSoundEnabled;
+	private boolean isSnapSoundEnabled;
+	/** 通知音を鳴らす設定（trueで有効） */
+	private boolean isNotificationSoundEnabled;
 
 	/**
 	 * コンストラクタ。デフォルト値を設定する
@@ -60,8 +62,9 @@ public class ConfigBean {
 
 		// -- 撮影後、通知設定
 		this.afterSnapActionType = AfterSnapActionType.NONE;
-		this.isShowNotification = false;
-		this.isSoundEnabled = true;
+		this.isShowNotification = true;
+		this.isSnapSoundEnabled = false;
+		this.isNotificationSoundEnabled = true;
 	}
 
 	/**
@@ -230,18 +233,35 @@ public class ConfigBean {
 	}
 
 	/**
-	 * 撮影後、通知音を有効にするかの設定を取得する
-	 * @return isSoundEnabled
+	 * 撮影音を有効にするかの設定を取得する
+	 * @return isSnapSoundEnabled
 	 */
-	public boolean getIsSoundEnabled() {
-		return isSoundEnabled;
+	public boolean getIsSnapSoundEnabled() {
+		return isSnapSoundEnabled;
 	}
 
 	/**
-	 * 撮影後、通知音を表示するかの設定をセットする
-	 * @param isSoundEnabled
+	 * 撮影音を表示するかの設定をセットする
+	 * @param isSnapSoundEnabled
 	 */
-	public void setIsSoundEnabled(boolean isSoundEnabled) {
-		this.isSoundEnabled = isSoundEnabled;
+	public void setIsSnapSoundEnabled(boolean isSoundEnabled) {
+		this.isSnapSoundEnabled = isSoundEnabled;
 	}
+	
+	/**
+	 * 通知音を有効にするかの設定を取得する
+	 * @return isNotificationSoundEnabled
+	 */
+	public boolean getIsNotificationSoundEnabled() {
+		return isNotificationSoundEnabled;
+	}
+
+	/**
+	 * 通知音を表示するかの設定をセットする
+	 * @param isNotificationSoundEnabled
+	 */
+	public void setIsNotificationSoundEnabled(boolean isNotificationSoundEnabled) {
+		this.isNotificationSoundEnabled = isNotificationSoundEnabled;
+	}
+	
 }

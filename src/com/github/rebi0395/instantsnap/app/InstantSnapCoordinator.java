@@ -72,7 +72,7 @@ public class InstantSnapCoordinator implements KeyEventListener {
 
 		// 依存性の注入があるクラス
 		this.keyManager = new TriggerKeyManager(config, this);
-		this.takeSnapService = new TakeSnapService(areaResolver, saveService);
+		this.takeSnapService = new TakeSnapService(areaResolver, saveService, soundPlayer);
 
 		// Stage情報を持つクラス
 		this.notificationPresenter = notificationPresenter;
@@ -144,8 +144,8 @@ public class InstantSnapCoordinator implements KeyEventListener {
 			SnapResultBean result;
 
 			// 撮影後、使う変数
-			boolean soundEnabled;
 			boolean showNotification;
+			boolean soundNotificationEnabled;
 			AfterSnapActionType afterSnapActionType;
 
 			synchronized (configLock) { // 排他制御
@@ -154,8 +154,8 @@ public class InstantSnapCoordinator implements KeyEventListener {
 					result = takeSnapService.execute(config);
 
 					// ロック中に設定値を退避する
-					soundEnabled = config.getIsSoundEnabled();
 					showNotification = config.getIsShowNotification();
+					soundNotificationEnabled = config.getIsNotificationSoundEnabled();
 					afterSnapActionType = config.getAfterSnapActionType();
 
 				} catch (Exception e) {
@@ -170,14 +170,14 @@ public class InstantSnapCoordinator implements KeyEventListener {
 			}
 
 			try {
-				// 撮影音が有効な場合
-				if (soundEnabled) {
-					soundPlayer.playShutterSound();
-				}
-
 				// 通知表示が有効な場合
 				if (showNotification) {
 					notificationPresenter.show(result, fileOpenService);
+				}
+
+				// 通知音が有効な場合
+				if (soundNotificationEnabled) {
+					soundPlayer.playNotificationSound();
 				}
 
 				// 撮影後アクションを実行
