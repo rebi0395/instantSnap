@@ -217,36 +217,36 @@ public class PropertiesRepository {
 
 			#カスタムメインキー設定 -- triggerを4にした上でキーコードを記載してください
 			#未使用な場合は、0
-			customKey=30
+			customKey=0
 
 			#カスタムキーのコンビネーションキー設定 -- 使用する場合はtrue メインキー必須
 			useAlt=false
-			useCtrl=true
-			useShift=true
+			useCtrl=false
+			useShift=false
 
 			#撮影範囲の選択
 			#1 -> アクティブウィンドウ(デフォルト), 2 -> アクティブモニター
 			#3 -> メインモニター, 4 -> 全てのモニター
-			snapArea=2
+			snapArea=1
 
 			#～～ 出力設定 ～～#
 			#画像を保存する（有効にする場合は"true"と記載してください）
-			saveImageEnabled=false
+			saveImageEnabled=true
 
 			#クリップボードにコピーする（有効にする場合は"true"と記載してください）
 			clipboardEnabled=true
 
 			#保存先パスを指定してください
-			savePath=C:/Instantsnap画像保存先
+			savePath=./screenshots/
 
 			#拡張子の選択 png、jpg、bmp、gifのいずれかを記載してください(デフォルト：png)
-			format=jpg
+			format=png
 
 			#～～ 撮影後設定 ～～#
 			#撮影後に行う処理を選択
-			#1 -> 通知を表示する, 2 -> 画像ファイルを開く,
+			#1 -> 画像ファイルを表示する, 2 -> ペイントを開く,
 			#3 -> 一時保存ファイルに保存する, 0, 未記入等 -> 何もしない(デフォルト)
-			afterSnapAction=3
+			afterSnapAction=0
 
 			#撮影時、通知を表示する（有効にする場合は"true"と記載してください）
 			notificationEnabled=true
@@ -256,7 +256,7 @@ public class PropertiesRepository {
 			soundNotificationEnabled=true
 
 			#撮影音を鳴らして撮影する（有効にする場合は"true"と記載してください）
-			soundSnapEnabled=true
+			soundSnapEnabled=false
 
-									""".replace("\r\n", "\n").replace("\n", System.lineSeparator());
+												""".replace("\r\n", "\n").replace("\n", System.lineSeparator());
 }
