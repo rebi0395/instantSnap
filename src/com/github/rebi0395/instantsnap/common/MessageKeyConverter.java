@@ -10,16 +10,16 @@ import org.slf4j.LoggerFactory;
 import com.github.rebi0395.instantsnap.model.enums.LanguageType;
 import static com.github.rebi0395.instantsnap.common.MessageKeyConstant.*;
 
-public class MessageManager {
+public class MessageKeyConverter {
 
 	/** ロガー */
-	private static final Logger log = LoggerFactory.getLogger(MessageManager.class);
+	private static final Logger log = LoggerFactory.getLogger(MessageKeyConverter.class);
 		
 	/** リソースバンドル */
 	private ResourceBundle bundle;
 	
 	/** コンストラクタ */
-	public MessageManager(LanguageType languageType) {
+	public MessageKeyConverter(LanguageType languageType) {
 		changeLanguage(languageType);
 	}
 	

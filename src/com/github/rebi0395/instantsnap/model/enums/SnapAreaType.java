@@ -7,7 +7,7 @@ import javafx.util.StringConverter;
 /**
  * 撮影モードを指定するクラス
  */
-public enum SnapArea implements BaseEnum {
+public enum SnapAreaType implements BaseEnum {
 
 	/** 使用しているウィンドウのみ撮影 */
 	ACTIVE_WINDOW("1", "activeWindow"),
@@ -24,7 +24,7 @@ public enum SnapArea implements BaseEnum {
 	private final String displayName;
 
 	/** コンストラクタ */
-	SnapArea(String value, String displayName) {
+	SnapAreaType(String value, String displayName) {
 		this.value = value;
 		this.displayName = displayName;
 	}
@@ -46,20 +46,20 @@ public enum SnapArea implements BaseEnum {
 	}
 
 	/**
-	 * プロパティファイルの値から対応する SnapArea を取得する。
+	 * プロパティファイルの値から対応する SnapAreaType を取得する。
 	 * 不正な値が指定された場合は デフォルト値を返し、ログを出力する。
 	 * @param raw プロパティファイルと紐つく値
-	 * @return 対応する SnapArea、またはデフォルトの SnapArea
+	 * @return 対応する SnapAreaType、またはデフォルトの SnapAreaType
 	 */
-	public static SnapArea parseOrDefault(String raw) {
-		return BaseEnum.parseOrDefault(SnapArea.class, raw, ACTIVE_WINDOW, PROPERTY_SNAP_AREA);
+	public static SnapAreaType parseOrDefault(String raw) {
+		return BaseEnum.parseOrDefault(SnapAreaType.class, raw, ACTIVE_WINDOW, PROPERTY_SNAP_AREA);
 	}
 
 	/**
 	 * 列挙型と文字列を相互変換する	JavaFXコンバーターを取得する
-	 * @return SnapArea と文字列を交互変換するJavaFXコンバーター
+	 * @return SnapAreaType と文字列を交互変換するJavaFXコンバーター
 	 */
-	public static StringConverter<SnapArea> toConverter() {
-		return BaseEnum.toConverter(SnapArea.class, ACTIVE_WINDOW);
+	public static StringConverter<SnapAreaType> toConverter() {
+		return BaseEnum.toConverter(SnapAreaType.class, ACTIVE_WINDOW);
 	}
 }

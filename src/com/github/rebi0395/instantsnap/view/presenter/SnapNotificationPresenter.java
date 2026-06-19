@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 import com.github.rebi0395.instantsnap.exception.ServiceException;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.model.bean.SnapResultBean;
-import com.github.rebi0395.instantsnap.service.SnapAfterService;
+import com.github.rebi0395.instantsnap.service.FileOpenService;
 import com.github.rebi0395.instantsnap.view.controller.SnapNotificationController;
 
 import static com.github.rebi0395.instantsnap.common.AppConstant.*;
@@ -68,7 +68,7 @@ public class SnapNotificationPresenter {
 	 * 通知を表示する
 	 * @param result 撮影結果インスタンス
 	 */
-	public void show(SnapResultBean result, SnapAfterService afterService) {
+	public void show(SnapResultBean result, FileOpenService afterService) {
 
 		// メッセージリスト
 		List<String> noticeMessageList = new ArrayList<String>();
@@ -112,11 +112,11 @@ public class SnapNotificationPresenter {
 	 * 
 	 * @param noticeMessageKeyList 通知に表示するメッセージキーのリスト
 	 * @param targetPath 直前の画像保存パス
-	 * @param isButtonRequired 通知に保存先パスに遷移するボタンを表示するか trueで表示
+	 * @param isOpenActionAvailable 通知に保存先パスに遷移する機能を与えるか trueで付与
 	 * @throws ServiceException
 	 */
 	private void showNotification(List<String> noticeMessageKeyList,
-			Path targetPath, boolean isButtonRequired, SnapAfterService afterService) throws ServiceException {
+			Path targetPath, boolean isOpenActionAvailable, FileOpenService afterService) throws ServiceException {
 
 		try {
 			// FXMLローダーを作成
@@ -133,7 +133,7 @@ public class SnapNotificationPresenter {
 
 			// 通知押下時の処理を設定
 			Runnable openAction = null;
-			if (isButtonRequired) {
+			if (isOpenActionAvailable) {
 				openAction = new Runnable() {
 					@Override
 					public void run() {

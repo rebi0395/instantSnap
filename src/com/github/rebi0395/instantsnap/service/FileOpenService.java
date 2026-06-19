@@ -6,20 +6,25 @@ import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.rebi0395.instantsnap.model.enums.SnapAfter;
+import com.github.rebi0395.instantsnap.model.enums.AfterSnapActionType;
 
-public class SnapAfterService {
+/**
+ * ファイルを開くクラス
+ */
+public class FileOpenService {
 
 	/** ロガー */
-	private static final Logger log = LoggerFactory.getLogger(SnapAfterService.class);
+	private static final Logger log = LoggerFactory.getLogger(FileOpenService.class);
 
 	/**
-	 * 撮影後の処理クラスに、処理を依頼するメソッドです
-	 * @param resolver 撮影後解決クラス
+	 * ユーザー設定値から指定の方法でファイルを開く
+	 * 例外発生時はログを出力し、例外を投げない
+	 * 
+	 * @param afterSnapActionType 撮影後動作のEnum
 	 * @param path 保存した画像のファイルパス
 	 */
-	public void execute(SnapAfter snapAfter, Path path) {
-		switch (snapAfter) {
+	public void execute(AfterSnapActionType afterSnapActionType, Path path) {
+		switch (afterSnapActionType) {
 		case OPEN_IMAGE:
 			openImage(path);
 			break;
@@ -77,7 +82,7 @@ public class SnapAfterService {
 			}
 		} catch (Exception e) {
 			// ログを出して例外を握りつぶす
-			log.warn("Failed to open directory. (ディレクトリを開くのに失敗しました)", e);
+			log.warn("ディレクトリを開くのに失敗しました", e);
 		}
 	}
 }
