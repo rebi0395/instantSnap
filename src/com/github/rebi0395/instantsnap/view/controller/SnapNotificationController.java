@@ -33,32 +33,23 @@ public class SnapNotificationController {
 	private Label labelClose;
 
 	/**
-	 * 通知表示内容を設定する
-	 *
-	 * @param messages 通知メッセージ一覧
-	 * @param openFolderText フォルダを開けることを通知する文言
-	 * @param openAction 通知押下時の処理。画像保存、一時保存がない場合はnull
-	 * @param closeAction 閉じる押下時の処理
+	 * 通知の文言やアクションを設定する
+	 * 
+	 * @param messageList 表示するメッセージリスト
+	 * @param openMessage クリック時にフォルダを開けることを通知するメッセージ
+	 * @param openAction クリック時にフォルダを開く動作 画像保存でない場合はnull
+	 * @param closeAction 通知を閉じる動作
 	 */
-	public void setup(List<String> messages, String openFolderText, Runnable openAction, Runnable closeAction) {
+	public void setup(List<String> messageList, String openMessage, Runnable openAction, Runnable closeAction) {
+
+		// メッセージを設定
 		labelTitle.setText("InstantSnap");
-		labelMessage.setText(String.join(System.lineSeparator(), messages));
+		labelMessage.setText(String.join(System.lineSeparator(), messageList));
 
-		// 閉じるラベルを押下で通知を閉じるアクションを設定
-		labelClose.setCursor(Cursor.HAND); // マウスカーソルを手の形にする
-		labelClose.setOnMouseClicked(event -> {
-			event.consume();
-			closeAction.run();
-		});
-
-		if (openAction == null) {
-			// ラベルを表示しない
-			labelOpenFolder.setVisible(false);
-			labelOpenFolder.setManaged(false);
-			labelOpenFolder.setText(null);
-		} else {
+		// 画像保存があり、フォルダを開く処理を搭載する場合
+		if (openAction != null) {
 			// ラベルを表示する
-			labelOpenFolder.setText(openFolderText);
+			labelOpenFolder.setText(openMessage);
 			labelOpenFolder.setVisible(true);
 			labelOpenFolder.setManaged(true);
 			// 外枠クリックでフォルダを開くアクションを設定
@@ -66,6 +57,19 @@ public class SnapNotificationController {
 			rootNotification.setOnMouseClicked(event -> {
 				openAction.run();
 			});
+			// 画像保存がなく、フォルダを開く処理が不要な場合
+		} else {
+			// ラベルを表示しない
+			labelOpenFolder.setVisible(false);
+			labelOpenFolder.setManaged(false);
+			labelOpenFolder.setText(null);
 		}
+
+		// 閉じるラベルを押下で通知を閉じるアクションを設定
+		labelClose.setCursor(Cursor.HAND); // マウスカーソルを手の形にする
+		labelClose.setOnMouseClicked(event -> {
+			event.consume();
+			closeAction.run();
+		});
 	}
 }

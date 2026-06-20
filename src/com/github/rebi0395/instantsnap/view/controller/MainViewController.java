@@ -31,7 +31,6 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.stage.DirectoryChooser;
-import javafx.stage.Stage;
 
 /**
  * メイン画面のコントローラクラス
@@ -40,8 +39,10 @@ public class MainViewController {
 
 	/** サービスクラスの司令塔クラス */
 	private InstantSnapCoordinator coordinator;
+
 	/** メッセージの多言語変換クラス */
 	private MessageKeyConverter converter;
+
 	/** nativeキーコードを保持する変数 */
 	private int nativeCode;
 
@@ -69,15 +70,15 @@ public class MainViewController {
 	/** 適応中の撮影後設定を表示するラベル */
 	@FXML
 	private Label labelSnapAfter;
-	
+
 	/** 画像を保存する設定の有効/無効を表示するラベル */
 	@FXML
 	private Label labelSaveImage;
-	
+
 	/** クリップボードに保存する設定の有効/無効を表示するラベル */
 	@FXML
 	private Label labelClipboard;
-	
+
 	/** 通知を表示する設定の有効/無効を表示するラベル */
 	@FXML
 	private Label labelNotification;
@@ -85,11 +86,11 @@ public class MainViewController {
 	/** 通知音を鳴らす設定の有効/無効を表示するラベル */
 	@FXML
 	private Label labelNotificationSound;
-	
+
 	/** 撮影音を鳴らす設定の有効/無効を表示するラベル */
 	@FXML
 	private Label labelSnapSound;
-	
+
 	// -- 言語設定 --
 	/** 撮影ショートカットキーを選択するコンボボックス */
 	@FXML
@@ -161,7 +162,7 @@ public class MainViewController {
 	/** 通知音設定のチェックボックス */
 	@FXML
 	private CheckBox checkNotificationSound;
-	
+
 	/** 撮影音設定のチェックボックス */
 	@FXML
 	private CheckBox checkSnapSound;
@@ -171,9 +172,8 @@ public class MainViewController {
 	 */
 	@FXML
 	public void initialize() {
-
+		this.converter = coordinator.getMessageKeyConverter();
 		ConfigBean config = coordinator.getConfigBean(); // 設定値保持クラス
-		this.converter = new MessageKeyConverter(config.getLanguageType()); // メッセージ変換クラス
 
 		// -- 活性・非活性の動的な制御の登録 -- 
 		// ショートカットキーのリストを監視するリスナー
@@ -225,7 +225,6 @@ public class MainViewController {
 		// クリップボードに画像をするかのチェックボックスをセット
 		checkClipboard.setSelected(config.getIsCopyToClipboard());
 		// 保存先のフォルダを取得し、テキストフィールドにセット
-		config.getSavePath();
 		textFilePath.setText(config.getSavePath());
 		// 拡張子のリスト、コンバーター(変換ルール)、初期設定値をセット
 		comboFormatType.getItems().addAll(FormatType.values());
@@ -262,7 +261,7 @@ public class MainViewController {
 			ConfigBean config = coordinator.getConfigBean();
 			config.setLanguageType(newVal); // 最新の言語設定をセット
 			coordinator.save(); // 内部では全項目更新
-			
+
 			converter.changeLanguage(config.getLanguageType()); // リソースバンドルを読み直す
 			updateSettingLabels(config, config.getCustomKeyBean()); // ラベル更新
 
@@ -276,7 +275,7 @@ public class MainViewController {
 	public void onSelectFile() {
 		DirectoryChooser dc = new DirectoryChooser();
 		dc.setTitle("保存先フォルダを選択");
-		File folder = dc.showDialog(new Stage());
+		File folder = dc.showDialog(textFilePath.getScene().getWindow());
 		if (folder != null) {
 			textFilePath.setText(folder.getAbsolutePath().replace("\\", "/")); // パス文字を置換する
 		}
@@ -436,12 +435,12 @@ public class MainViewController {
 	 * @param customKeys ユーザーのカスタムキーの設定値
 	 */
 	public void updateSettingLabels(ConfigBean config, KeyCombinationBean customKeys) {
-		
+
 		// -- 撮影設定
 		labelKeyCombination
 				.setText(config.getTriggerType().resolveKeyCombination(customKeys).resolveKeyCombinationName());
 		labelSnapArea.setText(config.getSnapAreaType().getDisplayName());
-		
+
 		// -- 出力設定
 		labelSaveImage.setText(converter.getEnabledMessage(config.getIsSaveImage()));
 		labelClipboard.setText(converter.getEnabledMessage(config.getIsCopyToClipboard()));

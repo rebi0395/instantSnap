@@ -34,7 +34,7 @@ public class FileOpenService {
 			break;
 
 		case SAVE_TO_TMP, NONE:
-			return;	// 何もしない
+			return; // 何もしない
 		}
 	}
 
@@ -46,7 +46,7 @@ public class FileOpenService {
 		try {
 			Desktop.getDesktop().open(targetPath.toAbsolutePath().toFile());
 		} catch (Exception e) {
-			log.warn("Failed to open directory. (画像を開くのに失敗しました)", e);
+			log.warn("画像を開くのに失敗しました", e);
 		}
 	}
 
@@ -72,9 +72,7 @@ public class FileOpenService {
 			// windowの場合、コマンドを直接叩いて実行する
 			if (os.contains("win")) {
 				new ProcessBuilder(
-						"cmd", "/c", // コマンドプロンプト起動
-						"start", "", // ウィンドウタイトルは空で指定
-						"explorer.exe", // エクスプローラー起動
+						"explorer",
 						"/select," + targetPath.toAbsolutePath() // 絶対パスのファイルを選択状態にする
 				).start();
 			} else {
