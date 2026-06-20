@@ -38,7 +38,7 @@ import javafx.stage.DirectoryChooser;
 public class MainViewController {
 
 	/** サービスクラスの司令塔クラス */
-	private InstantSnapCoordinator coordinator;
+	private final InstantSnapCoordinator coordinator;
 
 	/** メッセージの多言語変換クラス */
 	private MessageKeyConverter converter;
@@ -167,11 +167,21 @@ public class MainViewController {
 	@FXML
 	private CheckBox checkSnapSound;
 
+	/** コンストラクタ */
+	public MainViewController(InstantSnapCoordinator coordinator) {
+		this.coordinator = coordinator;
+	}
+	
 	/**
 	 * 初期化処理。FXMLファイルの要素を取り込んだ後に呼び出す
 	 */
 	@FXML
 	public void initialize() {
+		// コーディネーターがない場合、落とす
+		if (coordinator == null) {
+			throw new IllegalArgumentException("コーディネーターが注入されていません");
+		}
+
 		this.converter = coordinator.getMessageKeyConverter();
 		ConfigBean config = coordinator.getConfigBean(); // 設定値保持クラス
 
@@ -452,21 +462,5 @@ public class MainViewController {
 		labelNotification.setText(converter.getEnabledMessage(config.getIsShowNotification()));
 		labelNotificationSound.setText(converter.getEnabledMessage(config.getIsNotificationSoundEnabled()));
 		labelSnapSound.setText(converter.getEnabledMessage(config.getIsSnapSoundEnabled()));
-	}
-
-	/**
-	 * サービスクラスの司令塔クラスを取得する
-	 * @return coordinator
-	 */
-	public InstantSnapCoordinator getCoordinator() {
-		return coordinator;
-	}
-
-	/**
-	 * サービスクラスの司令塔クラスをセットする
-	 * @param coordinator セットする coordinator
-	 */
-	public void setCoordinator(InstantSnapCoordinator coordinator) {
-		this.coordinator = coordinator;
 	}
 }

@@ -52,8 +52,7 @@ public class InstantSnapApp extends Application {
 			this.coordinator = new InstantSnapCoordinator(notificationPresenter);
 
 			// コントローラを生成
-			MainViewController mainController = new MainViewController();
-			mainController.setCoordinator(coordinator);
+			MainViewController mainController = new MainViewController(coordinator);
 
 			// FXMLファイルローダーを作成する
 			FXMLLoader loader = new FXMLLoader(getClass().getResource(FXML_MAIN_VIEW));
