@@ -11,6 +11,7 @@ import com.github.rebi0395.instantsnap.common.MessageKeyConstant;
 import com.github.rebi0395.instantsnap.common.MessageKeyConverter;
 import com.github.rebi0395.instantsnap.model.bean.SnapResultBean;
 import com.github.rebi0395.instantsnap.service.FileOpenService;
+import com.github.rebi0395.instantsnap.view.StyleSheetUtil;
 import com.github.rebi0395.instantsnap.view.controller.SnapNotificationController;
 
 import static com.github.rebi0395.instantsnap.common.AppConstant.*;
@@ -107,10 +108,16 @@ public class SnapNotificationPresenter {
 		try {
 			// FXMLローダーを作成
 			FXMLLoader loader = new FXMLLoader(getClass().getResource(FXML_NOTIFICATION));
-			Parent root = loader.load();
 
-			// fxmlファイルに紐づいたコントローラを取得 (fxml側でコントローラ指定が前提)
-			SnapNotificationController controller = loader.getController();
+			// 通知コントローラを生成し、FXMLローダーにセットする
+			SnapNotificationController controller = new SnapNotificationController();
+			loader.setController(controller);
+
+			// FXMLに読み込む
+			Parent root = loader.load();
+			
+			// cssを適用する
+			StyleSheetUtil.applyStyleSheet(root, CSS_NOTIFICATION);
 
 			// Popupを設定
 			Popup popup = new Popup();

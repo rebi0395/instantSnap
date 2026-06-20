@@ -54,13 +54,15 @@ public final class AppConstant {
 	public static final String ICON_APP = "/icon/instantsnap.png";
 
 	/** メインウィンドウのFXMLファイル */
-	public static final String FXML_MAIN_VIEW = "/com/github/rebi0395/instantsnap/view/fxml/MainView.fxml";
+	public static final String FXML_MAIN_WINDOW = "/com/github/rebi0395/instantsnap/view/fxml/MainWindow.fxml";
 	/** 終了ダイアログのFXMLファイル */
 	public static final String FXML_EXIT_DIALOG = "/com/github/rebi0395/instantsnap/view/fxml/ExitDialog.fxml";
 	/** 通知画面のFXMLファイル */
 	public static final String FXML_NOTIFICATION = "/com/github/rebi0395/instantsnap/view/fxml/SnapNotification.fxml";
 
 	/** メインウィンドウのCSSファイル */
-	public static final String CSS_MAIN = "/com/github/rebi0395/instantsnap/view/css/main.css";
-
+	public static final String CSS_MAIN_WINDOW = "/com/github/rebi0395/instantsnap/view/css/main-window.css";
+	/** 通知画面のCSSファイル */
+	public static final String CSS_NOTIFICATION = "/com/github/rebi0395/instantsnap/view/css/notification.css";
+	
 }
