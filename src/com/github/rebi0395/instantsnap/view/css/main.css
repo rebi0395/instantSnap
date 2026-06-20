@@ -16,6 +16,34 @@
     -fx-pref-width: 200px;
 }
 
+/** テキストフィールド共通 */
+.text-field {
+    -fx-pref-width: 200px;
+
+    -fx-pref-height: 26px;
+    -fx-min-height: 26px;
+    -fx-max-height: 26px;
+
+    -fx-padding: 3 7 3 7;
+
+    -fx-background-color: white;
+    -fx-background-radius: 3;
+    -fx-background-insets: 0;
+
+    -fx-border-color: #bdbdbd;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3;
+}
+
+/** 非活性のテキストフィールド */
+.text-field:disabled {
+    -fx-opacity: 1.0;
+    -fx-background-color: #e0e0e0;
+    -fx-border-color: #bdbdbd;
+    -fx-text-fill: #666666;
+    -fx-prompt-text-fill: #8a8a8a;
+}
+
 /** 小項目の区切り */
 .section-border {
     -fx-background-color: #f8f8f8;

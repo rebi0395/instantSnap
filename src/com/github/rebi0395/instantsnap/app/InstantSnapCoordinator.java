@@ -6,6 +6,7 @@ import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.rebi0395.instantsnap.common.MessageKeyConverter;
 import com.github.rebi0395.instantsnap.exception.ServiceException;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.model.bean.SnapResultBean;
@@ -35,6 +36,9 @@ public class InstantSnapCoordinator implements KeyEventListener {
 	private final ConfigBean config;
 	/** プロパティファイルのリポジトリ */
 	private final PropertiesRepository repository;
+	/** メッセージを多言語変換するクラス */
+	private final MessageKeyConverter converter;
+
 	/** 一時保存ディレクトリの管理クラス */
 	private final TmpFolderService tmpFolder;
 	/** 撮影トリガーの管理クラス */
@@ -71,6 +75,7 @@ public class InstantSnapCoordinator implements KeyEventListener {
 		this.soundPlayer = new SoundPlayer();
 
 		// 依存性の注入があるクラス
+		this.converter = new MessageKeyConverter(config.getLanguageType());
 		this.keyManager = new TriggerKeyManager(config, this);
 		this.takeSnapService = new TakeSnapService(areaResolver, saveService, soundPlayer);
 
@@ -87,6 +92,8 @@ public class InstantSnapCoordinator implements KeyEventListener {
 		try {
 			// ユーザーの設定値をプロパティファイルを読み込み初期化
 			repository.read(config);
+			// 言語設定を初期化
+			converter.changeLanguage(config.getLanguageType());
 			// 一時保存ファイルのリセット
 			tmpFolder.cleanTmpDirectory();
 			// キー監視開始
@@ -172,7 +179,7 @@ public class InstantSnapCoordinator implements KeyEventListener {
 			try {
 				// 通知表示が有効な場合
 				if (showNotification) {
-					notificationPresenter.show(result, fileOpenService);
+					notificationPresenter.show(result, fileOpenService, converter);
 				}
 
 				// 通知音が有効な場合
@@ -205,5 +212,13 @@ public class InstantSnapCoordinator implements KeyEventListener {
 	 */
 	public ConfigBean getConfigBean() {
 		return config;
+	}
+	
+	/**
+	 * メッセージキーをメッセージに変換するコンバーターを取得する
+	 * @return converter
+	 */
+	public MessageKeyConverter getMessageKeyConverter() {
+		return converter;
 	}
 }

@@ -70,14 +70,16 @@
 												<ColumnConstraints percentWidth="50"/>
 											</columnConstraints>	
 											<VBox spacing="10" GridPane.columnIndex="0">
-												<HBox spacing="10" styleClass="output-switch-row output-switch-item">
-													<CheckBox fx:id="checkSaveImage" text="画像を保存する" styleClass="switch-check-box" />
+												<HBox spacing="10" styleClass="output-switch-item">
+													<CheckBox fx:id="checkSaveImage" styleClass="switch-check-box"/>
+													<Label text="画像を保存する"/>
 													<Label fx:id="labelSaveImage" styleClass="current-value"/>
 												</HBox>
 											</VBox>
 											<VBox spacing="10" GridPane.columnIndex="1">
-												<HBox spacing="10" styleClass="output-switch-row output-switch-item">
-													<CheckBox fx:id="checkClipboard" text="クリップボードに保存する" styleClass="switch-check-box"/>
+												<HBox spacing="10" styleClass="output-switch-item">
+													<CheckBox fx:id="checkClipboard" styleClass="switch-check-box"/>
+													<Label text="クリップボードにコピーする"/>
 													<Label fx:id="labelClipboard" styleClass="current-value"/>
 												</HBox>
 											</VBox>
@@ -116,7 +118,7 @@
 											</columnConstraints>
 									
 											<!-- 左側：撮影後の動作 -->
-											<VBox spacing="8" GridPane.columnIndex="0">
+											<VBox spacing="10" GridPane.columnIndex="0">
 												<HBox styleClass="setting-header">
 													<Label text="撮影後の動作" styleClass="section-title"/>
 													<Label fx:id="labelSnapAfter" styleClass="current-value"/>
@@ -129,22 +131,22 @@
 											</VBox>
 									
 											<!-- 右側：通知表示 -->
-											<VBox spacing="8" GridPane.columnIndex="1">
+											<VBox spacing="10" GridPane.columnIndex="1">
 												<HBox styleClass="setting-header">
 													<Label text="通知表示" styleClass="section-title"/>
 													<Label fx:id="labelNotification" styleClass="current-value"/>
 												</HBox>
-												<HBox spacing="10" styleClass="output-switch-row output-switch-item">
+												<HBox spacing="10" styleClass="output-switch-row">
 													<CheckBox fx:id="checkNotification" text="通知を表示する" styleClass="switch-check-box"/>
 												</HBox>
 												<HBox styleClass="setting-header">
 													<Label text="サウンド設定" styleClass="section-title"/>
 												</HBox>
-												<HBox spacing="10" styleClass="output-switch-row output-switch-item">
+												<HBox spacing="10" styleClass="output-switch-item">
 													<CheckBox fx:id="checkSnapSound" text="撮影音を有効にする"/>
 													<Label fx:id="labelSnapSound" styleClass="current-value"/>
 												</HBox>
-												<HBox spacing="10" styleClass="output-switch-row output-switch-item">
+												<HBox spacing="10" styleClass="output-switch-item">
 													<CheckBox fx:id="checkNotificationSound" text="通知音を有効にする"/>
 													<Label fx:id="labelNotificationSound" styleClass="current-value"/>
 												</HBox>
@@ -176,7 +178,7 @@
 				<Insets top="10" right="20" bottom="20" left="20"/>
 			</padding>
 			<children>
-				<Button text="設定を初期化" onAction="#onResetConfig" style="-fx-min-width: 100;"/>
+				<Button text="入力値を初期化" onAction="#onResetConfig" style="-fx-min-width: 100;"/>
 				<Button text="設定を反映" onAction="#onApplyConfig" prefWidth="120" style="-fx-base: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;"/>
 			</children>
 		</HBox>

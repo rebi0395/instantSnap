@@ -18,6 +18,9 @@ public final class MessageKeyConstant {
 	public static final String NOTIFICATION_IMAGE_SAVED = "notification.image.saved";
 	/** 一時保存通知メッセージキー */
 	public static final String NOTIFICATION_TMP_IMAGE_SAVED = "notification.tmp.image.saved";
+	/** 一時保存フォルダがアプリ終了時にファイルを消すことを警告するメッセージキー */
+	public static final String NOTIFICATION_TMP_WARN = "notification.tmp.warn";
+	
 	/** クリップボード保存通知メッセージキー */
 	public static final String NOTIFICATION_CLIPBOARD_SAVED = "notification.clipboard.saved";
 	/** 保存先を開く通知アクション文言キー */

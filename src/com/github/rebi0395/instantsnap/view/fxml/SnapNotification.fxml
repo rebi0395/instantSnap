@@ -11,7 +11,7 @@
 	xmlns="http://javafx.com/javafx" 
 	xmlns:fx="http://javafx.com/fxml"
 	fx:controller="com.github.rebi0395.instantsnap.view.controller.SnapNotificationController"
-	prefWidth="340"
+	prefWidth="360"
 	styleClass="notification-root"
 	stylesheets="@../css/notification.css">
 

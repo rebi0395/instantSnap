@@ -29,7 +29,7 @@ public class SoundPlayer implements AutoCloseable {
 	private Clip notificationClip;
 
 	/** 音声Clip一覧 */
-	private List<Clip> clipList = new ArrayList<>();
+	private final List<Clip> clipList = new ArrayList<>();
 
 	/** コンストラクタ 音声をClip形式でロードする */
 	public SoundPlayer() {
@@ -45,7 +45,7 @@ public class SoundPlayer implements AutoCloseable {
 	}
 	
 	/**
-	 * カメラのシャッター音を再生する
+	 * 通知音を再生する
 	 */
 	public void playNotificationSound() {
 		play(notificationClip);
@@ -102,7 +102,7 @@ public class SoundPlayer implements AutoCloseable {
 		try (AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(url)) {
 			Clip clip = AudioSystem.getClip(); // クリップ取得
 			clip.open(audioInputStream); // audioInputStreamを紐付け、音声操作を可能にする
-			addList(clip); // クリップリストに加える
+			addClip(clip); // クリップリストに加える
 			return clip;
 
 		} catch (Exception e) {
@@ -115,7 +115,7 @@ public class SoundPlayer implements AutoCloseable {
 	 * clipをclip一覧に加える
 	 * @param clip
 	 */
-	private void addList(Clip clip) {
+	private void addClip(Clip clip) {
 		if (clip != null) {
 			clipList.add(clip);
 		}
