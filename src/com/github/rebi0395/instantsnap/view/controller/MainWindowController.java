@@ -35,7 +35,7 @@ import javafx.stage.DirectoryChooser;
 /**
  * メイン画面のコントローラクラス
  */
-public class MainViewController {
+public class MainWindowController {
 
 	/** サービスクラスの司令塔クラス */
 	private final InstantSnapCoordinator coordinator;
@@ -168,7 +168,7 @@ public class MainViewController {
 	private CheckBox checkSnapSound;
 
 	/** コンストラクタ */
-	public MainViewController(InstantSnapCoordinator coordinator) {
+	public MainWindowController(InstantSnapCoordinator coordinator) {
 		this.coordinator = coordinator;
 	}
 	
@@ -177,11 +177,6 @@ public class MainViewController {
 	 */
 	@FXML
 	public void initialize() {
-		// コーディネーターがない場合、落とす
-		if (coordinator == null) {
-			throw new IllegalArgumentException("コーディネーターが注入されていません");
-		}
-
 		this.converter = coordinator.getMessageKeyConverter();
 		ConfigBean config = coordinator.getConfigBean(); // 設定値保持クラス
 

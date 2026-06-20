@@ -1,22 +1,13 @@
 package com.github.rebi0395.instantsnap.app;
 
-import java.io.InputStream;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.rebi0395.instantsnap.exception.ServiceException;
-import com.github.rebi0395.instantsnap.view.controller.MainViewController;
 import com.github.rebi0395.instantsnap.view.presenter.ExitDialogPresenter;
+import com.github.rebi0395.instantsnap.view.presenter.MainWindowPresenter;
 import com.github.rebi0395.instantsnap.view.presenter.SnapNotificationPresenter;
 
-import static com.github.rebi0395.instantsnap.common.AppConstant.*;
-
 import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 /**
@@ -37,7 +28,7 @@ public class InstantSnapApp extends Application {
 	private static final Logger log = LoggerFactory.getLogger(InstantSnapApp.class);
 
 	/**
-	 * コントローラにサービスクラスを注入し、初期起動を行う
+	 * 各種PresenterとCoordinatorを生成し、メインウィンドウを表示する
 	 */
 	@Override
 	public void start(Stage stage) {
@@ -51,45 +42,11 @@ public class InstantSnapApp extends Application {
 			// 司令塔クラスを生成し、初期化処理を行う
 			this.coordinator = new InstantSnapCoordinator(notificationPresenter);
 
-			// コントローラを生成
-			MainViewController mainController = new MainViewController(coordinator);
-
-			// FXMLファイルローダーを作成する
-			FXMLLoader loader = new FXMLLoader(getClass().getResource(FXML_MAIN_VIEW));
-			loader.setController(mainController); // FXMLローダーにコントローラをセットする
-			Parent mainRoot;
-
-			mainRoot = loader.load();
-
-			// シーン (ウィンドウのファイル、横幅、高さを設定)
-			Scene scene = new Scene(mainRoot, 600, 900);
-
-			// ウィンドウを閉じようとすると、確認ウィンドウを表示する処理を登録
-			stage.setOnCloseRequest(event -> {
-				event.consume(); // ウィンドウの閉じる動作を止める
-				try {
-					boolean isEnd = exitDialogPresenter.show(stage);
-					if (isEnd) {
-						coordinator.exit();
-					}
-				} catch (ServiceException e) {
-					coordinator.exit();
-				}
-			});
-
-			// アイコンを設定する
-			InputStream iconStream = getClass().getResourceAsStream(ICON_APP);
-			if (iconStream != null) {
-				stage.getIcons().add(new Image(iconStream));
-			} else {
-				log.warn("アイコンファイルが見つかりません: {}", ICON_APP);
-			}
-
-			// ウィンドウを設定し、表示する
-			stage.setTitle("InstantSnap Menu");
-			stage.setScene(scene);
-			stage.sizeToScene();
-			stage.show();
+			// メインウィンドウのプレゼンタークラスを作成
+			MainWindowPresenter mainPresenter = new MainWindowPresenter(stage, coordinator, exitDialogPresenter);
+			
+			// メインウィンドウを表示する
+			mainPresenter.show();
 
 		} catch (Exception e) {
 			log.error("InstantSnapの起動に失敗しました", e);

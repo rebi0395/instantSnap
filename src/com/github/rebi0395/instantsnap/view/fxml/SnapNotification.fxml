@@ -10,10 +10,8 @@
 <HBox fx:id="rootNotification" 
 	xmlns="http://javafx.com/javafx" 
 	xmlns:fx="http://javafx.com/fxml"
-	fx:controller="com.github.rebi0395.instantsnap.view.controller.SnapNotificationController"
 	prefWidth="360"
-	styleClass="notification-root"
-	stylesheets="@../css/notification.css">
+	styleClass="notification-root">
 
 	<Region styleClass="notification-accent" />
 	<VBox spacing="8" HBox.hgrow="ALWAYS" styleClass="notification-content">
