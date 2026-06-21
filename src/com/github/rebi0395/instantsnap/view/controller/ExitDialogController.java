@@ -7,45 +7,45 @@ import javafx.stage.Stage;
 public class ExitDialogController {
 
 	/** 終了ボタン */
-    @FXML
-    private Button okButton;
+	@FXML
+	private Button okButton;
 
-    /** 終了キャンセルボタン */
-    @FXML
-    private Button cancelButton;
+	/** 終了キャンセルボタン */
+	@FXML
+	private Button cancelButton;
 
-    /** 終了するかの結果 */ 
-    private boolean result = false;
+	/** 終了するかの結果 */
+	private boolean result = false;
 
-    /**
-     * 初期化メソッド ボタンのアクションを設定
-     */
-    @FXML
-    public void initialize() {
-        okButton.setOnAction(e -> {
-            result = true;
-            close();
-        });
+	/**
+	 * 初期化メソッド ボタンのアクションを設定
+	 */
+	@FXML
+	public void initialize() {
+		okButton.setOnAction(e -> {
+			result = true;
+			close();
+		});
 
-        cancelButton.setOnAction(e -> {
-            result = false;
-            close();
-        });
-    }
+		cancelButton.setOnAction(e -> {
+			result = false;
+			close();
+		});
+	}
 
-    /**
-     * アプリを終了するかを返却する
-     * @return アプリの終了するか trueで終了する
-     */
-    public boolean getResult() {
-        return result;
-    }
+	/**
+	 * アプリを終了するかを返却する
+	 * @return アプリの終了するか trueで終了する
+	 */
+	public boolean getResult() {
+		return result;
+	}
 
-    /**
-     * ダイアログを閉じる
-     */
-    private void close() {
-        Stage stage = (Stage) okButton.getScene().getWindow();
-        stage.close();
-    }
+	/**
+	 * ダイアログを閉じる
+	 */
+	private void close() {
+		Stage stage = (Stage) okButton.getScene().getWindow();
+		stage.close();
+	}
 }

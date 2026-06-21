@@ -11,10 +11,10 @@ import javafx.util.StringConverter;
  */
 public enum LanguageType implements BaseEnum {
 
-	/** 日本語 */
-	JAPANESE("ja", "日本語", Locale.JAPANESE),
 	/** 英語 */
-	ENGLISH("en", "English", Locale.ENGLISH);
+	ENGLISH("en", "English", Locale.ENGLISH),
+	/** 日本語 */
+	JAPANESE("ja", "日本語", Locale.JAPANESE);
 
 	/** プロパティファイルと紐つく値 */
 	private final String value;
@@ -60,7 +60,7 @@ public enum LanguageType implements BaseEnum {
 	 * @return 対応する LanguageType、またはデフォルトの LanguageType
 	 */
 	public static LanguageType parseOrDefault(String raw) {
-		return BaseEnum.parseOrDefault(LanguageType.class, raw, JAPANESE, AppConstant.PROPERTY_LANGUAGE);
+		return BaseEnum.parseOrDefault(LanguageType.class, raw, ENGLISH, AppConstant.PROPERTY_LANGUAGE);
 	}
 
 	/**
@@ -68,6 +68,6 @@ public enum LanguageType implements BaseEnum {
 	 * @return FormatType と文字列を交互変換するJavaFXコンバーター
 	 */
 	public static StringConverter<LanguageType> toConverter() {
-		return BaseEnum.toConverter(LanguageType.class, JAPANESE);
+		return BaseEnum.toConverter(LanguageType.class, ENGLISH);
 	}
 }

@@ -44,15 +44,35 @@ public final class AppConstant {
 	/** プロパティ 通知音を有効にするか */
 	public static final String PROPERTY_SOUND_NOTIFICATION_ENABLED = "soundNotificationEnabled";
 
+	// -- デフォルト値 --  
 	/** 保存先ディレクトリのデフォルト値 */
 	public static final String DEFAULT_SAVE_DIR = "./screenshots/";
 
-	/** 一時保存先ディレクトリ */
-	public static final String TMP_SAVE_DIR = "./tmp/";
+	/** カスタムキーでAltキーを使用するかどうかのデフォルト値 */
+	public static final boolean DEFAULT_USE_ALT = false;
 
-	/** アイコンのpngファイル */
-	public static final String ICON_APP = "/icon/instantsnap.png";
+	/** カスタムキーでCtrlキーを使用するかどうかのデフォルト値 */
+	public static final boolean DEFAULT_USE_CTRL = false;
 
+	/** カスタムキーでShiftキーを使用するかどうかのデフォルト値 */
+	public static final boolean DEFAULT_USE_SHIFT = false;
+
+	/** 画像保存を有効にするかどうかのデフォルト値 */
+	public static final boolean DEFAULT_SAVE_IMAGE_ENABLED = true;
+
+	/** クリップボード保存を有効にするかどうかのデフォルト値 */
+	public static final boolean DEFAULT_CLIPBOARD_ENABLED = true;
+
+	/** 撮影時通知を表示するかどうかのデフォルト値 */
+	public static final boolean DEFAULT_NOTIFICATION_ENABLED = true;
+
+	/** 撮影音を鳴らすかどうかのデフォルト値 */
+	public static final boolean DEFAULT_SOUND_SNAP_ENABLED = false;
+
+	/** 通知音を鳴らすかどうかのデフォルト値 */
+	public static final boolean DEFAULT_SOUND_NOTIFICATION_ENABLED = true;
+
+	// -- 外部ファイル --
 	/** メインウィンドウのFXMLファイル */
 	public static final String FXML_MAIN_WINDOW = "/com/github/rebi0395/instantsnap/view/fxml/MainWindow.fxml";
 	/** 終了ダイアログのFXMLファイル */
@@ -64,5 +84,11 @@ public final class AppConstant {
 	public static final String CSS_MAIN_WINDOW = "/com/github/rebi0395/instantsnap/view/css/main-window.css";
 	/** 通知画面のCSSファイル */
 	public static final String CSS_NOTIFICATION = "/com/github/rebi0395/instantsnap/view/css/notification.css";
-	
+
+	/** アイコンのpngファイル */
+	public static final String ICON_APP = "/icon/instantsnap.png";
+
+	/** 一時保存先ディレクトリ */
+	public static final String TMP_SAVE_DIR = "./tmp/";
+
 }
