@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.rebi0395.instantsnap.app.InstantSnapCoordinator;
 import com.github.rebi0395.instantsnap.common.AppLogger;
 import com.github.rebi0395.instantsnap.common.MessageKeyConverter;
@@ -28,6 +27,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.input.InputMethodEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.stage.DirectoryChooser;
@@ -212,7 +212,7 @@ public class MainWindowController {
 		nativeCode = customKeys.getTriggerKey(); // nativeキーコードを保持
 		if (!(nativeCode == VC_UNDEFINED)) {
 			// 未定義でない場合、テキストフィールドにキーの名前をセットする
-			textInputKey.setText(NativeKeyEvent.getKeyText(nativeCode));
+			textInputKey.setText(NativeKeyCodeConverter.toFXKeyCode(nativeCode).getName());
 		}
 		// 修飾キーの初期値を設定
 		checkCtrl.setSelected(customKeys.isUseCtrl());
@@ -291,6 +291,11 @@ public class MainWindowController {
 	 * @param textField テキストフィールド
 	 */
 	public void inputCustomKey(TextField textField) {
+		// IMEによる入力文字の確定をキャンセルする
+		textField.addEventFilter(InputMethodEvent.INPUT_METHOD_TEXT_CHANGED, event -> {
+			event.consume();
+		});
+
 		// 文字入力イベントをキャンセルする
 		textField.addEventFilter(KeyEvent.KEY_TYPED, event -> {
 			// 通常のキー入力をキャンセルさせる
@@ -298,7 +303,7 @@ public class MainWindowController {
 		});
 
 		// キーが押された瞬間に、キーコードとキーの表示名を表示する処理
-		textField.setOnKeyPressed(event -> {
+		textField.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
 			// JavaFXのキーコードを取得
 			KeyCode keyCode = event.getCode();
 			// ログレベルがtraceであればキーログを出力する
@@ -312,8 +317,7 @@ public class MainWindowController {
 			// 通常のキー押下イベントを消費させる
 			event.consume();
 			// テキストフィールドに表示する処理
-			String keyText = getKeyText(nativeCode);
-			textField.setText(keyText);
+			textField.setText(keyCode.getName()); // JavaFXのキーコード使用
 			textField.end(); // カーソルを右に移動
 		});
 	}

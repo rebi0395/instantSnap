@@ -2,6 +2,8 @@ package com.github.rebi0395.instantsnap.model.bean;
 
 import static com.github.kwhat.jnativehook.keyboard.NativeKeyEvent.*;
 
+import com.github.rebi0395.instantsnap.common.NativeKeyCodeConverter;
+
 /**
  * 設定した起動キーを保持するクラスです。
  */
@@ -44,8 +46,8 @@ public class KeyCombinationBean {
 		if (useShift) {
 			blilder.append("Shift + ");
 		}
-		blilder.append(getKeyText(triggerKey));
-
+		// 英語のキー名を取るために、JavaFXのキーコードからトリガーキー名を取得する
+		blilder.append(NativeKeyCodeConverter.toFXKeyCode(triggerKey).getName());
 		return blilder.toString();
 	}
 
