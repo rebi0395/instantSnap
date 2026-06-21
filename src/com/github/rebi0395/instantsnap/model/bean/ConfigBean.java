@@ -47,24 +47,28 @@ public class ConfigBean {
 	 */
 	public ConfigBean() {
 		// -- 言語設定
-		this.languageType = LanguageType.JAPANESE;
+		this.languageType = LanguageType.ENGLISH;
 
 		// -- 撮影設定
 		this.triggerType = TriggerType.SHIFT_PRINTSCREEN;
-		this.customKeyBean = new KeyCombinationBean(VC_UNDEFINED, false, false, false);
+		this.customKeyBean = new KeyCombinationBean(
+				VC_UNDEFINED,
+				DEFAULT_USE_CTRL,
+				DEFAULT_USE_ALT,
+				DEFAULT_USE_SHIFT);
 		this.snapAreaType = SnapAreaType.ACTIVE_WINDOW;
 
 		// -- 出力設定
-		this.isSaveImage = true;
-		this.isCopyToClipboard = true;
+		this.isSaveImage = DEFAULT_SAVE_IMAGE_ENABLED;
+		this.isCopyToClipboard = DEFAULT_CLIPBOARD_ENABLED;
 		this.savePath = DEFAULT_SAVE_DIR;
 		this.formatType = FormatType.PNG;
 
-		// -- 撮影後、通知設定
+		// -- 撮影後動作
 		this.afterSnapActionType = AfterSnapActionType.NONE;
-		this.isShowNotification = true;
-		this.isSnapSoundEnabled = false;
-		this.isNotificationSoundEnabled = true;
+		this.isShowNotification = DEFAULT_NOTIFICATION_ENABLED; // 通知
+		this.isSnapSoundEnabled = DEFAULT_SOUND_SNAP_ENABLED; // 撮影音
+		this.isNotificationSoundEnabled = DEFAULT_SOUND_NOTIFICATION_ENABLED; // 通知音
 	}
 
 	/**
@@ -247,7 +251,7 @@ public class ConfigBean {
 	public void setIsSnapSoundEnabled(boolean isSoundEnabled) {
 		this.isSnapSoundEnabled = isSoundEnabled;
 	}
-	
+
 	/**
 	 * 通知音を有効にするかの設定を取得する
 	 * @return isNotificationSoundEnabled
@@ -263,5 +267,5 @@ public class ConfigBean {
 	public void setIsNotificationSoundEnabled(boolean isNotificationSoundEnabled) {
 		this.isNotificationSoundEnabled = isNotificationSoundEnabled;
 	}
-	
+
 }

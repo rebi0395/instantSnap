@@ -400,7 +400,7 @@ public class MainWindowController {
 		// 文字列を更新する
 		updateSettingLabels(config, customKeys);
 
-		// configを更新し、司令塔クラスに返す
+		// 更新されたconfigを用いて、司令塔クラスにプロパティ更新を依頼する
 		coordinator.save();
 		labelStatus.setText("ステータス: 設定を反映しました。");
 	}
