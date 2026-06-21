@@ -48,11 +48,11 @@ public final class AppConstant {
 	/** 保存先ディレクトリのデフォルト値 */
 	public static final String DEFAULT_SAVE_DIR = "./screenshots/";
 
-	/** カスタムキーでAltキーを使用するかどうかのデフォルト値 */
-	public static final boolean DEFAULT_USE_ALT = false;
-
 	/** カスタムキーでCtrlキーを使用するかどうかのデフォルト値 */
 	public static final boolean DEFAULT_USE_CTRL = false;
+
+	/** カスタムキーでAltキーを使用するかどうかのデフォルト値 */
+	public static final boolean DEFAULT_USE_ALT = false;
 
 	/** カスタムキーでShiftキーを使用するかどうかのデフォルト値 */
 	public static final boolean DEFAULT_USE_SHIFT = false;

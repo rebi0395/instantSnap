@@ -171,7 +171,7 @@ public class MainWindowController {
 	public MainWindowController(InstantSnapCoordinator coordinator) {
 		this.coordinator = coordinator;
 	}
-	
+
 	/**
 	 * 初期化処理。FXMLファイルの要素を取り込んだ後に呼び出す
 	 */
@@ -220,7 +220,7 @@ public class MainWindowController {
 		checkShift.setSelected(customKeys.isUseShift());
 		// 撮影範囲のリスト、コンバーター(変換ルール)、初期設定値をセット
 		comboSnapArea.getItems().addAll(SnapAreaType.values());
-		comboSnapArea.setConverter(SnapAreaType.toConverter()); // コンバーターにより	Enumsをdisplaynameで変換が可能になる
+		comboSnapArea.setConverter(SnapAreaType.toConverter(converter)); // コンバーターにより	Enumsをdisplaynameで変換が可能になる
 		comboSnapArea.setValue(config.getSnapAreaType());
 
 		// -- 出力設定 --
@@ -268,7 +268,7 @@ public class MainWindowController {
 			coordinator.save(); // 内部では全項目更新
 
 			converter.changeLanguage(config.getLanguageType()); // リソースバンドルを読み直す
-			updateSettingLabels(config, config.getCustomKeyBean()); // ラベル更新
+			updateLanguageTexts(config); // 言語変更を反映させる
 
 		});
 	}
@@ -360,9 +360,9 @@ public class MainWindowController {
 			AfterSnapActionType afterSnapActionType = entry.getKey();
 			RadioButton radioButton = entry.getValue();
 
-			radioButton.setToggleGroup(radioSnapAfterGroup);
-			radioButton.setUserData(afterSnapActionType);
-			radioButton.setText(afterSnapActionType.getDisplayName());
+			radioButton.setToggleGroup(radioSnapAfterGroup); // ラジオボタングループに登録
+			radioButton.setUserData(afterSnapActionType); // Enumごと登録
+			radioButton.setText(afterSnapActionType.getMessage(converter)); // メッセージキー変換した文言セット
 		}
 	}
 
@@ -398,7 +398,7 @@ public class MainWindowController {
 		config.setIsSnapSoundEnabled(checkSnapSound.isSelected()); // 撮影音を鳴らす有無
 
 		// 文字列を更新する
-		updateSettingLabels(config, customKeys);
+		updateLanguageTexts(config);
 
 		// 更新されたconfigを用いて、司令塔クラスにプロパティ更新を依頼する
 		coordinator.save();
@@ -415,23 +415,73 @@ public class MainWindowController {
 		comboSnapArea.getSelectionModel().selectFirst();
 		// カスタムキーの設定をリセットする
 		textInputKey.clear();
-		checkCtrl.setSelected(false);
-		checkAlt.setSelected(false);
-		checkShift.setSelected(false);
+		checkCtrl.setSelected(DEFAULT_USE_CTRL);
+		checkAlt.setSelected(DEFAULT_USE_ALT);
+		checkShift.setSelected(DEFAULT_USE_SHIFT);
 
 		// -- 出力設定 --
-		checkSaveImage.setSelected(true); // チェックを入れる
-		checkClipboard.setSelected(true); // チェックを入れる
+		checkSaveImage.setSelected(DEFAULT_SAVE_IMAGE_ENABLED); // チェックを入れる
+		checkClipboard.setSelected(DEFAULT_CLIPBOARD_ENABLED); // チェックを入れる
 		textFilePath.setText(DEFAULT_SAVE_DIR); // フォルダパスをデフォルトに設定
 		comboFormatType.getSelectionModel().selectFirst();
 
 		// -- 撮影後設定 --
 		radioSnapAfterGroup.selectToggle(radioSnapAfterNothing);
-		checkNotification.setSelected(true);
-		checkNotificationSound.setSelected(true);
-		checkSnapSound.setSelected(false);
+		checkNotification.setSelected(DEFAULT_NOTIFICATION_ENABLED);
+		checkNotificationSound.setSelected(DEFAULT_SOUND_SNAP_ENABLED);
+		checkSnapSound.setSelected(DEFAULT_SOUND_NOTIFICATION_ENABLED);
 
 		labelStatus.setText("ステータス: 入力値を初期化しました");
+	}
+
+	/**
+	 * 言語切り替え後、画面表示を更新する
+	 * 
+	 * @param config ユーザー設定値
+	 */
+	private void updateLanguageTexts(ConfigBean config) {
+
+		// ComboBoxの表示を更新
+		updateComboBoxConverters(config);
+
+		// 撮影後設定のラジオボタン表示を更新
+		updateAfterSnapActionRadioTexts();
+
+		// 適用中ラベルを更新
+		updateSettingLabels(config, config.getCustomKeyBean());
+	}
+
+	/**
+	 * ComboBoxのコンバーターを再設定し、表示を更新する
+	 * 
+	 * @param config ユーザー設定値
+	 */
+	private void updateComboBoxConverters(ConfigBean config) {
+
+		// 今の選択状態を退避
+		SnapAreaType snapAreaType = comboSnapArea.getValue();
+
+		// メッセージキー対応Enumのコンバーターを再設定
+		comboSnapArea.setConverter(SnapAreaType.toConverter(converter));
+
+		// 選択値を入れ直して、ComboBoxの表示を再描画させる
+		comboSnapArea.getItems().clear();
+		comboSnapArea.getItems().addAll(SnapAreaType.values());
+		comboSnapArea.setConverter(SnapAreaType.toConverter(converter)); // コンバーターにより	Enumsをdisplaynameで変換が可能になる
+		comboSnapArea.setValue(snapAreaType);
+	}
+
+	/**
+	 * 撮影後設定のラジオボタン表示を更新する
+	 */
+	private void updateAfterSnapActionRadioTexts() {
+
+		for (Map.Entry<AfterSnapActionType, RadioButton> entry : snapAfterRadioMap.entrySet()) {
+			AfterSnapActionType afterSnapActionType = entry.getKey();
+			RadioButton radioButton = entry.getValue();
+
+			radioButton.setText(afterSnapActionType.getMessage(converter));
+		}
 	}
 
 	/**
@@ -444,16 +494,16 @@ public class MainWindowController {
 		// -- 撮影設定
 		labelKeyCombination
 				.setText(config.getTriggerType().resolveKeyCombination(customKeys).resolveKeyCombinationName());
-		labelSnapArea.setText(config.getSnapAreaType().getDisplayName());
+		labelSnapArea.setText(config.getSnapAreaType().getMessage(converter));
 
 		// -- 出力設定
 		labelSaveImage.setText(converter.getEnabledMessage(config.getIsSaveImage()));
 		labelClipboard.setText(converter.getEnabledMessage(config.getIsCopyToClipboard()));
 		labelFilePath.setText(config.getSavePath());
-		labelFormatType.setText(config.getFormatType().getDisplayName());
+		labelFormatType.setText(config.getFormatType().getBaseDisplayName());
 
 		// -- 撮影後設定
-		labelSnapAfter.setText(config.getAfterSnapActionType().getDisplayName());
+		labelSnapAfter.setText(config.getAfterSnapActionType().getMessage(converter));
 		labelNotification.setText(converter.getEnabledMessage(config.getIsShowNotification()));
 		labelNotificationSound.setText(converter.getEnabledMessage(config.getIsNotificationSoundEnabled()));
 		labelSnapSound.setText(converter.getEnabledMessage(config.getIsSnapSoundEnabled()));

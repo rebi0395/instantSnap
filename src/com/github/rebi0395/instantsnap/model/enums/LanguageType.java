@@ -19,14 +19,14 @@ public enum LanguageType implements BaseEnum {
 	/** プロパティファイルと紐つく値 */
 	private final String value;
 	/** 表示名 */
-	private final String displayName;
+	private final String baseDisplayName;
 	/** ResourceBandleが読むプロパティファイルの指定 */
 	private final Locale locale;
 
 	/** コンストラクタ */
-	LanguageType(String value, String displayName, Locale locale) {
+	LanguageType(String value, String baseDisplayName, Locale locale) {
 		this.value = value;
-		this.displayName = displayName;
+		this.baseDisplayName = baseDisplayName;
 		this.locale = locale;
 	}
 
@@ -39,11 +39,11 @@ public enum LanguageType implements BaseEnum {
 	}
 
 	/**
-	 * @return displayName 表示名
+	 * @return baseDisplayName 表示名
 	 */
 	@Override
-	public String getDisplayName() {
-		return displayName;
+	public String getBaseDisplayName() {
+		return baseDisplayName;
 	}
 
 	/**
@@ -65,7 +65,7 @@ public enum LanguageType implements BaseEnum {
 
 	/**
 	 * 列挙型と文字列を相互変換する	JavaFXコンバーターを取得する
-	 * @return FormatType と文字列を交互変換するJavaFXコンバーター
+	 * @return FormatType と文字列を相互変換するJavaFXコンバーター
 	 */
 	public static StringConverter<LanguageType> toConverter() {
 		return BaseEnum.toConverter(LanguageType.class, ENGLISH);

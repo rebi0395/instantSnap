@@ -24,12 +24,12 @@ public enum TriggerType implements BaseEnum {
 	/** プロパティファイルと紐つく値 */
 	private final String value;
 	/** 表示名 */
-	private final String displayName;
+	private final String baseDisplayName;
 
 	/** コンストラクタ */
-	TriggerType(String value, String displayName) {
+	TriggerType(String value, String baseDisplayName) {
 		this.value = value;
-		this.displayName = displayName;
+		this.baseDisplayName = baseDisplayName;
 	}
 
 	/**
@@ -78,11 +78,11 @@ public enum TriggerType implements BaseEnum {
 	}
 
 	/**
-	 * @return displayName 表示名
+	 * @return baseDisplayName 基準表示名（英語）
 	 */
 	@Override
-	public String getDisplayName() {
-		return displayName;
+	public String getBaseDisplayName() {
+		return baseDisplayName;
 	}
 
 	/**

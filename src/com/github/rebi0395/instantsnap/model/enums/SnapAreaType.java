@@ -1,32 +1,38 @@
 package com.github.rebi0395.instantsnap.model.enums;
 
 import static com.github.rebi0395.instantsnap.common.AppConstant.*;
+import static com.github.rebi0395.instantsnap.common.MessageKeyConstant.*;
+
+import com.github.rebi0395.instantsnap.common.MessageKeyConverter;
 
 import javafx.util.StringConverter;
 
 /**
  * 撮影モードを指定するクラス
  */
-public enum SnapAreaType implements BaseEnum {
+public enum SnapAreaType implements MessageEnum {
 
 	/** 使用しているウィンドウのみ撮影 */
-	ACTIVE_WINDOW("1", "activeWindow"),
+	ACTIVE_WINDOW("1", "Active window", SNAP_AREA_ACTIVE_WINDOW),
 	/** マウスポインターのあるモニターを撮影 */
-	ACTIVE_SCREEN("2", "activeScreen"),
+	ACTIVE_SCREEN("2", "Screen with mouse pointer", SNAP_AREA_ACTIVE_SCREEN),
 	/** メインモニターを固定して撮影 */
-	MAIN_SCREEN("3", "mainScreen"),
+	MAIN_SCREEN("3", "Main screen", SNAP_AREA_MAIN_SCREEN),
 	/** 全てのモニターを全て含んで撮影 */
-	FULL_SCREEN("4", "fullScreen");
+	FULL_SCREEN("4", "Full screen", SNAP_AREA_FULL_SCREEN);
 
 	/** プロパティファイルと紐つく値 */
 	private final String value;
-	/** 表示名 */
-	private final String displayName;
+	/** 基準表示名（英語） */
+	private final String baseDisplayName;
+	/** メッセージキー */
+	private final String messageKey;
 
 	/** コンストラクタ */
-	SnapAreaType(String value, String displayName) {
+	SnapAreaType(String value, String baseDisplayName, String messageKey) {
 		this.value = value;
-		this.displayName = displayName;
+		this.baseDisplayName = baseDisplayName;
+		this.messageKey = messageKey;
 	}
 
 	/**
@@ -38,11 +44,20 @@ public enum SnapAreaType implements BaseEnum {
 	}
 
 	/**
-	 * @return displayName 表示名
+	 * @return baseDisplayName 基準表示名（英語）
 	 */
 	@Override
-	public String getDisplayName() {
-		return displayName;
+	public String getBaseDisplayName() {
+		return baseDisplayName;
+	}
+
+	/**
+	 * @return messageKey メッセージキー
+	 */
+	@Override
+	public String getMessageKey() {
+		// TODO 自動生成されたメソッド・スタブ
+		return messageKey;
 	}
 
 	/**
@@ -57,9 +72,9 @@ public enum SnapAreaType implements BaseEnum {
 
 	/**
 	 * 列挙型と文字列を相互変換する	JavaFXコンバーターを取得する
-	 * @return SnapAreaType と文字列を交互変換するJavaFXコンバーター
+	 * @return SnapAreaType と文字列を相互変換するJavaFXコンバーター
 	 */
-	public static StringConverter<SnapAreaType> toConverter() {
-		return BaseEnum.toConverter(SnapAreaType.class, ACTIVE_WINDOW);
+	public static StringConverter<SnapAreaType> toConverter(MessageKeyConverter converter) {
+		return MessageEnum.toMessageConverter(SnapAreaType.class, ACTIVE_WINDOW, converter);
 	}
 }

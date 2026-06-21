@@ -10,6 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.rebi0395.instantsnap.model.enums.LanguageType;
+import com.github.rebi0395.instantsnap.model.enums.MessageEnum;
+
 import static com.github.rebi0395.instantsnap.common.MessageKeyConstant.*;
 
 public class MessageKeyConverter {
@@ -45,6 +47,20 @@ public class MessageKeyConverter {
 		} catch (MissingResourceException e) {
 			log.warn("メッセージのリソースが見つかりません" ,e);
 			return messageKey;
+		}
+	}
+	
+	/**
+	 * メッセージキーから、言語別のメッセージを取得する
+	 * @param messageKey メッセージキーを持つEnum（ポリモーフィズム）
+	 * @return メッセージで言語を変換したメッセージ
+	 */
+	public String getMessage(MessageEnum messageEnum) {
+		try {
+			return bundle.getString(messageEnum.getMessageKey());
+		} catch (MissingResourceException e) {
+			log.warn("メッセージのリソースが見つかりません" ,e);
+			return messageEnum.getBaseDisplayName();
 		}
 	}
 
