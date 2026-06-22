@@ -38,6 +38,7 @@ public class MessageKeyConverter {
 
 	/**
 	 * メッセージキーから、言語別のメッセージを取得する
+	 * 
 	 * @param messageKey メッセージキー
 	 * @return メッセージで言語を変換したメッセージ
 	 */
@@ -47,6 +48,22 @@ public class MessageKeyConverter {
 		} catch (MissingResourceException e) {
 			log.warn("メッセージのリソースが見つかりません" ,e);
 			return messageKey;
+		}
+	}
+	
+	/**
+	 * メッセージキーから、言語別のメッセージを取得する
+	 * 
+	 * @param messageKey メッセージキー
+	 * @param defaultMessage メッセージキーが取得できないときに返す文章
+	 * @return メッセージで言語を変換したメッセージ
+	 */
+	public String getMessage(String messageKey, String defaultMessage) {
+		try {
+			return bundle.getString(messageKey);
+		} catch (MissingResourceException e) {
+			log.warn("メッセージのリソースが見つかりません" ,e);
+			return defaultMessage;
 		}
 	}
 	
