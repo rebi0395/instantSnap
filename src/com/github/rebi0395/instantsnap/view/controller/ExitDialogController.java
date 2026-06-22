@@ -4,6 +4,9 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.stage.Stage;
 
+/**
+ * アプリ終了ダイアログのコントローラクラス
+ */
 public class ExitDialogController {
 
 	/** 終了ボタン */
