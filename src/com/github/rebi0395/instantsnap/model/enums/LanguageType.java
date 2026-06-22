@@ -7,7 +7,7 @@ import com.github.rebi0395.instantsnap.common.AppConstant;
 import javafx.util.StringConverter;
 
 /**
- * 言語設定を定義するクラス
+ * 言語設定を定義する列挙型クラス
  */
 public enum LanguageType implements BaseEnum {
 

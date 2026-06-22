@@ -7,6 +7,9 @@ import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 
 import javafx.scene.input.KeyCode;
 
+/**
+ * 共通ロガークラス
+ */
 public class AppLogger {
 
 	/** ロガー */

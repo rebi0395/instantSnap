@@ -1,5 +1,8 @@
 package com.github.rebi0395.instantsnap.common;
 
+/**
+ * メッセージキーの定数クラス
+ */
 public final class MessageKeyConstant {
 
 	// インスタンス化しない

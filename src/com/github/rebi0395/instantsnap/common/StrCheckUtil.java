@@ -3,7 +3,7 @@ package com.github.rebi0395.instantsnap.common;
 import java.util.Locale;
 
 /**
- * 文字列のnull対策、空白除去等、安全に扱うための共通クラスです
+ * 文字列のnull対策、空白除去等、文字列を安全に扱うための共通クラス
  */
 public class StrCheckUtil {
 
