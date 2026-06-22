@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.github.rebi0395.instantsnap.app.InstantSnapCoordinator;
 import com.github.rebi0395.instantsnap.common.AppLogger;
+import com.github.rebi0395.instantsnap.common.MessageKeyConstant;
 import com.github.rebi0395.instantsnap.common.MessageKeyConverter;
 import com.github.rebi0395.instantsnap.common.NativeKeyCodeConverter;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
@@ -21,11 +22,14 @@ import static com.github.rebi0395.instantsnap.common.StrCheckUtil.*;
 import static com.github.kwhat.jnativehook.keyboard.NativeKeyEvent.*;
 
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
+import javafx.scene.control.Tab;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.input.InputMethodEvent;
 import javafx.scene.input.KeyCode;
@@ -45,6 +49,70 @@ public class MainWindowController {
 
 	/** nativeキーコードを保持する変数 */
 	private int nativeCode;
+
+	// -- タブ --
+	/** 基本設定タブ */
+	@FXML
+	private Tab tabBasicSettings;
+
+	/** その他設定タブ */
+	@FXML
+	private Tab tabOtherSettings;
+
+	// -- 折りたたみ項目 --
+	/** 画像保存先設定の折りたたみ項目 */
+	@FXML
+	private TitledPane accordionSaveDestination;
+
+	// -- ボタン --
+	/** 入力値初期化ボタン */
+	@FXML
+	private Button buttonReset;
+
+	/** 設定反映ボタン */
+	@FXML
+	private Button buttonApply;
+
+	// -- セクションラベル --
+	/** ショートカットキー選択セクションのラベル */
+	@FXML
+	private Label sectionShortcutKey;
+
+	/** カスタムキー設定セクションのラベル */
+	@FXML
+	private Label sectionCustomKey;
+
+	/** 撮影範囲セクションのラベル */
+	@FXML
+	private Label sectionSnapArea;
+
+	/** 出力セクションのラベル */
+	@FXML
+	private Label captionOutput;
+
+	/** 保存方法セクションのラベル */
+	@FXML
+	private Label sectionSaveMethod;
+
+	/** 保存先選択セクションのラベル */
+	@FXML
+	private Label sectionSelectSaveDirectory;
+
+	/** 画像形式セクションのラベル */
+	@FXML
+	private Label sectionFormat;
+
+	/** 撮影後の動作セクションのラベル */
+	@FXML
+	private Label sectionAfterSnapAction;
+
+	/** 通知表示セクションのラベル */
+	@FXML
+	private Label sectionNotification;
+
+	/** サウンド設定セクションのラベル */
+	@FXML
+	private Label sectionSoundTitle;
 
 	// -- ラベル --
 	/** 操作完了やエラーメッセージを表示するラベル */
@@ -131,6 +199,10 @@ public class MainWindowController {
 	@FXML
 	private TextField textFilePath;
 
+	/** フォルダ選択ボタン */
+	@FXML
+	private Button buttonSelectFile;
+
 	/** 拡張子を選択するコンボボックス */
 	@FXML
 	private ComboBox<FormatType> comboFormatType;
@@ -139,18 +211,23 @@ public class MainWindowController {
 	/** 撮影後設定を選択するラジオボタンをグループ化するトグルボタン */
 	@FXML
 	private final ToggleGroup radioSnapAfterGroup = new ToggleGroup();
+
 	/** 撮影後設定を選択するラジオボタンの一つ「何もしない」 */
 	@FXML
 	private RadioButton radioSnapAfterNothing;
+
 	/** 撮影後設定を選択するラジオボタンの一つ「画像を開く」 */
 	@FXML
 	private RadioButton radioSnapAfterOpenImage;
+
 	/** 撮影後設定を選択するラジオボタンの一つ「ペイントで開く」 */
 	@FXML
 	private RadioButton radioSnapAfterOpenPaint;
+
 	/** 撮影後設定を選択するラジオボタンの一つ「一時保存フォルダに保存」 */
 	@FXML
 	private RadioButton radioSnapAfterSaveToTmp;
+
 	/** snapAfterとラジオボタンを紐付けるマップ */
 	private Map<AfterSnapActionType, RadioButton> snapAfterRadioMap;
 
@@ -251,6 +328,8 @@ public class MainWindowController {
 
 		// -- 適用設定表示ラベルの反映 --
 		updateSettingLabels(config, customKeys);
+		// 固定文言の反映
+		updateFixedTexts();
 	}
 
 	/**
@@ -446,13 +525,16 @@ public class MainWindowController {
 	private void updateLanguageTexts(ConfigBean config) {
 
 		// ComboBoxの表示を更新
-		updateComboBoxConverters(config);
+		updateComboBoxConverters();
 
 		// 撮影後設定のラジオボタン表示を更新
 		updateAfterSnapActionRadioTexts();
 
 		// 適用中ラベルを更新
 		updateSettingLabels(config, config.getCustomKeyBean());
+
+		// 固定文言を更新
+		updateFixedTexts();
 	}
 
 	/**
@@ -460,13 +542,10 @@ public class MainWindowController {
 	 * 
 	 * @param config ユーザー設定値
 	 */
-	private void updateComboBoxConverters(ConfigBean config) {
+	private void updateComboBoxConverters() {
 
 		// 今の選択状態を退避
 		SnapAreaType snapAreaType = comboSnapArea.getValue();
-
-		// メッセージキー対応Enumのコンバーターを再設定
-		comboSnapArea.setConverter(SnapAreaType.toConverter(converter));
 
 		// 選択値を入れ直して、ComboBoxの表示を再描画させる
 		comboSnapArea.getItems().clear();
@@ -512,4 +591,52 @@ public class MainWindowController {
 		labelNotificationSound.setText(converter.getEnabledMessage(config.getIsNotificationSoundEnabled()));
 		labelSnapSound.setText(converter.getEnabledMessage(config.getIsSnapSoundEnabled()));
 	}
+
+	/**
+	 * 固定表示文言を更新する
+	 */
+	private void updateFixedTexts() {
+		// タブ
+		tabBasicSettings.setText(converter.getMessage(MessageKeyConstant.TAB_BASIC_SETTINGS, "Basic settings"));
+		tabOtherSettings.setText(converter.getMessage(MessageKeyConstant.TAB_OTHER_SETTINGS, "Other settings"));
+
+		// キャプション
+		captionOutput.setText(converter.getMessage(MessageKeyConstant.CAPTION_OUTPUT, "Output Settings"));
+
+		// セクション
+		sectionShortcutKey.setText(converter.getMessage(MessageKeyConstant.SECTION_SHORTCUT_KEY, "Shortcut key"));
+		sectionCustomKey
+				.setText(converter.getMessage(MessageKeyConstant.SECTION_CUSTOM_KEY, "Custom key settings"));
+		sectionSnapArea.setText(converter.getMessage(MessageKeyConstant.SECTION_SNAP_AREA, "Capture area"));
+		sectionSaveMethod.setText(converter.getMessage(MessageKeyConstant.SECTION_SAVE_METHOD, "Save options"));
+		sectionSelectSaveDirectory.setText(converter.getMessage(MessageKeyConstant.SECTION_SELECT_SAVE_DIRECTORY, "Save destination folder"));
+		sectionFormat.setText(converter.getMessage(MessageKeyConstant.SECTION_FORMAT, "Image format"));
+		sectionAfterSnapAction
+				.setText(converter.getMessage(MessageKeyConstant.SECTION_AFTER_SNAP_ACTION, "After capture"));
+		sectionNotification.setText(converter.getMessage(MessageKeyConstant.SECTION_NOTIFICATION, "Notification"));
+		sectionSoundTitle.setText(converter.getMessage(MessageKeyConstant.SECTION_SOUND, "Sound"));
+
+		// チェックボックス
+		checkSaveImage.setText(converter.getMessage(MessageKeyConstant.CHECK_SAVE_IMAGE, "Save image"));
+		checkClipboard.setText(converter.getMessage(MessageKeyConstant.CHECK_COPY_TO_CLIPBOARD, "Copy to clipboard"));
+		checkNotification
+				.setText(converter.getMessage(MessageKeyConstant.CHECK_SHOW_NOTIFICATION, "Show notification"));
+		checkSnapSound
+				.setText(converter.getMessage(MessageKeyConstant.CHECK_ENABLE_SNAP_SOUND, "Enable shutter sound"));
+		checkNotificationSound.setText(
+				converter.getMessage(MessageKeyConstant.CHECK_ENABLE_NOTIFICATION_SOUND, "Enable notification sound"));
+
+		// アコーディオン
+		accordionSaveDestination.setText(
+				converter.getMessage(MessageKeyConstant.ACCORDION_SAVE_DESTINATION, "Save destination settings"));
+
+		// ボタン
+		buttonReset.setText(converter.getMessage(MessageKeyConstant.BUTTON_RESET_TO_DEFAULTS, "Reset to defaults"));
+		buttonApply.setText(converter.getMessage(MessageKeyConstant.BUTTON_APPLY_CONFIG, "Apply settings"));
+		buttonSelectFile.setText(converter.getMessage(MessageKeyConstant.BUTTON_SELECT_FILE, "Select...."));
+
+		// プロンプト(テキストフィールドの初期説明文)
+		textInputKey.setPromptText(converter.getMessage(MessageKeyConstant.PROMPT_CUSTOM_KEY, "Press a shortcut key"));
+	}
+
 }
