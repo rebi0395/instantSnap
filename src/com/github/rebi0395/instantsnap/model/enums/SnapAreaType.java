@@ -8,7 +8,7 @@ import com.github.rebi0395.instantsnap.common.MessageKeyConverter;
 import javafx.util.StringConverter;
 
 /**
- * 撮影モードを指定するクラス
+ * 撮影モードを指定する列挙型クラス
  */
 public enum SnapAreaType implements MessageEnum {
 

@@ -8,7 +8,7 @@ import com.github.rebi0395.instantsnap.common.MessageKeyConverter;
 import javafx.util.StringConverter;
 
 /**
- * 撮影後の挙動パターンを定義するクラス
+ * 撮影後の挙動パターンを定義する列挙型クラス
  */
 public enum AfterSnapActionType implements MessageEnum {
 

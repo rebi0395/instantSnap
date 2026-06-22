@@ -14,6 +14,9 @@ import com.github.rebi0395.instantsnap.model.enums.MessageEnum;
 
 import static com.github.rebi0395.instantsnap.common.MessageKeyConstant.*;
 
+/**
+ * ユーザー設定の言語で、メッセージキーをメッセージに変換するクラス
+ */
 public class MessageKeyConverter {
 
 	/** ロガー */

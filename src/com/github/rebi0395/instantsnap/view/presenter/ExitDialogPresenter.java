@@ -15,6 +15,9 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
+/**
+ * アプリ終了ダイアログの表示制御を行うクラス
+ */
 public class ExitDialogPresenter {
 
 	/**
