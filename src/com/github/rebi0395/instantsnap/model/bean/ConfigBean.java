@@ -30,6 +30,8 @@ public class ConfigBean {
 	private boolean isCopyToClipboard;
 	/** 画像の保存パス */
 	private String savePath;
+	/** ファイル名の先頭文字 */
+	private String fileNamePrefix;
 	/** 拡張子 */
 	private FormatType formatType;
 
@@ -62,6 +64,7 @@ public class ConfigBean {
 		this.isSaveImage = DEFAULT_SAVE_IMAGE_ENABLED;
 		this.isCopyToClipboard = DEFAULT_CLIPBOARD_ENABLED;
 		this.savePath = DEFAULT_SAVE_DIR;
+		this.fileNamePrefix = DEFAULT_FILE_NAME_PREFIX;
 		this.formatType = FormatType.PNG;
 
 		// -- 撮影後動作
@@ -185,6 +188,27 @@ public class ConfigBean {
 			this.savePath = DEFAULT_SAVE_DIR;
 		} else {
 			this.savePath = savePath.strip().replace("\\", "/");
+		}
+	}
+
+	/**
+	 * スクショの保存先パスを取得する。
+	 * @return savePath スクショの保存先パス
+	 */
+	public String getFileNamePrefix() {
+		return fileNamePrefix;
+	}
+
+	/**
+	 * ファイル名の先頭文字をセットする
+	 * ファイル名で使用できない文字は■で置換される。
+	 * @param fileNamePrefix ファイル名の先頭文字
+	 */
+	public void setFileNamePrefix(String fileNamePrefix) {
+		if (isBlankSafe(fileNamePrefix)) {
+			this.fileNamePrefix = DEFAULT_FILE_NAME_PREFIX;
+		} else {
+			this.fileNamePrefix = sanitizeFileNamePrefix(fileNamePrefix);
 		}
 	}
 

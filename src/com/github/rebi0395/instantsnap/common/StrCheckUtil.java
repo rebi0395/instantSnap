@@ -89,10 +89,9 @@ public class StrCheckUtil {
 			return "";
 		}
 
+		StringBuilder builder = new StringBuilder();
 		for (int i = 0; i < value.length(); i++) {
 			char ch = value.charAt(i); // 一文字ずつ切り抜く
-
-			StringBuilder builder = new StringBuilder();
 
 			switch (ch) {
 			case '\n':
@@ -103,10 +102,12 @@ public class StrCheckUtil {
 			case '\t':
 				// タブは半角スペースに変換
 				builder.append(" ");
+				break;
 
 			case '\\':
 				// Windowsパス対策
 				builder.append("\\\\");
+				break;
 
 			default:
 				// 制御文字を除外
@@ -116,7 +117,47 @@ public class StrCheckUtil {
 				builder.append(ch);
 			}
 		}
-		return value;
+		return builder.toString();
+	}
+
+	/**
+	 * ファイル禁止文字を■に置換する
+	 * @param fileName ユーザー入力のファイル名先頭部分
+	 * @return 置換後のファイル名先頭部分
+	 */
+	public static String sanitizeFileNamePrefix(String fileName) {
+		if (isBlankSafe(fileName)) {
+			return "";
+		}
+
+		StringBuilder builder = new StringBuilder();
+		for (int i = 0; i < fileName.length(); i++) {
+			char ch = fileName.charAt(i); // 一文字ずつ切り抜く
+
+			switch (ch) {
+			case '\\':
+			case '/':
+			case ':':
+			case '*':
+			case '?':
+			case '"':
+			case '<':
+			case '>':
+			case '|':
+				builder.append("■");
+				break;
+
+			default:
+				if (Character.isISOControl(ch)) {
+					builder.append("■");
+					break;
+				}
+
+				builder.append(ch);
+				break;
+			}
+		}
+		return builder.toString();
 	}
 
 	/**

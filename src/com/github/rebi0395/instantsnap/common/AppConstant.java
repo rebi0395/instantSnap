@@ -33,6 +33,8 @@ public final class AppConstant {
 	public static final String PROPERTY_CLIPBOARD_ENABLED = "clipboardEnabled";
 	/** プロパティ 保存パス */
 	public static final String PROPERTY_SAVE_PATH = "savePath";
+	/** プロパティ ファイル名の先頭文字 */
+	public static final String PROPERTY_FILE_NAME_PREFIX = "fileNamePrefix";
 	/** プロパティ 拡張子 */
 	public static final String PROPERTY_FORMAT = "format";
 	/** プロパティ 撮影後アクション */
@@ -47,6 +49,9 @@ public final class AppConstant {
 	// -- デフォルト値 --  
 	/** 保存先ディレクトリのデフォルト値 */
 	public static final String DEFAULT_SAVE_DIR = "./screenshots/";
+	
+	/** 保存先ディレクトリのデフォルト値 */
+	public static final String DEFAULT_FILE_NAME_PREFIX = "";
 
 	/** カスタムキーでCtrlキーを使用するかどうかのデフォルト値 */
 	public static final boolean DEFAULT_USE_CTRL = false;
