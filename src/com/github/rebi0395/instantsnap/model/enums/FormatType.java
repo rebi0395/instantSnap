@@ -9,10 +9,10 @@ import javafx.util.StringConverter;
  */
 public enum FormatType implements BaseEnum {
 
-	PNG("png", "png"), 
-	JPG("jpg", "jpg"), 
-	BMP("bmp", "bmp"), 
-	GIF("gif", "gif");
+	PNG("png", ".png"), 
+	JPG("jpg", ".jpg"), 
+	BMP("bmp", ".bmp"), 
+	GIF("gif", ".gif");
 
 	/** プロパティファイルと紐つく値 */
 	private final String value;

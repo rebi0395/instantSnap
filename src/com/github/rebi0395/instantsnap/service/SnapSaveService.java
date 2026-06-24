@@ -29,6 +29,9 @@ public class SnapSaveService {
 	/** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(SnapSaveService.class);
 
+	/** 一時保存の場合につける先頭文字 */
+	private static final String TEMPORARY_FILE_NAME_PREFIX = "temporary_";
+
 	/** コンストラクタ */
 	public SnapSaveService() {
 		// 何もしない
@@ -53,8 +56,9 @@ public class SnapSaveService {
 			String fileName = createFileName(config); // ファイル名生成
 			Path dir = resolveSaveDirectory(config); // ディレクトリ解決
 			Path targetPath = dir.resolve(fileName); // 保存先パス取得
+			targetPath = resolveDuplicateFileName(targetPath); // 重複チェック
 
-			// 保存処理			
+			// 保存処理
 			boolean isWritten = ImageIO.write(image, config.getFormatType().getValue(), targetPath.toFile());
 			if (!isWritten) {
 				log.error("対応していない画像形式のため、画像保存に失敗しました: {}", config.getFormatType().getValue());
@@ -146,17 +150,60 @@ public class SnapSaveService {
 	 */
 	public String createFileName(ConfigBean config) {
 
-		// ファイル名作成(yyyyMMdd_HHmmss.SSS)
+		// ファイル名作成(yyyyMMdd.HHmmss.SSS)
 		LocalDateTime now = LocalDateTime.now();
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd.HHmmss.SSS");
-		String fileName = now.format(dtf) + "." + config.getFormatType().getValue();
+		String prefix = config.getFileNamePrefix(); // 先頭文字取得
+
+		// ファイル名の要素組み立て
+		StringBuilder builder = new StringBuilder();
 
 		if (isTemporarySave(config)) {
 			// 一時保存なら、ファイル名の先頭をつけ、分かりやすくする
-			fileName = "temporary_" + fileName;
+			builder.append(TEMPORARY_FILE_NAME_PREFIX);
 		}
 
-		return fileName;
+		builder.append(prefix);
+		builder.append(now.format(dtf));
+		builder.append(".");
+		builder.append(config.getFormatType().getValue());
+
+		return builder.toString();
+	}
+
+	/**
+	 * 同名ファイルが存在する場合、ファイル名に連番を付けて重複しないパスを返す
+	 * @param targetPath 保存予定のパス
+	 * @return 重複しない保存予定パス
+	 */
+	public Path resolveDuplicateFileName(Path targetPath) {
+
+		String fileName = targetPath.getFileName().toString();
+		Path uniqueFilePath = targetPath;
+
+		int num = 0; // 被った場合、ファイル名につける数字
+		int lastDotIndex = fileName.lastIndexOf("."); // 拡張子なしは考慮しない
+		String base = fileName.substring(0, lastDotIndex); // 拡張子前
+		String extension = fileName.substring(lastDotIndex); // 拡張子
+
+		// 重複しなくなるまで繰り返す
+		while (Files.exists(uniqueFilePath)) {
+			num++; // 数字を +1
+
+			// ファイル名組み立て
+			StringBuilder builder = new StringBuilder();
+			builder.append(base);
+			builder.append("(");
+			builder.append(num);
+			builder.append(")");
+			builder.append(extension);
+			String newName = builder.toString();
+
+			Path parent = targetPath.getParent();
+			uniqueFilePath = parent.resolve(newName);
+
+		}
+		return uniqueFilePath;
 	}
 
 	/**

@@ -21,6 +21,7 @@ import static com.github.rebi0395.instantsnap.common.AppConstant.*;
 import static com.github.rebi0395.instantsnap.common.StrCheckUtil.*;
 import static com.github.kwhat.jnativehook.keyboard.NativeKeyEvent.*;
 
+import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
@@ -85,10 +86,6 @@ public class MainWindowController {
 	/** 撮影範囲セクションのラベル */
 	@FXML
 	private Label sectionSnapArea;
-
-	/** 出力セクションのラベル */
-	@FXML
-	private Label captionOutput;
 
 	/** 保存方法セクションのラベル */
 	@FXML
@@ -203,6 +200,10 @@ public class MainWindowController {
 	@FXML
 	private Button buttonSelectFile;
 
+	/** ファイルの先頭文字を指定するテキストフィールド */
+	@FXML
+	private TextField textFileNamePrefix;
+
 	/** 拡張子を選択するコンボボックス */
 	@FXML
 	private ComboBox<FormatType> comboFormatType;
@@ -269,6 +270,8 @@ public class MainWindowController {
 
 		// カスタムキーのテキストフィールドの挙動を設定
 		inputCustomKey(textInputKey);
+		// ファイル名の先頭文字の置換処理
+		registerTextFieldFocusOutEventAction();
 
 		// ～～ ユーザー設定値のセット ～～ 
 		// 言語設定のリスト、コンバーター(変換ルール)、初期設定値をセット
@@ -306,8 +309,10 @@ public class MainWindowController {
 		checkSaveImage.setSelected(config.getIsSaveImage());
 		// クリップボードに画像をするかのチェックボックスをセット
 		checkClipboard.setSelected(config.getIsCopyToClipboard());
-		// 保存先のフォルダを取得し、テキストフィールドにセット
+		// 保存先のフォルダを取得し、テキストフィールドの初期値にセット
 		textFilePath.setText(config.getSavePath());
+		// ファイル名の先頭文字を取得し、テキストフィールドの初期値にセット
+		textFileNamePrefix.setText(config.getFileNamePrefix());
 		// 拡張子のリスト、コンバーター(変換ルール)、初期設定値をセット
 		comboFormatType.getItems().addAll(FormatType.values());
 		comboFormatType.setConverter(FormatType.toConverter());
@@ -418,6 +423,26 @@ public class MainWindowController {
 	}
 
 	/**
+	 * テキストフィールドがフォーカスアウトされたときの処理を登録する。
+	 */
+	private void registerTextFieldFocusOutEventAction() {
+		// ファイル名に使用できない文字を置換処理する
+		// newValがfalseに変わるタイミングがフォーカスアウト
+		textFileNamePrefix.focusedProperty().addListener((obs, oldVal, newVal) -> {
+			if (newVal) {
+				return;
+			}
+			String inputText = textFileNamePrefix.getText();
+			String sanitizedText = sanitizeFileNamePrefix(inputText);
+			if (sanitizedText.equals(inputText)) {
+				// 置換処理していない場合はリターン
+				return;
+			}
+			textFileNamePrefix.setText(sanitizedText);
+		});
+	}
+
+	/**
 	 * SnapAfterと各種ラジオボタンを紐付けたマップを作成する
 	 * @return SnapAfterと各種ラジオボタンを紐付けたマップ
 	 */
@@ -472,6 +497,7 @@ public class MainWindowController {
 		config.setIsSaveImage(checkSaveImage.isSelected()); // 画像保存の有無
 		config.setIsCopyToClipboard(checkClipboard.isSelected()); // クリップボード保存の有無
 		config.setSavePath(textFilePath.getText()); // 保存パス
+		config.setFileNamePrefix(textFileNamePrefix.getText()); // ファイル名の先頭文字
 		config.setFormatType(comboFormatType.getValue()); // 拡張子
 
 		// -- 撮影後設定 --
@@ -506,6 +532,7 @@ public class MainWindowController {
 		checkSaveImage.setSelected(DEFAULT_SAVE_IMAGE_ENABLED); // チェックを入れる
 		checkClipboard.setSelected(DEFAULT_CLIPBOARD_ENABLED); // チェックを入れる
 		textFilePath.setText(DEFAULT_SAVE_DIR); // フォルダパスをデフォルトに設定
+		textFileNamePrefix.setText(DEFAULT_FILE_NAME_PREFIX); // ファイル名の先頭文字をデフォルトに設定
 		comboFormatType.getSelectionModel().selectFirst();
 
 		// -- 撮影後設定 --
@@ -601,7 +628,7 @@ public class MainWindowController {
 		tabOtherSettings.setText(converter.getMessage(MessageKeyConstant.TAB_OTHER_SETTINGS, "Other settings"));
 
 		// キャプション
-		captionOutput.setText(converter.getMessage(MessageKeyConstant.CAPTION_OUTPUT, "Output Settings"));
+		//		captionOutput.setText(converter.getMessage(MessageKeyConstant.CAPTION_OUTPUT, "Output Settings"));
 
 		// セクション
 		sectionShortcutKey.setText(converter.getMessage(MessageKeyConstant.SECTION_SHORTCUT_KEY, "Shortcut key"));
@@ -609,7 +636,8 @@ public class MainWindowController {
 				.setText(converter.getMessage(MessageKeyConstant.SECTION_CUSTOM_KEY, "Custom key settings"));
 		sectionSnapArea.setText(converter.getMessage(MessageKeyConstant.SECTION_SNAP_AREA, "Capture area"));
 		sectionSaveMethod.setText(converter.getMessage(MessageKeyConstant.SECTION_SAVE_METHOD, "Save options"));
-		sectionSelectSaveDirectory.setText(converter.getMessage(MessageKeyConstant.SECTION_SELECT_SAVE_DIRECTORY, "Save destination folder"));
+		sectionSelectSaveDirectory.setText(
+				converter.getMessage(MessageKeyConstant.SECTION_SELECT_SAVE_DIRECTORY, "Save destination folder"));
 		sectionFormat.setText(converter.getMessage(MessageKeyConstant.SECTION_FORMAT, "Image format"));
 		sectionAfterSnapAction
 				.setText(converter.getMessage(MessageKeyConstant.SECTION_AFTER_SNAP_ACTION, "After capture"));

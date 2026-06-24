@@ -18,7 +18,7 @@
 	</top>
 
 	<center>
-		<TabPane fx:id="mainTabPane" tabClosingPolicy="UNAVAILABLE">
+		<TabPane fx:id="mainTabPane" tabClosingPolicy="UNAVAILABLE" styleClass="main-tab-pane">
 			<tabs>
 				<Tab fx:id="tabBasicSettings"><!-- 基本設定 -->
 					<content>
@@ -30,7 +30,8 @@
 								</padding>
 								<VBox spacing="10" styleClass="section-border">
 									<HBox styleClass="setting-header">
-										<Label fx:id="sectionShortcutKey" styleClass="section-title"/><!-- ショートカットキー選択 -->
+										<Label fx:id="sectionShortcutKey" styleClass="section-title" 
+											prefWidth="120" maxWidth="120"/><!-- ショートカットキー選択 -->
 										<Label fx:id="labelKeyCombination" styleClass="current-value"/>
 									</HBox>
 									<HBox styleClass="setting-header">
@@ -51,15 +52,13 @@
 								</VBox>
 								<VBox spacing="10" styleClass="section-border">
 									<HBox styleClass="setting-header">
-										<Label fx:id="sectionSnapArea" styleClass="section-title"/><!-- 撮影範囲 -->
+										<Label fx:id="sectionSnapArea" styleClass="section-title"
+											prefWidth="80" maxWidth="80"/><!-- 撮影範囲 -->
 										<Label fx:id="labelSnapArea" styleClass="current-value"/>
 									</HBox>
 									<HBox styleClass="setting-header">
 										<ComboBox fx:id="comboSnapArea"/>
 									</HBox>
-								</VBox>
-								<VBox spacing="10">
-									<Label fx:id="captionOutput" styleClass="section-main-title" /><!-- 出力設定 -->
 								</VBox>
 								<VBox spacing="20">
 									<VBox spacing="10" styleClass="section-border">
@@ -95,14 +94,15 @@
 															</HBox>
 															<HBox styleClass="setting-header">
 																<Button fx:id="buttonSelectFile" onAction="#onSelectFile"/><!-- 選択...-->
-																<TextField fx:id="textFilePath" promptText="選択されたフォルダ" editable="false"/>
+																<TextField fx:id="textFilePath" promptText="選択されたフォルダ" editable="false" styleClass="readonly-text-field"/>
 															</HBox>
 															<HBox styleClass="setting-header">
 																<Label fx:id="sectionFormat" styleClass="section-title"/><!-- 画像の拡張子 -->
 																<Label fx:id="labelFormatType" styleClass="current-value"/>
 															</HBox>
 															<HBox styleClass="setting-header">
-																<ComboBox fx:id="comboFormatType"/>
+																<TextField fx:id="textFileNamePrefix"/>
+																<ComboBox fx:id="comboFormatType" prefWidth="70" maxWidth="70"/>
 															</HBox>
 														</VBox>
 													</content>
@@ -133,7 +133,7 @@
 											<!-- 右側：通知表示 -->
 											<VBox spacing="10" GridPane.columnIndex="1">
 												<HBox styleClass="setting-header">
-													<Label fx:id="sectionNotification" styleClass="section-title"/><!-- 通知表示 -->
+													<Label fx:id="sectionNotification" styleClass="section-title" prefWidth="80" maxWidth="80"/><!-- 通知表示 -->
 													<Label fx:id="labelNotification" styleClass="current-value"/>
 												</HBox>
 												<HBox spacing="10" styleClass="output-switch-row">
@@ -143,11 +143,11 @@
 													<Label fx:id="sectionSoundTitle" styleClass="section-title"/><!-- サウンド設定 -->
 												</HBox>
 												<HBox spacing="10" styleClass="output-switch-item">
-													<CheckBox fx:id="checkSnapSound"/><!-- 撮影音を有効にする -->
+													<CheckBox fx:id="checkSnapSound" prefWidth="160" maxWidth="160"/><!-- 撮影音を有効にする -->
 													<Label fx:id="labelSnapSound" styleClass="current-value"/>
 												</HBox>
 												<HBox spacing="10" styleClass="output-switch-item">
-													<CheckBox fx:id="checkNotificationSound"/><!-- 通知音を有効にする -->
+													<CheckBox fx:id="checkNotificationSound" prefWidth="160" maxWidth="160"/><!-- 通知音を有効にする -->
 													<Label fx:id="labelNotificationSound" styleClass="current-value"/>
 												</HBox>
 											</VBox>
