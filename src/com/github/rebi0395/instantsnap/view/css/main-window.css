@@ -123,6 +123,17 @@
     -fx-alignment: center-left;
 }
 
+/** 不正値の場合に赤くする */
+.invalid-value {
+	-fx-border-color: #d32f2f;
+	-fx-background-color: #fff5f5;
+}
+
+/* 不正値のテキストフィールド */
+.text-field.invalid-value {
+	-fx-text-fill: #b71c1c;
+}
+
 /* =========================
    Switch style CheckBox
    ========================= */
