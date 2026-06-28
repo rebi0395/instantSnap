@@ -121,6 +121,13 @@ public class MainWindowPresenter {
 		}
 	}
 
+	/**
+	 * メイン画面のSceneを作成する
+	 * 表示可能領域に収まるサイズに調整する
+	 * 
+	 * @param root JavaFXの最上位ノード
+	 * @return メイン画面のScene
+	 */
 	private Scene createScene(Parent root) {
 
 		Rectangle2D visualBounds = Screen.getPrimary().getVisualBounds(); // 画面サイズ取得
