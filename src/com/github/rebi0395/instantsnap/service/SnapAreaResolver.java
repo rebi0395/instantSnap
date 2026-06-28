@@ -9,6 +9,7 @@ import java.awt.Rectangle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.rebi0395.instantsnap.common.OsUtil;
 import com.github.rebi0395.instantsnap.model.enums.SnapAreaType;
 import com.sun.jna.platform.win32.User32;
 import com.sun.jna.platform.win32.WinDef.HWND;
@@ -58,9 +59,8 @@ public class SnapAreaResolver {
 	 * @return Rectangle 影を除外したアクティブウィンドウの範囲
 	 */
 	public Rectangle getActiveWindowArea() {
-		String os = System.getProperty("os.name").toLowerCase();
 		// Windows以外はデフォルト挙動を行う
-		if (!os.contains("win")) {
+		if (!OsUtil.isWindows()) {
 			log.info("osがwindowsではありません");
 			return getDefaultScreenArea();
 		}
