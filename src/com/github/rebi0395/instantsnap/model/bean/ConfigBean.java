@@ -7,6 +7,7 @@ import static com.github.kwhat.jnativehook.keyboard.NativeKeyEvent.*;
 import com.github.rebi0395.instantsnap.model.enums.FormatType;
 import com.github.rebi0395.instantsnap.model.enums.LanguageType;
 import com.github.rebi0395.instantsnap.model.enums.AfterSnapActionType;
+import com.github.rebi0395.instantsnap.model.enums.FileNameDateFormatType;
 import com.github.rebi0395.instantsnap.model.enums.SnapAreaType;
 import com.github.rebi0395.instantsnap.model.enums.TriggerType;
 
@@ -32,6 +33,8 @@ public class ConfigBean {
 	private String savePath;
 	/** ファイル名の先頭文字 */
 	private String fileNamePrefix;
+	/** ファイル名の日時フォーマット */
+	private FileNameDateFormatType fileNameDateFormatType;
 	/** 拡張子 */
 	private FormatType formatType;
 
@@ -65,6 +68,7 @@ public class ConfigBean {
 		this.isCopyToClipboard = DEFAULT_CLIPBOARD_ENABLED;
 		this.savePath = DEFAULT_SAVE_DIR;
 		this.fileNamePrefix = DEFAULT_FILE_NAME_PREFIX;
+		this.fileNameDateFormatType = FileNameDateFormatType.MILLISECOND_DOT;
 		this.formatType = FormatType.PNG;
 
 		// -- 撮影後動作
@@ -72,6 +76,27 @@ public class ConfigBean {
 		this.isShowNotification = DEFAULT_NOTIFICATION_ENABLED; // 通知
 		this.isSnapSoundEnabled = DEFAULT_SOUND_SNAP_ENABLED; // 撮影音
 		this.isNotificationSoundEnabled = DEFAULT_SOUND_NOTIFICATION_ENABLED; // 通知音
+	}
+
+	/**
+	 * 画像ファイルが必要かを返す
+	 *
+	 * @return 画像保存ON、または撮影後アクションありの場合 true
+	 */
+	public boolean isFileRequired() {
+		return this.getIsSaveImage()
+				|| this.getAfterSnapActionType() != AfterSnapActionType.NONE;
+	}
+
+	/**
+	 * 一時保存かを返す
+	 *
+	 * @return 撮影後アクションが一時保存。または
+	 * 画像保存OFF、かつ撮影後アクションありの場合 true
+	 */
+	public boolean isTemporarySave() {
+		return this.getAfterSnapActionType() == AfterSnapActionType.SAVE_TO_TMP ||
+				(!this.getIsSaveImage() && this.getAfterSnapActionType() != AfterSnapActionType.NONE);
 	}
 
 	/**
@@ -192,8 +217,8 @@ public class ConfigBean {
 	}
 
 	/**
-	 * スクショの保存先パスを取得する。
-	 * @return savePath スクショの保存先パス
+	 * ファイル名の先頭文字を取得する。
+	 * @return fileNamePrefix ファイル名の先頭文字
 	 */
 	public String getFileNamePrefix() {
 		return fileNamePrefix;
@@ -210,6 +235,22 @@ public class ConfigBean {
 		} else {
 			this.fileNamePrefix = sanitizeFileNamePrefix(fileNamePrefix);
 		}
+	}
+
+	/**
+	 * ファイル名の日時フォーマット設定を取得する
+	 * @return fileNameDateFormatType ファイル名の日時フォーマット設定
+	 */
+	public FileNameDateFormatType getFileNameDateFormatType() {
+		return fileNameDateFormatType;
+	}
+
+	/**
+	 * ファイル名の日時フォーマット設定をセットする
+	 * @param fileNameDateFormatType セットする
+	 */
+	public void setFileNameDateFormatType(FileNameDateFormatType fileNameDateFormatType) {
+		this.fileNameDateFormatType = fileNameDateFormatType;
 	}
 
 	/**

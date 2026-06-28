@@ -34,21 +34,20 @@ public class KeyCombinationBean {
 		if (triggerKey == VC_UNDEFINED) {
 			return "";
 		}
-		StringBuilder blilder = new StringBuilder();
-
+		StringBuilder builder = new StringBuilder();
 		// 修飾キーを用いるとき、文字列を結合する
 		if (useCtrl) {
-			blilder.append("Ctrl + ");
+			builder.append("Ctrl + ");
 		}
 		if (useAlt) {
-			blilder.append("Alt + ");
+			builder.append("Alt + ");
 		}
 		if (useShift) {
-			blilder.append("Shift + ");
+			builder.append("Shift + ");
 		}
-		// 英語のキー名を取るために、JavaFXのキーコードからトリガーキー名を取得する
-		blilder.append(NativeKeyCodeConverter.toFXKeyCode(triggerKey).getName());
-		return blilder.toString();
+		// nativeキーコードからJavaFXのキー名を取得する
+		builder.append(NativeKeyCodeConverter.toFXKeyName(triggerKey));
+		return builder.toString();
 	}
 
 	/**

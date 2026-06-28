@@ -35,6 +35,8 @@ public final class AppConstant {
 	public static final String PROPERTY_SAVE_PATH = "savePath";
 	/** プロパティ ファイル名の先頭文字 */
 	public static final String PROPERTY_FILE_NAME_PREFIX = "fileNamePrefix";
+	/** プロパティ ファイル名の日時指定 */
+	public static final String PROPERTY_FILE_NAME_DATE_FORMAT = "fileNameDateFormat";
 	/** プロパティ 拡張子 */
 	public static final String PROPERTY_FORMAT = "format";
 	/** プロパティ 撮影後アクション */
@@ -96,4 +98,17 @@ public final class AppConstant {
 	/** 一時保存先ディレクトリ */
 	public static final String TMP_SAVE_DIR = "./tmp/";
 
+	// -- OS名
+	/** OS名：Windows */
+	public static final String OS_NAME_WINDOWS = "Windows";
+
+	/** OS名：macOS */
+	public static final String OS_NAME_MAC = "macOS";
+
+	/** OS名：Linux */
+	public static final String OS_NAME_LINUX = "Linux";
+
+	/** OS名：その他 */
+	public static final String OS_NAME_OTHER = "Other";
+	
 }

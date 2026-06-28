@@ -89,19 +89,20 @@
 													<content>
 														<VBox spacing="10">
 															<HBox styleClass="setting-header">
-																<Label fx:id="sectionSelectSaveDirectory" styleClass="section-title"/><!-- 保存先フォルダを選択 -->
+																<Label fx:id="sectionSelectSaveDirectory" styleClass="section-title" prefWidth="140" maxWidth="140"/><!-- 保存先フォルダを選択 -->
 																<Label fx:id="labelFilePath" styleClass="current-value"/>
 															</HBox>
 															<HBox styleClass="setting-header">
 																<Button fx:id="buttonSelectFile" onAction="#onSelectFile"/><!-- 選択...-->
-																<TextField fx:id="textFilePath" promptText="選択されたフォルダ" editable="false" styleClass="readonly-text-field"/>
+																<TextField fx:id="textFilePath" editable="true" styleClass="readonly-text-field"/>
 															</HBox>
 															<HBox styleClass="setting-header">
-																<Label fx:id="sectionFormat" styleClass="section-title"/><!-- 画像の拡張子 -->
-																<Label fx:id="labelFormatType" styleClass="current-value"/>
+																<Label fx:id="sectionFileName" styleClass="section-title" prefWidth="140" maxWidth="140"/><!-- ファイル名の設定 -->
+																<Label fx:id="labelFileName" styleClass="current-value"/>
 															</HBox>
 															<HBox styleClass="setting-header">
 																<TextField fx:id="textFileNamePrefix"/>
+																<ComboBox fx:id="comboFileNameDateFormatType"/>
 																<ComboBox fx:id="comboFormatType" prefWidth="70" maxWidth="70"/>
 															</HBox>
 														</VBox>

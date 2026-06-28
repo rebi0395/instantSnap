@@ -183,6 +183,27 @@ public class NativeKeyCodeConverter {
 	public static KeyCode toFXKeyCode(int nativeCode) {
 		return NATIVE_MAP.get(nativeCode);
 	}
+	
+	/**
+	 * nativeキーコードから、JavaFxのキーの名前に変換する
+	 * @param code nativeのキーコード
+	 * @return 引数に対応するJavaFXのKeyName
+	 */
+	public static String toFXKeyName(int nativeCode) {
+		
+		KeyCode keyCode = NATIVE_MAP.get(nativeCode);
+		// Metaキーの場合、os判定を行ない、名前を返却する
+		if (keyCode == KeyCode.META) {
+			if (OsUtil.isWindows()) {
+				return KeyCode.WINDOWS.getName();
+			}
+			
+			if (OsUtil.isMac()) {
+				return KeyCode.COMMAND.getName();
+			}
+		}
+		return keyCode.getName();
+	}
 
 	/**
 	 * 拡張キー（右側の Shift / Ctrl / Alt）を、左側と同じ正規キーコードに正規化する。

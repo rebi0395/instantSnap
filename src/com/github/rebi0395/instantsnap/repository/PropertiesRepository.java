@@ -21,6 +21,7 @@ import com.github.rebi0395.instantsnap.model.bean.KeyCombinationBean;
 import com.github.rebi0395.instantsnap.model.enums.FormatType;
 import com.github.rebi0395.instantsnap.model.enums.LanguageType;
 import com.github.rebi0395.instantsnap.model.enums.AfterSnapActionType;
+import com.github.rebi0395.instantsnap.model.enums.FileNameDateFormatType;
 import com.github.rebi0395.instantsnap.model.enums.SnapAreaType;
 import com.github.rebi0395.instantsnap.model.enums.TriggerType;
 
@@ -85,6 +86,8 @@ public class PropertiesRepository {
 					properties.getProperty(PROPERTY_SAVE_PATH));
 			config.setFileNamePrefix(
 					properties.getProperty(PROPERTY_FILE_NAME_PREFIX));
+			config.setFileNameDateFormatType(FileNameDateFormatType.parseOrDefault(
+					properties.getProperty(PROPERTY_FILE_NAME_DATE_FORMAT)));
 			config.setFormatType(FormatType.parseOrDefault(
 					properties.getProperty(PROPERTY_FORMAT)));
 
@@ -218,6 +221,7 @@ public class PropertiesRepository {
 		updateMap.put(PROPERTY_CLIPBOARD_ENABLED, String.valueOf(config.getIsCopyToClipboard()));
 		updateMap.put(PROPERTY_SAVE_PATH, config.getSavePath());
 		updateMap.put(PROPERTY_FILE_NAME_PREFIX, config.getFileNamePrefix());
+		updateMap.put(PROPERTY_FILE_NAME_DATE_FORMAT, config.getFileNameDateFormatType().getValue());
 		updateMap.put(PROPERTY_FORMAT, config.getFormatType().getValue());
 
 		// 撮影後設定, 通知設定
@@ -274,9 +278,9 @@ public class PropertiesRepository {
 			useCtrl=false
 			useShift=false
 
-			# 撮影範囲の選択
-			# 1 -> アクティブウィンドウ(デフォルト), 2 -> アクティブモニター
-			# 3 -> メインモニター, 4 -> 全てのモニター
+			# 撮影範囲の選択 デフォルトは 1
+			# 1 -> 使用しているウィンドウを撮影, 2 -> カーソルのあるモニターを撮影
+			# 3 -> メインモニターを撮影, 4 -> 全てのモニターを撮影
 			snapArea=1
 
 			# ～～ 出力設定 ～～
@@ -291,6 +295,11 @@ public class PropertiesRepository {
 
 			# ファイル名の先頭文字
 			fileNamePrefix=
+			
+			# ファイル名につける日時フォーマット デフォルトは1
+			# 1 -> yyyyMMdd.HHmmss.SSS, 2 -> yyyyMMdd.HHmmss
+			# 3 -> yyyyMMdd_HHmmss_SSS, 4 -> yyyyMMdd_HHmmss
+			fileNameDateFormat=1
 
 			# ファイルの拡張子の選択 png、jpg、bmp、gifのいずれかを記載してください(デフォルト：png)
 			format=png
@@ -352,6 +361,11 @@ public class PropertiesRepository {
 
 			# Prefix added to the beginning of the file name
 			fileNamePrefix=
+
+			# Date/time format added to the file name. Default is 1.
+			# 1 -> yyyyMMdd.HHmmss.SSS, 2 -> yyyyMMdd.HHmmss
+			# 3 -> yyyyMMdd_HHmmss_SSS, 4 -> yyyyMMdd_HHmmss
+			fileNameDateFormat=1
 
 			# Select the file extension. Specify one of png, jpg, bmp, or gif. (default: png)
 			format=png

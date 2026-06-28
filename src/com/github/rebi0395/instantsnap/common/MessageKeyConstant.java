@@ -48,8 +48,8 @@ public final class MessageKeyConstant {
 	public static final String SECTION_SAVE_METHOD = "section.saveMethod";
 	/** セクション：保存先フォルダ選択 */
 	public static final String SECTION_SELECT_SAVE_DIRECTORY = "section.selectSaveDirectory";
-	/** セクション：拡張子の選択 */
-	public static final String SECTION_FORMAT = "section.format";
+	/** セクション：ファイル名の設定 */
+	public static final String SECTION_FILE_NAME = "section.fileName";
 	/** セクション：撮影後の動作 */
 	public static final String SECTION_AFTER_SNAP_ACTION = "section.afterSnapAction";
 	/** セクション：通知表示 */
