@@ -51,31 +51,22 @@ public final class AppConstant {
 	// -- デフォルト値 --  
 	/** 保存先ディレクトリのデフォルト値 */
 	public static final String DEFAULT_SAVE_DIR = "./screenshots/";
-	
 	/** 保存先ディレクトリのデフォルト値 */
 	public static final String DEFAULT_FILE_NAME_PREFIX = "";
-
 	/** カスタムキーでCtrlキーを使用するかどうかのデフォルト値 */
 	public static final boolean DEFAULT_USE_CTRL = false;
-
 	/** カスタムキーでAltキーを使用するかどうかのデフォルト値 */
 	public static final boolean DEFAULT_USE_ALT = false;
-
 	/** カスタムキーでShiftキーを使用するかどうかのデフォルト値 */
 	public static final boolean DEFAULT_USE_SHIFT = false;
-
 	/** 画像保存を有効にするかどうかのデフォルト値 */
 	public static final boolean DEFAULT_SAVE_IMAGE_ENABLED = true;
-
 	/** クリップボード保存を有効にするかどうかのデフォルト値 */
 	public static final boolean DEFAULT_CLIPBOARD_ENABLED = true;
-
 	/** 撮影時通知を表示するかどうかのデフォルト値 */
 	public static final boolean DEFAULT_NOTIFICATION_ENABLED = true;
-
 	/** 撮影音を鳴らすかどうかのデフォルト値 */
-	public static final boolean DEFAULT_SOUND_SNAP_ENABLED = false;
-
+	public static final boolean DEFAULT_SOUND_SNAP_ENABLED = true;
 	/** 通知音を鳴らすかどうかのデフォルト値 */
 	public static final boolean DEFAULT_SOUND_NOTIFICATION_ENABLED = true;
 
@@ -94,20 +85,16 @@ public final class AppConstant {
 
 	/** アイコンのpngファイル */
 	public static final String ICON_APP = "/icon/instantsnap.png";
-
 	/** 一時保存先ディレクトリ */
 	public static final String TMP_SAVE_DIR = "./tmp/";
 
 	// -- OS名
 	/** OS名：Windows */
 	public static final String OS_NAME_WINDOWS = "Windows";
-
 	/** OS名：macOS */
 	public static final String OS_NAME_MAC = "macOS";
-
 	/** OS名：Linux */
 	public static final String OS_NAME_LINUX = "Linux";
-
 	/** OS名：その他 */
 	public static final String OS_NAME_OTHER = "Other";
 	
