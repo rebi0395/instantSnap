@@ -106,10 +106,10 @@ public class MessageKeyConverter {
 	 */
 	public String getEnabledMessage(boolean enabled) {
 		if (enabled) {
-			return getMessage(LABEL_ENABLED);
+			return getMessage(LABEL_ENABLED, "Enabled");
 
 		} else {
-			return getMessage(LABEL_DISABLED);
+			return getMessage(LABEL_DISABLED, "Disabled");
 		}
 	}
 }
