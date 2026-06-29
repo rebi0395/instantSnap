@@ -7,6 +7,7 @@ import static com.github.kwhat.jnativehook.keyboard.NativeKeyEvent.*;
 import com.github.rebi0395.instantsnap.model.enums.FormatType;
 import com.github.rebi0395.instantsnap.model.enums.LanguageType;
 import com.github.rebi0395.instantsnap.model.enums.AfterSnapActionType;
+import com.github.rebi0395.instantsnap.model.enums.FileNameDateFormatType;
 import com.github.rebi0395.instantsnap.model.enums.SnapAreaType;
 import com.github.rebi0395.instantsnap.model.enums.TriggerType;
 
@@ -30,6 +31,10 @@ public class ConfigBean {
 	private boolean isCopyToClipboard;
 	/** 画像の保存パス */
 	private String savePath;
+	/** ファイル名の先頭文字 */
+	private String fileNamePrefix;
+	/** ファイル名の日時フォーマット */
+	private FileNameDateFormatType fileNameDateFormatType;
 	/** 拡張子 */
 	private FormatType formatType;
 
@@ -62,6 +67,8 @@ public class ConfigBean {
 		this.isSaveImage = DEFAULT_SAVE_IMAGE_ENABLED;
 		this.isCopyToClipboard = DEFAULT_CLIPBOARD_ENABLED;
 		this.savePath = DEFAULT_SAVE_DIR;
+		this.fileNamePrefix = DEFAULT_FILE_NAME_PREFIX;
+		this.fileNameDateFormatType = FileNameDateFormatType.MILLISECOND_DOT;
 		this.formatType = FormatType.PNG;
 
 		// -- 撮影後動作
@@ -69,6 +76,27 @@ public class ConfigBean {
 		this.isShowNotification = DEFAULT_NOTIFICATION_ENABLED; // 通知
 		this.isSnapSoundEnabled = DEFAULT_SOUND_SNAP_ENABLED; // 撮影音
 		this.isNotificationSoundEnabled = DEFAULT_SOUND_NOTIFICATION_ENABLED; // 通知音
+	}
+
+	/**
+	 * 画像ファイルが必要かを返す
+	 *
+	 * @return 画像保存ON、または撮影後アクションありの場合 true
+	 */
+	public boolean isFileRequired() {
+		return this.getIsSaveImage()
+				|| this.getAfterSnapActionType() != AfterSnapActionType.NONE;
+	}
+
+	/**
+	 * 一時保存かを返す
+	 *
+	 * @return 撮影後アクションが一時保存。または
+	 * 画像保存OFF、かつ撮影後アクションありの場合 true
+	 */
+	public boolean isTemporarySave() {
+		return this.getAfterSnapActionType() == AfterSnapActionType.SAVE_TO_TMP ||
+				(!this.getIsSaveImage() && this.getAfterSnapActionType() != AfterSnapActionType.NONE);
 	}
 
 	/**
@@ -186,6 +214,43 @@ public class ConfigBean {
 		} else {
 			this.savePath = savePath.strip().replace("\\", "/");
 		}
+	}
+
+	/**
+	 * ファイル名の先頭文字を取得する。
+	 * @return fileNamePrefix ファイル名の先頭文字
+	 */
+	public String getFileNamePrefix() {
+		return fileNamePrefix;
+	}
+
+	/**
+	 * ファイル名の先頭文字をセットする
+	 * ファイル名で使用できない文字は■で置換される。
+	 * @param fileNamePrefix ファイル名の先頭文字
+	 */
+	public void setFileNamePrefix(String fileNamePrefix) {
+		if (isBlankSafe(fileNamePrefix)) {
+			this.fileNamePrefix = DEFAULT_FILE_NAME_PREFIX;
+		} else {
+			this.fileNamePrefix = sanitizeFileNamePrefix(fileNamePrefix);
+		}
+	}
+
+	/**
+	 * ファイル名の日時フォーマット設定を取得する
+	 * @return fileNameDateFormatType ファイル名の日時フォーマット設定
+	 */
+	public FileNameDateFormatType getFileNameDateFormatType() {
+		return fileNameDateFormatType;
+	}
+
+	/**
+	 * ファイル名の日時フォーマット設定をセットする
+	 * @param fileNameDateFormatType セットする
+	 */
+	public void setFileNameDateFormatType(FileNameDateFormatType fileNameDateFormatType) {
+		this.fileNameDateFormatType = fileNameDateFormatType;
 	}
 
 	/**

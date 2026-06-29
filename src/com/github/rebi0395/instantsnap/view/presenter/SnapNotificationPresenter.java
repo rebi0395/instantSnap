@@ -31,7 +31,7 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 
 /**
- * 撮影後、通知を表示するクラス
+ * 撮影後に表示する通知の表示制御を行うクラス
  */
 public class SnapNotificationPresenter {
 

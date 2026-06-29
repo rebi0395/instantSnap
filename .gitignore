@@ -30,3 +30,5 @@ replay_pid*
 /exe/
 /logs/
 /tmp/
+config.properties
+config.properties

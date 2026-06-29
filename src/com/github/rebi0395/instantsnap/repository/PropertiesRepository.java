@@ -21,6 +21,7 @@ import com.github.rebi0395.instantsnap.model.bean.KeyCombinationBean;
 import com.github.rebi0395.instantsnap.model.enums.FormatType;
 import com.github.rebi0395.instantsnap.model.enums.LanguageType;
 import com.github.rebi0395.instantsnap.model.enums.AfterSnapActionType;
+import com.github.rebi0395.instantsnap.model.enums.FileNameDateFormatType;
 import com.github.rebi0395.instantsnap.model.enums.SnapAreaType;
 import com.github.rebi0395.instantsnap.model.enums.TriggerType;
 
@@ -83,6 +84,10 @@ public class PropertiesRepository {
 					properties.getProperty(PROPERTY_CLIPBOARD_ENABLED), DEFAULT_CLIPBOARD_ENABLED));
 			config.setSavePath(
 					properties.getProperty(PROPERTY_SAVE_PATH));
+			config.setFileNamePrefix(
+					properties.getProperty(PROPERTY_FILE_NAME_PREFIX));
+			config.setFileNameDateFormatType(FileNameDateFormatType.parseOrDefault(
+					properties.getProperty(PROPERTY_FILE_NAME_DATE_FORMAT)));
 			config.setFormatType(FormatType.parseOrDefault(
 					properties.getProperty(PROPERTY_FORMAT)));
 
@@ -215,6 +220,8 @@ public class PropertiesRepository {
 		updateMap.put(PROPERTY_SAVE_IMAGE_ENABLED, String.valueOf(config.getIsSaveImage()));
 		updateMap.put(PROPERTY_CLIPBOARD_ENABLED, String.valueOf(config.getIsCopyToClipboard()));
 		updateMap.put(PROPERTY_SAVE_PATH, config.getSavePath());
+		updateMap.put(PROPERTY_FILE_NAME_PREFIX, config.getFileNamePrefix());
+		updateMap.put(PROPERTY_FILE_NAME_DATE_FORMAT, config.getFileNameDateFormatType().getValue());
 		updateMap.put(PROPERTY_FORMAT, config.getFormatType().getValue());
 
 		// 撮影後設定, 通知設定
@@ -251,59 +258,67 @@ public class PropertiesRepository {
 
 	/** 初期化時の文章をソース側で保持 改行コードはosごとに最適化（日本語） */
 	private static final String PROPERTY_TEMPLATE_JA = """
-			#InstantSnap Settings
+			# InstantSnap Settings
 
-			#言語を指定してください
+			# 言語を指定してください
 			language=ja
 
-			#～～ 撮影設定 ～～#
-			#スクショ発動キーの選択
-			#1 -> shift + printscreen(デフォルト), 2 -> Ctrl + Shift + S
-			#3 -> F9, 4 -> カスタムキー
+			# ～～ 撮影設定 ～～
+			# スクショ発動キーの選択
+			# 1 -> shift + printscreen(デフォルト), 2 -> Ctrl + Shift + S
+			# 3 -> F9, 4 -> カスタムキー
 			trigger=1
 
-			#カスタムメインキー設定 -- triggerを4にした上でキーコードを記載してください
-			#未使用な場合は、0
+			# カスタムメインキー設定 -- triggerを4にした上でキーコードを記載してください
+			# 未使用な場合は、0
 			customKey=0
 
-			#カスタムキーのコンビネーションキー設定 -- 使用する場合はtrue メインキー必須
+			# カスタムキーのコンビネーションキー設定 -- 使用する場合はtrue メインキー必須
 			useAlt=false
 			useCtrl=false
 			useShift=false
 
-			#撮影範囲の選択
-			#1 -> アクティブウィンドウ(デフォルト), 2 -> アクティブモニター
-			#3 -> メインモニター, 4 -> 全てのモニター
+			# 撮影範囲の選択 デフォルトは 1
+			# 1 -> 使用しているウィンドウを撮影, 2 -> カーソルのあるモニターを撮影
+			# 3 -> メインモニターを撮影, 4 -> 全てのモニターを撮影
 			snapArea=1
 
-			#～～ 出力設定 ～～#
-			#画像を保存する（有効にする場合は"true"と記載してください）
+			# ～～ 出力設定 ～～
+			# 画像を保存する（有効にする場合は"true"と記載してください）
 			saveImageEnabled=true
 
-			#クリップボードにコピーする（有効にする場合は"true"と記載してください）
+			# クリップボードにコピーする（有効にする場合は"true"と記載してください）
 			clipboardEnabled=true
 
-			#保存先パスを指定してください
+			# 保存先パスを指定してください
 			savePath=./screenshots/
 
-			#拡張子の選択 png、jpg、bmp、gifのいずれかを記載してください(デフォルト：png)
+			# ファイル名の先頭文字
+			fileNamePrefix=
+			
+			# ファイル名につける日時フォーマット デフォルトは1
+			# 1 -> yyyyMMdd.HHmmss.SSS, 2 -> yyyyMMdd.HHmmss
+			# 3 -> yyyyMMdd_HHmmss_SSS, 4 -> yyyyMMdd_HHmmss
+			fileNameDateFormat=1
+
+			# ファイルの拡張子の選択 png、jpg、bmp、gifのいずれかを記載してください(デフォルト：png)
 			format=png
 
-			#～～ 撮影後設定 ～～#
-			#撮影後に行う処理を選択
-			#1 -> 画像ファイルを表示する, 2 -> ペイントを開く,
-			#3 -> 一時保存ファイルに保存する, 0, 未記入等 -> 何もしない(デフォルト)
+			# ～～ 撮影後設定 ～～
+			# 撮影後に行う処理を選択
+			# 1 -> 画像ファイルを表示する, 2 -> ペイントを開く,
+			# 3 -> 一時保存ファイルに保存する, 0, 未記入等 -> 何もしない(デフォルト)
 			afterSnapAction=0
 
-			#撮影時、通知を表示する（有効にする場合は"true"と記載してください）
+			# 撮影時、通知を表示する（有効にする場合は"true"と記載してください）
 			notificationEnabled=true
 
-			#～～ サウンド設定 ～～#
-			#通知音を有効にする（有効にする場合は"true"と記載してください）
+			# ～～ サウンド設定 ～～#
+			# 通知音を有効にする（有効にする場合は"true"と記載してください）
 			soundNotificationEnabled=true
 
-			#撮影音を鳴らして撮影する（有効にする場合は"true"と記載してください）
-			soundSnapEnabled=false
+			# 撮影音を鳴らして撮影する（有効にする場合は"true"と記載してください）
+			soundSnapEnabled=true
 
 			""".replace("\r\n", "\n").replace("\n", System.lineSeparator());
 
@@ -344,6 +359,14 @@ public class PropertiesRepository {
 			# Please specify the save path
 			savePath=./screenshots/
 
+			# Prefix added to the beginning of the file name
+			fileNamePrefix=
+
+			# Date/time format added to the file name. Default is 1.
+			# 1 -> yyyyMMdd.HHmmss.SSS, 2 -> yyyyMMdd.HHmmss
+			# 3 -> yyyyMMdd_HHmmss_SSS, 4 -> yyyyMMdd_HHmmss
+			fileNameDateFormat=1
+
 			# Select the file extension. Specify one of png, jpg, bmp, or gif. (default: png)
 			format=png
 
@@ -361,7 +384,7 @@ public class PropertiesRepository {
 			soundNotificationEnabled=true
 
 			# Play a shutter sound when capturing (set to "true" to enable)
-			soundSnapEnabled=false
+			soundSnapEnabled=true
 
 			""".replace("\r\n", "\n").replace("\n", System.lineSeparator());
 

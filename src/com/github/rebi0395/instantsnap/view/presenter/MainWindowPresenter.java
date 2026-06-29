@@ -14,9 +14,11 @@ import com.github.rebi0395.instantsnap.view.StyleSheetUtil;
 import com.github.rebi0395.instantsnap.view.controller.MainWindowController;
 
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 /**
@@ -35,6 +37,18 @@ public class MainWindowPresenter {
 
 	/** 終了通知を表示させるプレゼンター */
 	private final ExitDialogPresenter exitDialogPresenter;
+
+	/** ウィンドウの最大の横幅 */
+	private static final double SCENE_MAX_WIDTH = 600;
+
+	/** ウィンドウの最大の高さ */
+	private static final double SCENE_MAX_HEIGHT = 900;
+	 
+	/** ウィンドウの横幅の余白 */
+	private static final double SCENE_MARGIN_WIDTH = 60;
+
+	/** ウィンドウの高さの余白 */
+	private static final double SCENE_MARGIN_HEIGHT = 90;
 
 	public MainWindowPresenter(Stage stage, InstantSnapCoordinator coordinator,
 			ExitDialogPresenter exitDialogPresenter) {
@@ -57,7 +71,7 @@ public class MainWindowPresenter {
 		Parent mainRoot = loader.load();
 
 		// シーンの設定 (ウィンドウのファイル、横幅、高さを設定)
-		Scene scene = new Scene(mainRoot, 600, 900);
+		Scene scene = createScene(mainRoot);
 		StyleSheetUtil.applyStyleSheet(scene, CSS_MAIN_WINDOW); // css適用
 
 		// ウィンドウを閉じようとすると、確認ウィンドウを表示する処理を登録
@@ -69,7 +83,6 @@ public class MainWindowPresenter {
 		// ウィンドウを設定し、表示する
 		stage.setTitle("InstantSnap Menu");
 		stage.setScene(scene);
-		stage.sizeToScene();
 		stage.show();
 	}
 
@@ -106,5 +119,26 @@ public class MainWindowPresenter {
 		} catch (IOException e) {
 			log.warn("アイコンファイルの読み込みに失敗しました: {}", ICON_APP, e);
 		}
+	}
+
+	/**
+	 * メイン画面のSceneを作成する
+	 * 表示可能領域に収まるサイズに調整する
+	 * 
+	 * @param root JavaFXの最上位ノード
+	 * @return メイン画面のScene
+	 */
+	private Scene createScene(Parent root) {
+
+		Rectangle2D visualBounds = Screen.getPrimary().getVisualBounds(); // 画面サイズ取得
+
+		// 使用している画面の幅、高さから余白を引いた値を取得する
+		double width = visualBounds.getWidth() - SCENE_MARGIN_WIDTH;
+		double height = visualBounds.getHeight() - SCENE_MARGIN_HEIGHT;
+
+		// 最大値か、画面サイズから余白を引いた大きさのうち、小さいサイズを適用する
+		double sceneWidth = Math.min(SCENE_MAX_WIDTH, width);
+		double sceneHeight = Math.min(SCENE_MAX_HEIGHT, height);
+		return new Scene(root, sceneWidth, sceneHeight);
 	}
 }

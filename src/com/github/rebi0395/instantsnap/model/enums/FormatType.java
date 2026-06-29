@@ -9,20 +9,20 @@ import javafx.util.StringConverter;
  */
 public enum FormatType implements BaseEnum {
 
-	PNG("png", "png"), 
-	JPG("jpg", "jpg"), 
-	BMP("bmp", "bmp"), 
-	GIF("gif", "gif");
+	PNG("png", ".png"), 
+	JPG("jpg", ".jpg"), 
+	BMP("bmp", ".bmp"), 
+	GIF("gif", ".gif");
 
 	/** プロパティファイルと紐つく値 */
 	private final String value;
 	/** 表示名 */
-	private final String displayName;
+	private final String baseDisplayName;
 
 	/** コンストラクタ */
-	FormatType(String value, String displayName) {
+	FormatType(String value, String baseDisplayName) {
 		this.value = value;
-		this.displayName = displayName;
+		this.baseDisplayName = baseDisplayName;
 	}
 
 	/**
@@ -34,12 +34,12 @@ public enum FormatType implements BaseEnum {
 	}
 
 	/**
-	 * @return displayName 表示名
+	 * @return baseDisplayName 基準表示名（英語）
 	 */
 	@Override
-	public String getDisplayName() {
-		return displayName;
-	}
+	public String getBaseDisplayName() {
+		return baseDisplayName;
+	}	
 
 	/**
 	 * プロパティファイルの値から対応する FormatType を取得する。
@@ -53,7 +53,7 @@ public enum FormatType implements BaseEnum {
 
 	/**
 	 * 列挙型と文字列を相互変換する	JavaFXコンバーターを取得する
-	 * @return FormatType と文字列を交互変換するJavaFXコンバーター
+	 * @return FormatType と文字列を相互変換するJavaFXコンバーター
 	 */
 	public static StringConverter<FormatType> toConverter() {
 		return BaseEnum.toConverter(FormatType.class, PNG);

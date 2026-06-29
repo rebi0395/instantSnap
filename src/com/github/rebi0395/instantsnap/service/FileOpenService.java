@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.rebi0395.instantsnap.common.OsUtil;
 import com.github.rebi0395.instantsnap.model.enums.AfterSnapActionType;
 
 /**
@@ -68,9 +69,8 @@ public class FileOpenService {
 	 */
 	public void openDirectory(Path targetPath) {
 		try {
-			String os = System.getProperty("os.name").toLowerCase();
 			// windowの場合、コマンドを直接叩いて実行する
-			if (os.contains("win")) {
+			if (OsUtil.isWindows()) {
 				new ProcessBuilder(
 						"explorer",
 						"/select," + targetPath.toAbsolutePath() // 絶対パスのファイルを選択状態にする

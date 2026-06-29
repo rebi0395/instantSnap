@@ -26,6 +26,11 @@ public class DpiUtil {
 	 * プロセス全体に強制適用するように初期化（マルチモニターでの座標バグ防止）
 	 */
 	public static synchronized void enablePerMonitorV2() {
+		// Windowのみ適用
+		if (!OsUtil.isWindows()) {
+			log.info("DPI Awareness設定はWindows以外のためスキップしました");
+			return;
+		}
 		// 二重Dpi宣言防止
 		if (initialized) {
 			return;
@@ -35,9 +40,9 @@ public class DpiUtil {
 			// User32.dll から直接関数を呼び出す
 			Function.getFunction("user32", "SetProcessDpiAwarenessContext")
 					.invoke(new Object[] { DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 });
-			log.info("DPI Awareness: Per-Monitor V2 enabled");
+			log.info("DPI Awareness設定を適用しました。: Per-Monitor V2");
 		} catch (Throwable t) {
-			log.warn("DPI Awareness setting failed: ", t);
+			log.warn("DPI Awareness設定に失敗しました。処理を継続します", t);
 		}
 	}
 }

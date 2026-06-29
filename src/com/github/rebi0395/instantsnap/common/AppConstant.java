@@ -33,6 +33,10 @@ public final class AppConstant {
 	public static final String PROPERTY_CLIPBOARD_ENABLED = "clipboardEnabled";
 	/** プロパティ 保存パス */
 	public static final String PROPERTY_SAVE_PATH = "savePath";
+	/** プロパティ ファイル名の先頭文字 */
+	public static final String PROPERTY_FILE_NAME_PREFIX = "fileNamePrefix";
+	/** プロパティ ファイル名の日時指定 */
+	public static final String PROPERTY_FILE_NAME_DATE_FORMAT = "fileNameDateFormat";
 	/** プロパティ 拡張子 */
 	public static final String PROPERTY_FORMAT = "format";
 	/** プロパティ 撮影後アクション */
@@ -47,28 +51,22 @@ public final class AppConstant {
 	// -- デフォルト値 --  
 	/** 保存先ディレクトリのデフォルト値 */
 	public static final String DEFAULT_SAVE_DIR = "./screenshots/";
-
-	/** カスタムキーでAltキーを使用するかどうかのデフォルト値 */
-	public static final boolean DEFAULT_USE_ALT = false;
-
+	/** 保存先ディレクトリのデフォルト値 */
+	public static final String DEFAULT_FILE_NAME_PREFIX = "";
 	/** カスタムキーでCtrlキーを使用するかどうかのデフォルト値 */
 	public static final boolean DEFAULT_USE_CTRL = false;
-
+	/** カスタムキーでAltキーを使用するかどうかのデフォルト値 */
+	public static final boolean DEFAULT_USE_ALT = false;
 	/** カスタムキーでShiftキーを使用するかどうかのデフォルト値 */
 	public static final boolean DEFAULT_USE_SHIFT = false;
-
 	/** 画像保存を有効にするかどうかのデフォルト値 */
 	public static final boolean DEFAULT_SAVE_IMAGE_ENABLED = true;
-
 	/** クリップボード保存を有効にするかどうかのデフォルト値 */
 	public static final boolean DEFAULT_CLIPBOARD_ENABLED = true;
-
 	/** 撮影時通知を表示するかどうかのデフォルト値 */
 	public static final boolean DEFAULT_NOTIFICATION_ENABLED = true;
-
 	/** 撮影音を鳴らすかどうかのデフォルト値 */
-	public static final boolean DEFAULT_SOUND_SNAP_ENABLED = false;
-
+	public static final boolean DEFAULT_SOUND_SNAP_ENABLED = true;
 	/** 通知音を鳴らすかどうかのデフォルト値 */
 	public static final boolean DEFAULT_SOUND_NOTIFICATION_ENABLED = true;
 
@@ -87,8 +85,17 @@ public final class AppConstant {
 
 	/** アイコンのpngファイル */
 	public static final String ICON_APP = "/icon/instantsnap.png";
-
 	/** 一時保存先ディレクトリ */
 	public static final String TMP_SAVE_DIR = "./tmp/";
 
+	// -- OS名
+	/** OS名：Windows */
+	public static final String OS_NAME_WINDOWS = "Windows";
+	/** OS名：macOS */
+	public static final String OS_NAME_MAC = "macOS";
+	/** OS名：Linux */
+	public static final String OS_NAME_LINUX = "Linux";
+	/** OS名：その他 */
+	public static final String OS_NAME_OTHER = "Other";
+	
 }
