@@ -44,6 +44,33 @@
     -fx-prompt-text-fill: #8a8a8a;
 }
 
+/** 編集不可の表示専用テキストフィールド */
+.readonly-text-field {
+	-fx-background-color: #f3f3f3;
+	-fx-border-color: #cccccc;
+	-fx-text-fill: #333333;
+}
+
+/** タブ幅固定 */
+.main-tab-pane {
+	-fx-tab-min-width: 110px;
+	-fx-tab-max-width: 110px;
+}
+
+/** タブ真ん中 */
+.main-tab-pane .tab {
+	-fx-alignment: CENTER;
+}
+
+/** タブのラベル固定 */
+.main-tab-pane .tab-label {
+	-fx-min-width: 100px;
+	-fx-pref-width: 100px;
+	-fx-max-width: 100px;
+	-fx-alignment: CENTER;
+	-fx-text-alignment: CENTER;
+}
+
 /** 小項目の区切り */
 .section-border {
     -fx-background-color: #f8f8f8;
@@ -94,6 +121,17 @@
 .output-switch-item {
     -fx-spacing: 10px;
     -fx-alignment: center-left;
+}
+
+/** 不正値の場合に赤くする */
+.invalid-value {
+	-fx-border-color: #d32f2f;
+	-fx-background-color: #fff5f5;
+}
+
+/* 不正値のテキストフィールド */
+.text-field.invalid-value {
+	-fx-text-fill: #b71c1c;
 }
 
 /* =========================

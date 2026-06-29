@@ -14,6 +14,7 @@ import com.github.rebi0395.instantsnap.model.enums.AfterSnapActionType;
 import com.github.rebi0395.instantsnap.repository.PropertiesRepository;
 import com.github.rebi0395.instantsnap.service.KeyEventListener;
 import com.github.rebi0395.instantsnap.service.FileOpenService;
+import com.github.rebi0395.instantsnap.service.FilePathService;
 import com.github.rebi0395.instantsnap.service.SnapAreaResolver;
 import com.github.rebi0395.instantsnap.service.SnapSaveService;
 import com.github.rebi0395.instantsnap.service.SoundPlayer;
@@ -41,6 +42,8 @@ public class InstantSnapCoordinator implements KeyEventListener {
 
 	/** 一時保存ディレクトリの管理クラス */
 	private final TmpFolderService tmpFolder;
+	/** ファイル名生成、ディレクトリ解決を行うクラス */
+	private final FilePathService filePathService;
 	/** 撮影トリガーの管理クラス */
 	private final TriggerKeyManager keyManager;
 
@@ -69,13 +72,14 @@ public class InstantSnapCoordinator implements KeyEventListener {
 		this.config = new ConfigBean();
 		this.repository = new PropertiesRepository();
 		this.tmpFolder = new TmpFolderService();
+		this.filePathService = new FilePathService();
 		this.areaResolver = new SnapAreaResolver();
-		this.saveService = new SnapSaveService();
 		this.fileOpenService = new FileOpenService();
 		this.soundPlayer = new SoundPlayer();
 
 		// 依存性の注入があるクラス
 		this.converter = new MessageKeyConverter(config.getLanguageType());
+		this.saveService = new SnapSaveService(filePathService);
 		this.keyManager = new TriggerKeyManager(config, this);
 		this.takeSnapService = new TakeSnapService(areaResolver, saveService, soundPlayer);
 
@@ -220,5 +224,13 @@ public class InstantSnapCoordinator implements KeyEventListener {
 	 */
 	public MessageKeyConverter getMessageKeyConverter() {
 		return converter;
+	}
+	
+	/**
+	 * ファイル名生成、ディレクトリ解決を行うクラスを取得する
+	 * @return filePathService
+	 */
+	public FilePathService getFilePathService() {
+		return filePathService;
 	}
 }

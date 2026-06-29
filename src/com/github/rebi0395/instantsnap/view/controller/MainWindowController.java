@@ -4,9 +4,9 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.rebi0395.instantsnap.app.InstantSnapCoordinator;
 import com.github.rebi0395.instantsnap.common.AppLogger;
+import com.github.rebi0395.instantsnap.common.MessageKeyConstant;
 import com.github.rebi0395.instantsnap.common.MessageKeyConverter;
 import com.github.rebi0395.instantsnap.common.NativeKeyCodeConverter;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
@@ -14,22 +14,31 @@ import com.github.rebi0395.instantsnap.model.bean.KeyCombinationBean;
 import com.github.rebi0395.instantsnap.model.enums.FormatType;
 import com.github.rebi0395.instantsnap.model.enums.LanguageType;
 import com.github.rebi0395.instantsnap.model.enums.AfterSnapActionType;
+import com.github.rebi0395.instantsnap.model.enums.FileNameDateFormatType;
 import com.github.rebi0395.instantsnap.model.enums.SnapAreaType;
 import com.github.rebi0395.instantsnap.model.enums.TriggerType;
+import com.github.rebi0395.instantsnap.service.FilePathService;
 
 import static com.github.rebi0395.instantsnap.common.AppConstant.*;
 import static com.github.rebi0395.instantsnap.common.StrCheckUtil.*;
 import static com.github.kwhat.jnativehook.keyboard.NativeKeyEvent.*;
 
 import javafx.fxml.FXML;
+import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
+import javafx.scene.control.Tab;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.Tooltip;
+import javafx.scene.input.InputMethodEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.BorderPane;
 import javafx.stage.DirectoryChooser;
 
 /**
@@ -43,8 +52,75 @@ public class MainWindowController {
 	/** メッセージの多言語変換クラス */
 	private MessageKeyConverter converter;
 
+	/** ファイル名生成、ディレクトリ解決を行うクラス */
+	private FilePathService filePathService;
+
 	/** nativeキーコードを保持する変数 */
 	private int nativeCode;
+
+	/** 画面全体の親レイアウト */
+	@FXML
+	private BorderPane rootPane;
+	
+	// -- タブ --
+	/** 基本設定タブ */
+	@FXML
+	private Tab tabBasicSettings;
+
+	/** その他設定タブ */
+	@FXML
+	private Tab tabOtherSettings;
+
+	// -- 折りたたみ項目 --
+	/** 画像保存先設定の折りたたみ項目 */
+	@FXML
+	private TitledPane accordionSaveDestination;
+
+	// -- ボタン --
+	/** 入力値初期化ボタン */
+	@FXML
+	private Button buttonReset;
+
+	/** 設定反映ボタン */
+	@FXML
+	private Button buttonApply;
+
+	// -- セクションラベル --
+	/** ショートカットキー選択セクションのラベル */
+	@FXML
+	private Label sectionShortcutKey;
+
+	/** カスタムキー設定セクションのラベル */
+	@FXML
+	private Label sectionCustomKey;
+
+	/** 撮影範囲セクションのラベル */
+	@FXML
+	private Label sectionSnapArea;
+
+	/** 保存方法セクションのラベル */
+	@FXML
+	private Label sectionSaveMethod;
+
+	/** 保存先選択セクションのラベル */
+	@FXML
+	private Label sectionSelectSaveDirectory;
+
+	/** ファイル名セクションのラベル */
+	@FXML
+	private Label sectionFileName;
+
+	/** 撮影後の動作セクションのラベル */
+	@FXML
+	private Label sectionAfterSnapAction;
+
+	/** 通知表示セクションのラベル */
+	@FXML
+	private Label sectionNotification;
+
+	/** サウンド設定セクションのラベル */
+	@FXML
+	private Label sectionSoundTitle;
 
 	// -- ラベル --
 	/** 操作完了やエラーメッセージを表示するラベル */
@@ -59,9 +135,9 @@ public class MainWindowController {
 	@FXML
 	private Label labelFilePath;
 
-	/** 適応中の拡張子を表示するラベル */
+	/** 適応中の保存ファイル名を表示するラベル */
 	@FXML
-	private Label labelFormatType;
+	private Label labelFileName;
 
 	/** 適応中の撮影範囲を表示するラベル */
 	@FXML
@@ -131,6 +207,18 @@ public class MainWindowController {
 	@FXML
 	private TextField textFilePath;
 
+	/** フォルダ選択ボタン */
+	@FXML
+	private Button buttonSelectFile;
+
+	/** ファイルの先頭文字を指定するテキストフィールド */
+	@FXML
+	private TextField textFileNamePrefix;
+
+	/** ファイル名の日時フォーマットを選択するコンボボックス */
+	@FXML
+	private ComboBox<FileNameDateFormatType> comboFileNameDateFormatType;
+
 	/** 拡張子を選択するコンボボックス */
 	@FXML
 	private ComboBox<FormatType> comboFormatType;
@@ -139,18 +227,23 @@ public class MainWindowController {
 	/** 撮影後設定を選択するラジオボタンをグループ化するトグルボタン */
 	@FXML
 	private final ToggleGroup radioSnapAfterGroup = new ToggleGroup();
+
 	/** 撮影後設定を選択するラジオボタンの一つ「何もしない」 */
 	@FXML
 	private RadioButton radioSnapAfterNothing;
+
 	/** 撮影後設定を選択するラジオボタンの一つ「画像を開く」 */
 	@FXML
 	private RadioButton radioSnapAfterOpenImage;
+
 	/** 撮影後設定を選択するラジオボタンの一つ「ペイントで開く」 */
 	@FXML
 	private RadioButton radioSnapAfterOpenPaint;
+
 	/** 撮影後設定を選択するラジオボタンの一つ「一時保存フォルダに保存」 */
 	@FXML
 	private RadioButton radioSnapAfterSaveToTmp;
+
 	/** snapAfterとラジオボタンを紐付けるマップ */
 	private Map<AfterSnapActionType, RadioButton> snapAfterRadioMap;
 
@@ -167,18 +260,22 @@ public class MainWindowController {
 	@FXML
 	private CheckBox checkSnapSound;
 
+	/** 不正値用スタイルクラス */
+	private static final String STYLE_INVALID_VALUE = "invalid-value";
+
 	/** コンストラクタ */
 	public MainWindowController(InstantSnapCoordinator coordinator) {
 		this.coordinator = coordinator;
 	}
-	
+
 	/**
 	 * 初期化処理。FXMLファイルの要素を取り込んだ後に呼び出す
 	 */
 	@FXML
 	public void initialize() {
-		this.converter = coordinator.getMessageKeyConverter();
 		ConfigBean config = coordinator.getConfigBean(); // 設定値保持クラス
+		this.converter = coordinator.getMessageKeyConverter(); // メッセージキー変換クラス
+		this.filePathService = coordinator.getFilePathService(); // ファイル名生成、ディレクトリ解決を行うクラス
 
 		// -- 活性・非活性の動的な制御の登録 -- 
 		// ショートカットキーのリストを監視するリスナー
@@ -192,6 +289,8 @@ public class MainWindowController {
 
 		// カスタムキーのテキストフィールドの挙動を設定
 		inputCustomKey(textInputKey);
+		// ファイル名の先頭文字の置換処理
+		registerTextFieldFocusOutListener();
 
 		// ～～ ユーザー設定値のセット ～～ 
 		// 言語設定のリスト、コンバーター(変換ルール)、初期設定値をセット
@@ -212,7 +311,7 @@ public class MainWindowController {
 		nativeCode = customKeys.getTriggerKey(); // nativeキーコードを保持
 		if (!(nativeCode == VC_UNDEFINED)) {
 			// 未定義でない場合、テキストフィールドにキーの名前をセットする
-			textInputKey.setText(NativeKeyEvent.getKeyText(nativeCode));
+			textInputKey.setText(NativeKeyCodeConverter.toFXKeyName(nativeCode));
 		}
 		// 修飾キーの初期値を設定
 		checkCtrl.setSelected(customKeys.isUseCtrl());
@@ -220,7 +319,7 @@ public class MainWindowController {
 		checkShift.setSelected(customKeys.isUseShift());
 		// 撮影範囲のリスト、コンバーター(変換ルール)、初期設定値をセット
 		comboSnapArea.getItems().addAll(SnapAreaType.values());
-		comboSnapArea.setConverter(SnapAreaType.toConverter()); // コンバーターにより	Enumsをdisplaynameで変換が可能になる
+		comboSnapArea.setConverter(SnapAreaType.toConverter(converter)); // コンバーターにより	Enumsをdisplaynameで変換が可能になる
 		comboSnapArea.setValue(config.getSnapAreaType());
 
 		// -- 出力設定 --
@@ -229,8 +328,14 @@ public class MainWindowController {
 		checkSaveImage.setSelected(config.getIsSaveImage());
 		// クリップボードに画像をするかのチェックボックスをセット
 		checkClipboard.setSelected(config.getIsCopyToClipboard());
-		// 保存先のフォルダを取得し、テキストフィールドにセット
+		// 保存先のフォルダを取得し、テキストフィールドの初期値にセット
 		textFilePath.setText(config.getSavePath());
+		// ファイル名の先頭文字を取得し、テキストフィールドの初期値にセット
+		textFileNamePrefix.setText(config.getFileNamePrefix());
+		// 日時フォーマットのリスト、コンバーター(変換ルール)、初期設定値をセット
+		comboFileNameDateFormatType.getItems().addAll(FileNameDateFormatType.values());
+		comboFileNameDateFormatType.setConverter(FileNameDateFormatType.toConverter());
+		comboFileNameDateFormatType.setValue(config.getFileNameDateFormatType());
 		// 拡張子のリスト、コンバーター(変換ルール)、初期設定値をセット
 		comboFormatType.getItems().addAll(FormatType.values());
 		comboFormatType.setConverter(FormatType.toConverter());
@@ -251,6 +356,10 @@ public class MainWindowController {
 
 		// -- 適用設定表示ラベルの反映 --
 		updateSettingLabels(config, customKeys);
+		// 固定文言の反映
+		updateFixedTexts();
+		// 不正値項目のスタイル反映
+		updateInvalidStyle(config);
 	}
 
 	/**
@@ -268,8 +377,7 @@ public class MainWindowController {
 			coordinator.save(); // 内部では全項目更新
 
 			converter.changeLanguage(config.getLanguageType()); // リソースバンドルを読み直す
-			updateSettingLabels(config, config.getCustomKeyBean()); // ラベル更新
-
+			updateLanguageTexts(config); // 言語変更を反映させる
 		});
 	}
 
@@ -282,7 +390,11 @@ public class MainWindowController {
 		dc.setTitle("保存先フォルダを選択");
 		File folder = dc.showDialog(textFilePath.getScene().getWindow());
 		if (folder != null) {
-			textFilePath.setText(folder.getAbsolutePath().replace("\\", "/")); // パス文字を置換する
+			// パス文字を置換してテキストフィールドにセットする
+			textFilePath.setText(folder.getAbsolutePath().replace("\\", "/"));
+			// パスをチェックし、スタイルを変化させる
+			boolean invalid = filePathService.isInvalidSaveDirectoryPath(textFilePath.getText());
+			applyInvalidStyle(textFilePath, invalid);
 		}
 	}
 
@@ -291,6 +403,11 @@ public class MainWindowController {
 	 * @param textField テキストフィールド
 	 */
 	public void inputCustomKey(TextField textField) {
+		// IMEによる入力文字の確定をキャンセルする
+		textField.addEventFilter(InputMethodEvent.INPUT_METHOD_TEXT_CHANGED, event -> {
+			event.consume();
+		});
+
 		// 文字入力イベントをキャンセルする
 		textField.addEventFilter(KeyEvent.KEY_TYPED, event -> {
 			// 通常のキー入力をキャンセルさせる
@@ -298,7 +415,7 @@ public class MainWindowController {
 		});
 
 		// キーが押された瞬間に、キーコードとキーの表示名を表示する処理
-		textField.setOnKeyPressed(event -> {
+		textField.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
 			// JavaFXのキーコードを取得
 			KeyCode keyCode = event.getCode();
 			// ログレベルがtraceであればキーログを出力する
@@ -312,8 +429,7 @@ public class MainWindowController {
 			// 通常のキー押下イベントを消費させる
 			event.consume();
 			// テキストフィールドに表示する処理
-			String keyText = getKeyText(nativeCode);
-			textField.setText(keyText);
+			textField.setText(NativeKeyCodeConverter.toFXKeyName(nativeCode)); // JavaFXのキーコード使用
 			textField.end(); // カーソルを右に移動
 		});
 	}
@@ -332,6 +448,43 @@ public class MainWindowController {
 		checkCtrl.setDisable(!(isCustom && hasKey));
 		checkAlt.setDisable(!(isCustom && hasKey));
 		checkShift.setDisable(!(isCustom && hasKey));
+	}
+
+	/**
+	 * テキストフィールドがフォーカスアウトされたときの処理を登録する。
+	 */
+	private void registerTextFieldFocusOutListener() {
+		// ファイル名に使用できない文字を置換処理する
+		// newValがfalseに変わるタイミングがフォーカスアウト
+		textFileNamePrefix.focusedProperty().addListener((obs, oldVal, newVal) -> {
+			if (newVal) {
+				return;
+			}
+			String inputText = textFileNamePrefix.getText();
+			String sanitizedText = sanitizeFileNamePrefix(inputText);
+			if (sanitizedText.equals(inputText)) {
+				// 置換処理していない場合はリターン
+				return;
+			}
+			textFileNamePrefix.setText(sanitizedText);
+		});
+
+		// 入力時、不正なパスであれば入力欄を赤くする
+		textFilePath.focusedProperty().addListener((obs, oldVal, newVal) -> {
+			if (newVal) {
+				return;
+			}
+			String inputText = textFilePath.getText();
+			if (isBlankSafe(inputText)) {
+				// 空文字の場合は、デフォルトパスを注入する
+				textFilePath.setText(DEFAULT_SAVE_DIR);
+				applyInvalidStyle(textFilePath, false);
+				return;
+			}
+
+			boolean invalid = filePathService.isInvalidSaveDirectoryPath(inputText);
+			applyInvalidStyle(textFilePath, invalid);
+		});
 	}
 
 	/**
@@ -360,9 +513,9 @@ public class MainWindowController {
 			AfterSnapActionType afterSnapActionType = entry.getKey();
 			RadioButton radioButton = entry.getValue();
 
-			radioButton.setToggleGroup(radioSnapAfterGroup);
-			radioButton.setUserData(afterSnapActionType);
-			radioButton.setText(afterSnapActionType.getDisplayName());
+			radioButton.setToggleGroup(radioSnapAfterGroup); // ラジオボタングループに登録
+			radioButton.setUserData(afterSnapActionType); // Enumごと登録
+			radioButton.setText(afterSnapActionType.getMessage(converter)); // メッセージキー変換した文言セット
 		}
 	}
 
@@ -371,6 +524,9 @@ public class MainWindowController {
 	 */
 	@FXML
 	public void onApplyConfig() {
+		
+		// 入力部品からフォーカスを外す
+		rootPane.requestFocus();
 
 		ConfigBean config = coordinator.getConfigBean();
 		config.setLanguageType(comboLanguageType.getValue()); // 言語設定
@@ -389,6 +545,8 @@ public class MainWindowController {
 		config.setIsSaveImage(checkSaveImage.isSelected()); // 画像保存の有無
 		config.setIsCopyToClipboard(checkClipboard.isSelected()); // クリップボード保存の有無
 		config.setSavePath(textFilePath.getText()); // 保存パス
+		config.setFileNamePrefix(textFileNamePrefix.getText()); // ファイル名の先頭文字
+		config.setFileNameDateFormatType(comboFileNameDateFormatType.getValue()); // 日時フォーマット
 		config.setFormatType(comboFormatType.getValue()); // 拡張子
 
 		// -- 撮影後設定 --
@@ -398,7 +556,10 @@ public class MainWindowController {
 		config.setIsSnapSoundEnabled(checkSnapSound.isSelected()); // 撮影音を鳴らす有無
 
 		// 文字列を更新する
-		updateSettingLabels(config, customKeys);
+		updateLanguageTexts(config);
+
+		// 不正値の場合、スタイルを反映
+		updateInvalidStyle(config);
 
 		// 更新されたconfigを用いて、司令塔クラスにプロパティ更新を依頼する
 		coordinator.save();
@@ -415,23 +576,81 @@ public class MainWindowController {
 		comboSnapArea.getSelectionModel().selectFirst();
 		// カスタムキーの設定をリセットする
 		textInputKey.clear();
-		checkCtrl.setSelected(false);
-		checkAlt.setSelected(false);
-		checkShift.setSelected(false);
+		checkCtrl.setSelected(DEFAULT_USE_CTRL);
+		checkAlt.setSelected(DEFAULT_USE_ALT);
+		checkShift.setSelected(DEFAULT_USE_SHIFT);
+		// カスタムキーの内部保持値もリセットする
+		nativeCode = VC_UNDEFINED;
 
 		// -- 出力設定 --
-		checkSaveImage.setSelected(true); // チェックを入れる
-		checkClipboard.setSelected(true); // チェックを入れる
+		checkSaveImage.setSelected(DEFAULT_SAVE_IMAGE_ENABLED); // チェックを入れる
+		checkClipboard.setSelected(DEFAULT_CLIPBOARD_ENABLED); // チェックを入れる
 		textFilePath.setText(DEFAULT_SAVE_DIR); // フォルダパスをデフォルトに設定
-		comboFormatType.getSelectionModel().selectFirst();
+		textFileNamePrefix.setText(DEFAULT_FILE_NAME_PREFIX); // ファイル名の先頭文字をデフォルトに設定
+		comboFileNameDateFormatType.getSelectionModel().selectFirst(); // 日時フォーマット
+		comboFormatType.getSelectionModel().selectFirst(); // 拡張子 
 
 		// -- 撮影後設定 --
 		radioSnapAfterGroup.selectToggle(radioSnapAfterNothing);
-		checkNotification.setSelected(true);
-		checkNotificationSound.setSelected(true);
-		checkSnapSound.setSelected(false);
+		checkNotification.setSelected(DEFAULT_NOTIFICATION_ENABLED);
+		checkSnapSound.setSelected(DEFAULT_SOUND_SNAP_ENABLED);
+		checkNotificationSound.setSelected(DEFAULT_SOUND_NOTIFICATION_ENABLED);
 
+		// -- ステータス更新 --
 		labelStatus.setText("ステータス: 入力値を初期化しました");
+
+		// -- 不正値のスタイル除去 --
+		applyInvalidStyle(textFilePath, false);
+	}
+
+	/**
+	 * 言語切り替え後、画面表示を更新する
+	 * 
+	 * @param config ユーザー設定値
+	 */
+	private void updateLanguageTexts(ConfigBean config) {
+
+		// ComboBoxの表示を更新
+		updateComboBoxConverters();
+
+		// 撮影後設定のラジオボタン表示を更新
+		updateAfterSnapActionRadioTexts();
+
+		// 適用中ラベルを更新
+		updateSettingLabels(config, config.getCustomKeyBean());
+
+		// 固定文言を更新
+		updateFixedTexts();
+	}
+
+	/**
+	 * ComboBoxのコンバーターを再設定し、表示を更新する
+	 * 
+	 * @param config ユーザー設定値
+	 */
+	private void updateComboBoxConverters() {
+
+		// 今の選択状態を退避
+		SnapAreaType snapAreaType = comboSnapArea.getValue();
+
+		// 選択値を入れ直して、ComboBoxの表示を再描画させる
+		comboSnapArea.getItems().clear();
+		comboSnapArea.getItems().addAll(SnapAreaType.values());
+		comboSnapArea.setConverter(SnapAreaType.toConverter(converter)); // コンバーターにより	Enumsをdisplaynameで変換が可能になる
+		comboSnapArea.setValue(snapAreaType);
+	}
+
+	/**
+	 * 撮影後設定のラジオボタン表示を更新する
+	 */
+	private void updateAfterSnapActionRadioTexts() {
+
+		for (Map.Entry<AfterSnapActionType, RadioButton> entry : snapAfterRadioMap.entrySet()) {
+			AfterSnapActionType afterSnapActionType = entry.getKey();
+			RadioButton radioButton = entry.getValue();
+
+			radioButton.setText(afterSnapActionType.getMessage(converter));
+		}
 	}
 
 	/**
@@ -444,18 +663,95 @@ public class MainWindowController {
 		// -- 撮影設定
 		labelKeyCombination
 				.setText(config.getTriggerType().resolveKeyCombination(customKeys).resolveKeyCombinationName());
-		labelSnapArea.setText(config.getSnapAreaType().getDisplayName());
+		labelSnapArea.setText(config.getSnapAreaType().getMessage(converter));
 
 		// -- 出力設定
 		labelSaveImage.setText(converter.getEnabledMessage(config.getIsSaveImage()));
 		labelClipboard.setText(converter.getEnabledMessage(config.getIsCopyToClipboard()));
-		labelFilePath.setText(config.getSavePath());
-		labelFormatType.setText(config.getFormatType().getDisplayName());
+
+		// フォルダ名のラベル設定
+		String savePath = filePathService.resolveSaveDirectoryPreview(config.getSavePath());
+		labelFilePath.setText(compressMiddle(savePath, 36)); // 長い場合、真ん中を省略表記
+		labelFilePath.setTooltip(new Tooltip(savePath)); // ツールチップで全体を表示可能
+
+		// ファイル名のラベル設定
+		String fileName = filePathService.createFileNamePreview(config);
+		labelFileName.setText(compressMiddle(fileName, 36)); // 長い場合、真ん中を省略表記
+		labelFileName.setTooltip(new Tooltip(fileName)); // ツールチップで全体を表示可能
 
 		// -- 撮影後設定
-		labelSnapAfter.setText(config.getAfterSnapActionType().getDisplayName());
+		labelSnapAfter.setText(config.getAfterSnapActionType().getMessage(converter));
 		labelNotification.setText(converter.getEnabledMessage(config.getIsShowNotification()));
 		labelNotificationSound.setText(converter.getEnabledMessage(config.getIsNotificationSoundEnabled()));
 		labelSnapSound.setText(converter.getEnabledMessage(config.getIsSnapSoundEnabled()));
+	}
+
+	/**
+	 * 固定表示文言を更新する
+	 */
+	private void updateFixedTexts() {
+		// タブ
+		tabBasicSettings.setText(converter.getMessage(MessageKeyConstant.TAB_BASIC_SETTINGS, "Basic settings"));
+		tabOtherSettings.setText(converter.getMessage(MessageKeyConstant.TAB_OTHER_SETTINGS, "Other settings"));
+
+		// セクション
+		sectionShortcutKey.setText(converter.getMessage(MessageKeyConstant.SECTION_SHORTCUT_KEY, "Shortcut key"));
+		sectionCustomKey
+				.setText(converter.getMessage(MessageKeyConstant.SECTION_CUSTOM_KEY, "Custom key settings"));
+		sectionSnapArea.setText(converter.getMessage(MessageKeyConstant.SECTION_SNAP_AREA, "Capture area"));
+		sectionSaveMethod.setText(converter.getMessage(MessageKeyConstant.SECTION_SAVE_METHOD, "Save options"));
+		sectionSelectSaveDirectory.setText(
+				converter.getMessage(MessageKeyConstant.SECTION_SELECT_SAVE_DIRECTORY, "Save destination folder"));
+		sectionFileName.setText(converter.getMessage(MessageKeyConstant.SECTION_FILE_NAME, "File name"));
+		sectionAfterSnapAction
+				.setText(converter.getMessage(MessageKeyConstant.SECTION_AFTER_SNAP_ACTION, "After capture"));
+		sectionNotification.setText(converter.getMessage(MessageKeyConstant.SECTION_NOTIFICATION, "Notification"));
+		sectionSoundTitle.setText(converter.getMessage(MessageKeyConstant.SECTION_SOUND, "Sound"));
+
+		// チェックボックス
+		checkSaveImage.setText(converter.getMessage(MessageKeyConstant.CHECK_SAVE_IMAGE, "Save image"));
+		checkClipboard.setText(converter.getMessage(MessageKeyConstant.CHECK_COPY_TO_CLIPBOARD, "Copy to clipboard"));
+		checkNotification
+				.setText(converter.getMessage(MessageKeyConstant.CHECK_SHOW_NOTIFICATION, "Show notification"));
+		checkSnapSound
+				.setText(converter.getMessage(MessageKeyConstant.CHECK_ENABLE_SNAP_SOUND, "Enable shutter sound"));
+		checkNotificationSound.setText(
+				converter.getMessage(MessageKeyConstant.CHECK_ENABLE_NOTIFICATION_SOUND, "Enable notification sound"));
+
+		// アコーディオン
+		accordionSaveDestination.setText(
+				converter.getMessage(MessageKeyConstant.ACCORDION_SAVE_DESTINATION, "Save destination settings"));
+
+		// ボタン
+		buttonReset.setText(converter.getMessage(MessageKeyConstant.BUTTON_RESET_TO_DEFAULTS, "Reset to defaults"));
+		buttonApply.setText(converter.getMessage(MessageKeyConstant.BUTTON_APPLY_CONFIG, "Apply settings"));
+		buttonSelectFile.setText(converter.getMessage(MessageKeyConstant.BUTTON_SELECT_FILE, "Select...."));
+
+		// プロンプト(テキストフィールドの初期説明文)
+		textInputKey.setPromptText(converter.getMessage(MessageKeyConstant.PROMPT_CUSTOM_KEY, "Press a shortcut key"));
+	}
+
+	/**
+	 * ユーザー設定値が不正値であれば、スタイルを反映させる。
+	 * 不正でない項目はスタイルを除去する
+	 * @param config ユーザー設定値
+	 */
+	private void updateInvalidStyle(ConfigBean config) {
+		applyInvalidStyle(textFilePath,
+				filePathService.isInvalidSaveDirectoryPath(config.getSavePath()));
+	}
+
+	/**
+	 * 不正値用のスタイルを反映する
+	 * 
+	 * @param node 反映対象
+	 * @param invalid 不正値の場合true
+	 */
+	private void applyInvalidStyle(Node node, boolean invalid) {
+		node.getStyleClass().remove(STYLE_INVALID_VALUE);
+
+		if (invalid) {
+			node.getStyleClass().add(STYLE_INVALID_VALUE);
+		}
 	}
 }

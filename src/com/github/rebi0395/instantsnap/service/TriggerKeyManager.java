@@ -119,6 +119,7 @@ public class TriggerKeyManager implements NativeKeyListener {
 		if (canSnap && isShortcutPressed(keys)) {
 			// 連写を防ぐため、撮影可能フラグをオフにする
 			canSnap = false;
+			clearKeyStates();
 			listener.requestSnap();
 		}
 	}
@@ -181,6 +182,16 @@ public class TriggerKeyManager implements NativeKeyListener {
 				&& (keys.isUseCtrl() == isCtrlPressed)
 				&& (keys.isUseShift() == isShiftPressed)
 				&& isTriggerPressed;
+	}
+
+	/**
+	 * キーの押下状態をリセットする
+	 */
+	private void clearKeyStates() {
+		isTriggerPressed = false;
+		isAltPressed = false;
+		isCtrlPressed = false;
+		isShiftPressed = false;
 	}
 
 	/**

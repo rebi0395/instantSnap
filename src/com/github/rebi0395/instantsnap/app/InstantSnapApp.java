@@ -36,15 +36,15 @@ public class InstantSnapApp extends Application {
 			// 通知表示クラスを生成
 			this.notificationPresenter = new SnapNotificationPresenter(stage);
 
-			// 終了ダイアログ表示クラスを生成
-			this.exitDialogPresenter = new ExitDialogPresenter();
-
 			// 司令塔クラスを生成し、初期化処理を行う
 			this.coordinator = new InstantSnapCoordinator(notificationPresenter);
 
+			// 終了ダイアログ表示クラスを生成
+			this.exitDialogPresenter = new ExitDialogPresenter(coordinator.getMessageKeyConverter());
+
 			// メインウィンドウのプレゼンタークラスを作成
 			MainWindowPresenter mainPresenter = new MainWindowPresenter(stage, coordinator, exitDialogPresenter);
-			
+
 			// メインウィンドウを表示する
 			mainPresenter.show();
 

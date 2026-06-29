@@ -2,6 +2,8 @@ package com.github.rebi0395.instantsnap.model.bean;
 
 import static com.github.kwhat.jnativehook.keyboard.NativeKeyEvent.*;
 
+import com.github.rebi0395.instantsnap.common.NativeKeyCodeConverter;
+
 /**
  * 設定した起動キーを保持するクラスです。
  */
@@ -32,21 +34,20 @@ public class KeyCombinationBean {
 		if (triggerKey == VC_UNDEFINED) {
 			return "";
 		}
-		StringBuilder blilder = new StringBuilder();
-
+		StringBuilder builder = new StringBuilder();
 		// 修飾キーを用いるとき、文字列を結合する
 		if (useCtrl) {
-			blilder.append("Ctrl + ");
+			builder.append("Ctrl + ");
 		}
 		if (useAlt) {
-			blilder.append("Alt + ");
+			builder.append("Alt + ");
 		}
 		if (useShift) {
-			blilder.append("Shift + ");
+			builder.append("Shift + ");
 		}
-		blilder.append(getKeyText(triggerKey));
-
-		return blilder.toString();
+		// nativeキーコードからJavaFXのキー名を取得する
+		builder.append(NativeKeyCodeConverter.toFXKeyName(triggerKey));
+		return builder.toString();
 	}
 
 	/**

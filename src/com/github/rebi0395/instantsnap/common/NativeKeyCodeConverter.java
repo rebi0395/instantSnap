@@ -24,6 +24,8 @@ public class NativeKeyCodeConverter {
 	public static final int VC_CONTROL_R = 3613; // 3613
 	/** 右Shiftキーが拡張キー扱いされた場合、飛んでくるキーコードを定義 */
 	public static final int VC_SHIFT_R = 3638; // 3638
+	/** 下バックスラッシュキーが拡張キー扱いされた場合、飛んでくるキーコードを定義 */
+	public static final int VC_BACK_SLASH_D = 3654; // 3654
 
 	// インスタンス化しない
 	private NativeKeyCodeConverter() {
@@ -107,23 +109,23 @@ public class NativeKeyCodeConverter {
 		// --- Bracket ---
 		KEYCODE_MAP.put(KeyCode.OPEN_BRACKET, VC_OPEN_BRACKET);
 		KEYCODE_MAP.put(KeyCode.CLOSE_BRACKET, VC_CLOSE_BRACKET);
-		
+
 		// Comma / Period / Slash / Minus
 		KEYCODE_MAP.put(KeyCode.COMMA, VC_COMMA);
 		KEYCODE_MAP.put(KeyCode.PERIOD, VC_PERIOD);
 		KEYCODE_MAP.put(KeyCode.SLASH, VC_SLASH);
 		KEYCODE_MAP.put(KeyCode.BACK_SLASH, VC_BACK_SLASH);
 		KEYCODE_MAP.put(KeyCode.MINUS, VC_MINUS);
-		
+
 		// --- Space / PrintScreen / Scroll Lock ---
 		KEYCODE_MAP.put(KeyCode.SPACE, VC_SPACE);
 		KEYCODE_MAP.put(KeyCode.PRINTSCREEN, VC_PRINTSCREEN);
 		KEYCODE_MAP.put(KeyCode.SCROLL_LOCK, VC_SCROLL_LOCK);
-		
+
 		// Windows / Command(macOS)
 		KEYCODE_MAP.put(KeyCode.WINDOWS, VC_META);
 		KEYCODE_MAP.put(KeyCode.META, VC_META);
-		
+
 		// Nativeキーコードをキー、javaFXキーコードを値とするマップ生成
 		for (Map.Entry<KeyCode, Integer> entry : KEYCODE_MAP.entrySet()) {
 			NATIVE_MAP.put(entry.getValue(), entry.getKey());
@@ -181,6 +183,27 @@ public class NativeKeyCodeConverter {
 	public static KeyCode toFXKeyCode(int nativeCode) {
 		return NATIVE_MAP.get(nativeCode);
 	}
+	
+	/**
+	 * nativeキーコードから、JavaFxのキーの名前に変換する
+	 * @param code nativeのキーコード
+	 * @return 引数に対応するJavaFXのKeyName
+	 */
+	public static String toFXKeyName(int nativeCode) {
+		
+		KeyCode keyCode = NATIVE_MAP.get(nativeCode);
+		// Metaキーの場合、os判定を行ない、名前を返却する
+		if (keyCode == KeyCode.META) {
+			if (OsUtil.isWindows()) {
+				return KeyCode.WINDOWS.getName();
+			}
+			
+			if (OsUtil.isMac()) {
+				return KeyCode.COMMAND.getName();
+			}
+		}
+		return keyCode.getName();
+	}
 
 	/**
 	 * 拡張キー（右側の Shift / Ctrl / Alt）を、左側と同じ正規キーコードに正規化する。
@@ -197,6 +220,9 @@ public class NativeKeyCodeConverter {
 
 		case VC_SHIFT_R:
 			return VC_SHIFT;
+
+		case VC_BACK_SLASH_D:
+			return VC_BACK_SLASH;
 
 		default:
 			return nativeCode;

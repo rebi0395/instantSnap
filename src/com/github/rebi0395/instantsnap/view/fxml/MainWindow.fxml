@@ -6,7 +6,7 @@
 <?import javafx.collections.FXCollections?>
 <?import java.lang.String?>
 
-<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
+<BorderPane fx:id="rootPane" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
 
 	<top>
 		<HBox styleClass="top-bar">
@@ -18,9 +18,9 @@
 	</top>
 
 	<center>
-		<TabPane fx:id="mainTabPane" tabClosingPolicy="UNAVAILABLE">
+		<TabPane fx:id="mainTabPane" tabClosingPolicy="UNAVAILABLE" styleClass="main-tab-pane">
 			<tabs>
-				<Tab fx:id="configTab" text="基本設定">
+				<Tab fx:id="tabBasicSettings"><!-- 基本設定 -->
 					<content>
 						<ScrollPane fitToWidth="true" fitToHeight="true" pannable="true" 
 						hbarPolicy="NEVER" vbarPolicy="ALWAYS">
@@ -30,17 +30,18 @@
 								</padding>
 								<VBox spacing="10" styleClass="section-border">
 									<HBox styleClass="setting-header">
-										<Label text="ショートカットキー選択" styleClass="section-title"/>
+										<Label fx:id="sectionShortcutKey" styleClass="section-title" 
+											prefWidth="120" maxWidth="120"/><!-- ショートカットキー選択 -->
 										<Label fx:id="labelKeyCombination" styleClass="current-value"/>
 									</HBox>
 									<HBox styleClass="setting-header">
 										<ComboBox fx:id="comboTriggerType"/>
 									</HBox>
 									<HBox>
-										<Label text="ーーカスタムキー設定ーー"/>
+										<Label fx:id="sectionCustomKey"/><!-- カスタムキー設定 -->
 									</HBox>
 									<HBox styleClass="setting-header">
-										<TextField fx:id="textInputKey" promptText="ショートカットキーにしたいキーを入力" disable="true"/>
+										<TextField fx:id="textInputKey" disable="true"/>
 										<Label text="+"/>
 										<CheckBox fx:id="checkCtrl" text="Ctrl"/>
 										<Label text="+"/>
@@ -51,19 +52,17 @@
 								</VBox>
 								<VBox spacing="10" styleClass="section-border">
 									<HBox styleClass="setting-header">
-										<Label text="撮影範囲" styleClass="section-title"/>
+										<Label fx:id="sectionSnapArea" styleClass="section-title"
+											prefWidth="80" maxWidth="80"/><!-- 撮影範囲 -->
 										<Label fx:id="labelSnapArea" styleClass="current-value"/>
 									</HBox>
 									<HBox styleClass="setting-header">
 										<ComboBox fx:id="comboSnapArea"/>
 									</HBox>
 								</VBox>
-								<VBox spacing="10">
-									<Label text="出力" styleClass="section-main-title" />
-								</VBox>
 								<VBox spacing="20">
 									<VBox spacing="10" styleClass="section-border">
-										<Label text="保存方法" styleClass="section-title"/>
+										<Label fx:id="sectionSaveMethod" styleClass="section-title"/><!-- 保存方法 -->
 										<GridPane hgap="20">
 											<columnConstraints>
 												<ColumnConstraints percentWidth="50"/>
@@ -72,37 +71,39 @@
 											<VBox spacing="10" GridPane.columnIndex="0">
 												<HBox spacing="10" styleClass="output-switch-item">
 													<CheckBox fx:id="checkSaveImage" styleClass="switch-check-box"/>
-													<Label text="画像を保存する"/>
+													<!-- 画像を保存する -->
 													<Label fx:id="labelSaveImage" styleClass="current-value"/>
 												</HBox>
 											</VBox>
 											<VBox spacing="10" GridPane.columnIndex="1">
 												<HBox spacing="10" styleClass="output-switch-item">
 													<CheckBox fx:id="checkClipboard" styleClass="switch-check-box"/>
-													<Label text="クリップボードにコピーする"/>
+													<!-- クリップボードにコピーする -->
 													<Label fx:id="labelClipboard" styleClass="current-value"/>
 												</HBox>
 											</VBox>
 										</GridPane>
 										<Accordion fx:id="accordionImageSaveSettings">
 											<panes>
-												<TitledPane fx:id="paneImageSaveSettings" text="画像保存先の設定" expanded="false" focusTraversable="true">
+												<TitledPane fx:id="accordionSaveDestination" expanded="false" focusTraversable="true"><!-- 画像保存先の設定 -->
 													<content>
 														<VBox spacing="10">
 															<HBox styleClass="setting-header">
-																<Label text="保存先フォルダ選択" styleClass="section-title"/>
+																<Label fx:id="sectionSelectSaveDirectory" styleClass="section-title" prefWidth="140" maxWidth="140"/><!-- 保存先フォルダを選択 -->
 																<Label fx:id="labelFilePath" styleClass="current-value"/>
 															</HBox>
 															<HBox styleClass="setting-header">
-																<Button text="選択..." onAction="#onSelectFile"/>
-																<TextField fx:id="textFilePath" promptText="選択されたフォルダ" editable="false"/>
+																<Button fx:id="buttonSelectFile" onAction="#onSelectFile"/><!-- 選択...-->
+																<TextField fx:id="textFilePath" editable="true" styleClass="readonly-text-field"/>
 															</HBox>
 															<HBox styleClass="setting-header">
-																<Label text="画像の拡張子" styleClass="section-title"/>
-																<Label fx:id="labelFormatType" styleClass="current-value"/>
+																<Label fx:id="sectionFileName" styleClass="section-title" prefWidth="140" maxWidth="140"/><!-- ファイル名の設定 -->
+																<Label fx:id="labelFileName" styleClass="current-value"/>
 															</HBox>
 															<HBox styleClass="setting-header">
-																<ComboBox fx:id="comboFormatType"/>
+																<TextField fx:id="textFileNamePrefix"/>
+																<ComboBox fx:id="comboFileNameDateFormatType"/>
+																<ComboBox fx:id="comboFormatType" prefWidth="70" maxWidth="70"/>
 															</HBox>
 														</VBox>
 													</content>
@@ -120,7 +121,7 @@
 											<!-- 左側：撮影後の動作 -->
 											<VBox spacing="10" GridPane.columnIndex="0">
 												<HBox styleClass="setting-header">
-													<Label text="撮影後の動作" styleClass="section-title"/>
+													<Label fx:id="sectionAfterSnapAction" styleClass="section-title"/><!-- 撮影後の動作 -->
 													<Label fx:id="labelSnapAfter" styleClass="current-value"/>
 												</HBox>
 									
@@ -133,21 +134,21 @@
 											<!-- 右側：通知表示 -->
 											<VBox spacing="10" GridPane.columnIndex="1">
 												<HBox styleClass="setting-header">
-													<Label text="通知表示" styleClass="section-title"/>
+													<Label fx:id="sectionNotification" styleClass="section-title" prefWidth="80" maxWidth="80"/><!-- 通知表示 -->
 													<Label fx:id="labelNotification" styleClass="current-value"/>
 												</HBox>
 												<HBox spacing="10" styleClass="output-switch-row">
 													<CheckBox fx:id="checkNotification" text="通知を表示する" styleClass="switch-check-box"/>
 												</HBox>
 												<HBox styleClass="setting-header">
-													<Label text="サウンド設定" styleClass="section-title"/>
+													<Label fx:id="sectionSoundTitle" styleClass="section-title"/><!-- サウンド設定 -->
 												</HBox>
 												<HBox spacing="10" styleClass="output-switch-item">
-													<CheckBox fx:id="checkSnapSound" text="撮影音を有効にする"/>
+													<CheckBox fx:id="checkSnapSound" prefWidth="160" maxWidth="160"/><!-- 撮影音を有効にする -->
 													<Label fx:id="labelSnapSound" styleClass="current-value"/>
 												</HBox>
 												<HBox spacing="10" styleClass="output-switch-item">
-													<CheckBox fx:id="checkNotificationSound" text="通知音を有効にする"/>
+													<CheckBox fx:id="checkNotificationSound" prefWidth="160" maxWidth="160"/><!-- 通知音を有効にする -->
 													<Label fx:id="labelNotificationSound" styleClass="current-value"/>
 												</HBox>
 											</VBox>
@@ -158,7 +159,7 @@
 						</ScrollPane>
 					</content>
 				</Tab>
-				<Tab fx:id="otherTab" text="その他設定">
+				<Tab fx:id="tabOtherSettings"><!-- その他設定 -->
 					<content>
 						<VBox spacing="20">
 							<padding>
@@ -178,8 +179,8 @@
 				<Insets top="10" right="20" bottom="20" left="20"/>
 			</padding>
 			<children>
-				<Button text="入力値を初期化" onAction="#onResetConfig" style="-fx-min-width: 100;"/>
-				<Button text="設定を反映" onAction="#onApplyConfig" prefWidth="120" style="-fx-base: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;"/>
+				<Button fx:id="buttonReset" onAction="#onResetConfig" style="-fx-min-width: 100;"/><!-- 入力値を初期化 -->
+				<Button fx:id="buttonApply" onAction="#onApplyConfig" prefWidth="120" style="-fx-base: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;"/><!-- 設定を反映 -->
 			</children>
 		</HBox>
 	</bottom>
