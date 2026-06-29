@@ -5,6 +5,8 @@ import static com.github.rebi0395.instantsnap.common.AppConstant.*;
 import java.awt.Toolkit;
 import java.io.IOException;
 
+import com.github.rebi0395.instantsnap.common.MessageKeyConstant;
+import com.github.rebi0395.instantsnap.common.MessageKeyConverter;
 import com.github.rebi0395.instantsnap.exception.ServiceException;
 import com.github.rebi0395.instantsnap.view.controller.ExitDialogController;
 
@@ -20,6 +22,14 @@ import javafx.stage.StageStyle;
  */
 public class ExitDialogPresenter {
 
+	/** メッセージキーをメッセージに変換するクラス */
+	private MessageKeyConverter converter;
+
+	/** コンストラクタ */
+	public ExitDialogPresenter(MessageKeyConverter converter) {
+		this.converter = converter;
+	}
+	
 	/**
 	 * 終了確認ダイアログを表示する
 	 *
@@ -28,7 +38,7 @@ public class ExitDialogPresenter {
 	 */
 	public boolean show(Stage owner) throws ServiceException {
 		try {
-			ExitDialogController exitController = new ExitDialogController();
+			ExitDialogController exitController = new ExitDialogController(converter);
 
 			// FXMLローダーをロード
 			FXMLLoader exitLoader = new FXMLLoader(getClass().getResource(FXML_EXIT_DIALOG));
@@ -43,7 +53,7 @@ public class ExitDialogPresenter {
 			dialog.setResizable(false); // サイズ変更できないように設定
 			dialog.initStyle(StageStyle.UTILITY); // バックグラウンドの操作を無効化
 			dialog.setScene(new Scene(exitRoot));
-			dialog.setTitle("終了確認");
+			dialog.setTitle(converter.getMessage(MessageKeyConstant.DIALOG_EXIT_TITLE));
 
 			Toolkit.getDefaultToolkit().beep();
 
