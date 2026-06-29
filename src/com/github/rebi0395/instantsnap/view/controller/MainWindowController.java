@@ -38,6 +38,7 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.input.InputMethodEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.BorderPane;
 import javafx.stage.DirectoryChooser;
 
 /**
@@ -57,6 +58,10 @@ public class MainWindowController {
 	/** nativeキーコードを保持する変数 */
 	private int nativeCode;
 
+	/** 画面全体の親レイアウト */
+	@FXML
+	private BorderPane rootPane;
+	
 	// -- タブ --
 	/** 基本設定タブ */
 	@FXML
@@ -519,6 +524,9 @@ public class MainWindowController {
 	 */
 	@FXML
 	public void onApplyConfig() {
+		
+		// 入力部品からフォーカスを外す
+		rootPane.requestFocus();
 
 		ConfigBean config = coordinator.getConfigBean();
 		config.setLanguageType(comboLanguageType.getValue()); // 言語設定
