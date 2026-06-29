@@ -318,7 +318,7 @@ public class PropertiesRepository {
 			soundNotificationEnabled=true
 
 			# 撮影音を鳴らして撮影する（有効にする場合は"true"と記載してください）
-			soundSnapEnabled=false
+			soundSnapEnabled=true
 
 			""".replace("\r\n", "\n").replace("\n", System.lineSeparator());
 
@@ -384,7 +384,7 @@ public class PropertiesRepository {
 			soundNotificationEnabled=true
 
 			# Play a shutter sound when capturing (set to "true" to enable)
-			soundSnapEnabled=false
+			soundSnapEnabled=true
 
 			""".replace("\r\n", "\n").replace("\n", System.lineSeparator());
 
