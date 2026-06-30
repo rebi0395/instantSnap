@@ -10,7 +10,7 @@ import javafx.util.StringConverter;
 /**
  * 撮影後の挙動パターンを定義する列挙型クラス
  */
-public enum AfterSnapActionType implements MessageEnum {
+public enum AfterSnapActionType implements BaseEnum, MessageEnum {
 
 	/** 何もしない(デフォルト値) */
 	NONE("0", "None", AFTER_SNAP_ACTION_NONE),
