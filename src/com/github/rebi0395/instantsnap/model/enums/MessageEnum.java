@@ -9,8 +9,14 @@ import javafx.util.StringConverter;
 /**
  * メッセージキーを持つEnumの基底インターフェース
  */
-public interface MessageEnum extends BaseEnum {
+public interface MessageEnum {
 
+	/**
+	 * 基準表示名（英語）を取得する
+	 * @return 基準表示名(英語)
+	 */
+	String getBaseDisplayName();
+	
 	/**
 	 * メッセージキーを取得する
 	 * @return メッセージキー

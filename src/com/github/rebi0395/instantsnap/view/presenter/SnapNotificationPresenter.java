@@ -166,22 +166,23 @@ public class SnapNotificationPresenter {
 
 		if (result.getIsImageSaved()) {
 			// 画像保存に成功
-			noticeMessageList.add(converter.getMessage(MessageKeyConstant.NOTIFICATION_IMAGE_SAVED));
+			noticeMessageList.add(converter.getMessage(MessageKeyConstant.NOTIFICATION_IMAGE_SAVED, "Image saved."));
 		}
 
 		if (result.getIsClipboardCopied()) {
 			// クリップボードコピーに成功
-			noticeMessageList.add(converter.getMessage(MessageKeyConstant.NOTIFICATION_CLIPBOARD_SAVED));
+			noticeMessageList.add(converter.getMessage(MessageKeyConstant.NOTIFICATION_CLIPBOARD_SAVED, "Copied to clipboard."));
 		}
 
 		if (result.getIsTmpSaved()) {
 			// 一時保存に成功
-			noticeMessageList.add(converter.getMessage(MessageKeyConstant.NOTIFICATION_TMP_IMAGE_SAVED));
-			noticeMessageList.add(converter.getMessage(MessageKeyConstant.NOTIFICATION_TMP_WARN));
+			noticeMessageList.add(converter.getMessage(MessageKeyConstant.NOTIFICATION_TMP_IMAGE_SAVED, "Image saved to the temporary folder."));
+			noticeMessageList.add(converter.getMessage(
+					MessageKeyConstant.NOTIFICATION_TMP_WARN, "Temporary images will be deleted when the app exits.\\nMove any images you want to keep to another folder."));
 		}
 
 		// 通知クリックでフォルダが開けることを伝える文言を取得
-		String openMessage = converter.getMessage(MessageKeyConstant.NOTIFICATION_OPEN_SAVE_DIR);
+		String openMessage = converter.getMessage(MessageKeyConstant.NOTIFICATION_OPEN_SAVE_DIR, "Open save folder");
 
 		return new NotificationData(
 				List.copyOf(noticeMessageList),

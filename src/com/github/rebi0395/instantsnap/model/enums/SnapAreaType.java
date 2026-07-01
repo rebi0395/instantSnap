@@ -10,7 +10,7 @@ import javafx.util.StringConverter;
 /**
  * 撮影モードを指定する列挙型クラス
  */
-public enum SnapAreaType implements MessageEnum {
+public enum SnapAreaType implements BaseEnum, MessageEnum {
 
 	/** 使用しているウィンドウのみ撮影 */
 	ACTIVE_WINDOW("1", "Active window", SNAP_AREA_ACTIVE_WINDOW),

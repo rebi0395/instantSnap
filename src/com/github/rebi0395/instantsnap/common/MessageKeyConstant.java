@@ -69,8 +69,14 @@ public final class MessageKeyConstant {
 	/** ラベルで無効を表示するメッセージキー */
 	public static final String LABEL_DISABLED = "label.disabled";
 
+	/** ステータス：起動中 */
+	public static final String STATUS_STARTING = "status.starting";	
+	/** ステータス：撮影可能 */
+	public static final String STATUS_CAN_SNAP = "status.canSnap";
+	/** ステータス：設定反映中 */
+	public static final String STATUS_SAVING = "status.saving";
 	/** ステータス：設定反映完了 */
-	public static final String STATUS_APPLY_CONFIG = "status.applyConfig";
+	public static final String STATUS_SAVED = "status.saved";
 	/** ステータス：入力値初期化完了 */
 	public static final String STATUS_RESET_INPUT = "status.resetInput";
 
