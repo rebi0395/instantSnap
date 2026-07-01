@@ -18,6 +18,11 @@ import com.sun.jna.platform.win32.WinUser;
 import com.sun.jna.platform.win32.WinUser.HMONITOR;
 import com.sun.jna.platform.win32.WinUser.MONITORINFOEX;
 
+import com.sun.jna.Native;
+import com.sun.jna.Pointer;
+import com.sun.jna.win32.StdCallLibrary;
+import com.sun.jna.win32.W32APIOptions;
+
 /**
  * スクリーンショットの撮影範囲を特定するクラス
  */
@@ -28,6 +33,31 @@ public class SnapAreaResolver {
 
 	/** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(SnapAreaResolver.class);
+
+	/** WindowsのDWMから影なしウィンドウ範囲を取得するための属性 */
+	private static final int DWMWA_EXTENDED_FRAME_BOUNDS = 9;
+
+	/** Windows APIの正常終了コード */
+	private static final int S_OK = 0;
+
+	/**
+	 * Windowsのdwmapi.dllにアクセスするためのJNAインターフェース
+	 */
+	private interface DwmApi extends StdCallLibrary {
+
+		/** dwmapi.dllのインスタンス */
+		DwmApi INSTANCE = Native.load("dwmapi", DwmApi.class, W32APIOptions.DEFAULT_OPTIONS);
+
+		/**
+		 * ウィンドウに適用されているDWM属性を取得する
+		 * @param hwnd ウィンドウの識別番号
+		 * @param dwAttribute 取得する属性
+		 * @param pvAttribute 取得結果の格納先
+		 * @param cbAttribute 格納先のサイズ
+		 * @return 成功時は0
+		 */
+		int DwmGetWindowAttribute(HWND hwnd, int dwAttribute, Pointer pvAttribute, int cbAttribute);
+	}
 
 	/**
 	 * 列挙型に対応する撮影範囲の座標を返却する
@@ -73,6 +103,10 @@ public class SnapAreaResolver {
 
 		// Windowsから影を除外した物理座標を取得する
 		Rectangle physRect = getPhysicalWindowRect(hwnd);
+		if (physRect == null) {
+			log.warn("アクティブウィンドウの物理座標取得に失敗しました。デフォルト撮影範囲へフォールバックします");
+			return getDefaultScreenArea();
+		}
 
 		// ウィンドウが存在するモニター（GraphicsDevice）を特定する
 		GraphicsDevice activeDevice = findMonitorOfActiveWindow(physRect);
@@ -85,11 +119,117 @@ public class SnapAreaResolver {
 	}
 
 	/**
+	 * ポインターの位置からアクティブモニターを特定し、撮影範囲を取得する
+	 * @return アクティブモニターの撮影範囲
+	 */
+	public Rectangle getActiveScreenArea() {
+		PointerInfo pointer = MouseInfo.getPointerInfo();
+		if (pointer == null || pointer.getDevice() == null) {
+			log.warn("マウスポインターの位置からモニターを特定できませんでした");
+			return getMainScreenArea();
+		}
+		GraphicsDevice activeDevice = pointer.getDevice();
+		return activeDevice.getDefaultConfiguration().getBounds();
+	}
+
+	/**
+	 * メインに設定しているモニターの範囲を取得する
+	 * @return メインモニターの撮影範囲
+	 */
+	public Rectangle getMainScreenArea() {
+		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		GraphicsDevice mainDevice = ge.getDefaultScreenDevice();
+		return mainDevice.getDefaultConfiguration().getBounds();
+
+	}
+
+	/**
+	 * 全モニターの範囲を取得する
+	 * @return マルチモニター込みの撮影範囲
+	 */
+	public Rectangle getFullScreenArea() {
+		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		GraphicsDevice[] screens = ge.getScreenDevices();
+
+		Rectangle allRectangle = screens[0].getDefaultConfiguration().getBounds();
+		for (GraphicsDevice screen : screens) {
+			allRectangle = allRectangle.union(screen.getDefaultConfiguration().getBounds());
+		}
+		return allRectangle;
+	}
+
+	/**
+	 * プロパティファイルの設定値が不正のときのデフォルト処理
+	 * @return アクティブモニターの撮影範囲
+	 */
+	public Rectangle getDefaultScreenArea() {
+		log.info("撮影範囲をデフォルト値で設定しました");
+		return getActiveScreenArea();
+	}
+
+	/**
+	 * Windows APIを叩き、影を除外したウィンドウの物理座標を取得する
+	 * @param hwnd ウィンドウの個別識別情報
+	 * @return ウィンドウの影なし座標情報
+	 */
+	private Rectangle getPhysicalWindowRect(HWND hwnd) {
+
+		// DWMから影なし座標を取得する
+		Rectangle dwmRect = getDwmWindowRect(hwnd);
+
+		if (dwmRect != null) {
+			return dwmRect;
+		}
+		log.warn("DWMによるウィンドウ座標取得に失敗しました。推測方式にフォールバックします");
+
+		// DWMで取得できなかった場合は、推測方式で取得する
+		Rectangle estimatedRect = getEstimatedWindowRect(hwnd);
+
+		if (estimatedRect != null) {
+			return estimatedRect;
+		}
+
+		log.warn("推測方式によるウィンドウ座標取得に失敗しました。");
+		return null;
+	}
+
+	/**
+	 * DWM APIから影を除外したウィンドウ座標を取得する
+	 * @param hwnd ウィンドウの個別識別情報
+	 * @return 影なしウィンドウ座標。取得できない場合はnull
+	 */
+	private Rectangle getDwmWindowRect(HWND hwnd) {
+		try {
+			// DWMから「影を除外した見た目上のウィンドウ範囲」を取得する
+			RECT dwmRect = new RECT();
+			int result = DwmApi.INSTANCE.DwmGetWindowAttribute(
+					hwnd,
+					DWMWA_EXTENDED_FRAME_BOUNDS,
+					dwmRect.getPointer(),
+					dwmRect.size());
+
+			// ネイティブ側で書き込まれたRECTの内容をJava側へ反映する
+			dwmRect.read();
+
+			if (result == S_OK && isValidRect(dwmRect)) {
+				return toRectangle(dwmRect);
+			}
+
+			log.warn("DWMによるウィンドウ座標取得に失敗しました。result={}", result);
+
+		} catch (Throwable t) {
+			log.warn("DWMによるウィンドウ座標取得中に例外が発生しました", t);
+		}
+
+		return null;
+	}
+
+	/**
 	 * Windows APIを叩き、DPIスケーリングを考慮した「影なし物理座標」を計算する
 	 * @param hwnd ウィンドウの個別識別情報
 	 * @return ウィンドウの影なし座標情報 (X,Y,W,H)
 	 */
-	public Rectangle getPhysicalWindowRect(HWND hwnd) {
+	private Rectangle getEstimatedWindowRect(HWND hwnd) {
 
 		RECT windowRect = new RECT();
 		RECT clientRect = new RECT();
@@ -110,12 +250,36 @@ public class SnapAreaResolver {
 	}
 
 	/**
+	 * RECTが正常な範囲を持っているか判定する
+	 * @param rect Windows APIから取得したRECT
+	 * @return 正常な範囲の場合true
+	 */
+	private boolean isValidRect(RECT rect) {
+		// 右端 > 左側 && 下端 > 上端 であれば正常な範囲とする
+		return rect.right > rect.left && rect.bottom > rect.top;
+	}
+
+	/**
+	 * WindowsのRECTをJavaのRectangleへ変換する
+	 * @param rect Windows APIから取得したRECT
+	 * @return JavaのRectangle
+	 */
+	private Rectangle toRectangle(RECT rect) {
+		int x = rect.left;
+		int y = rect.top;
+		int w = rect.right - rect.left; // 右端 - 左端で幅取得
+		int h = rect.bottom - rect.top; // 下端 - 上端で高さ取得
+
+		return new Rectangle(x, y, w, h);
+	}
+
+	/**
 	 * 座標の中心点から、該当するモニター（GraphicsDevice）を特定する
 	 *
 	 * @param rectangle ウィンドウのX,Y,W,H
 	 * @return GraphicsDevice ウィンドウの中心が属しているモニター
 	 */
-	public GraphicsDevice findMonitorOfActiveWindow(Rectangle rectangle) {
+	private GraphicsDevice findMonitorOfActiveWindow(Rectangle rectangle) {
 		int centerX = rectangle.x + (rectangle.width / 2);
 		int centerY = rectangle.y + (rectangle.height / 2);
 
@@ -143,7 +307,7 @@ public class SnapAreaResolver {
 	 * @param device 取得したアクティブモニター
 	 * @return Javaが管理する等倍の仮想モニターの座標に変換した、アクティブウィンドウの座標
 	 */
-	public Rectangle convertToJavaVirtualBounds(HWND hwnd, Rectangle physRect, GraphicsDevice device) {
+	private Rectangle convertToJavaVirtualBounds(HWND hwnd, Rectangle physRect, GraphicsDevice device) {
 		Rectangle deviceBounds = device.getDefaultConfiguration().getBounds(); // モニター自体の座標取得 
 		try {
 			// ウィンドウが最も被っているモニターの識別子を取得する
@@ -180,54 +344,5 @@ public class SnapAreaResolver {
 			log.warn("Windowsの物理座標を、Javaの仮想画面座標系へスケーリング変換処理が失敗しました", t);
 			return physRect; // 失敗時は物理座標のまま返却する
 		}
-	}
-
-	/**
-	 * ポインターの位置からアクティブモニターを特定し、撮影範囲を取得する
-	 * @return アクティブモニターの撮影範囲
-	 */
-	public Rectangle getActiveScreenArea() {
-		PointerInfo pointer = MouseInfo.getPointerInfo();
-		if (pointer == null || pointer.getDevice() == null) {
-			log.warn("マウスポインターの位置からモニターを特定できませんでした");
-			return getMainScreenArea();
-		}
-		GraphicsDevice activeDevice = pointer.getDevice();
-		return activeDevice.getDefaultConfiguration().getBounds();
-	}
-
-	/**
-	 * メインに設定しているモニターの範囲を取得する
-	 * @return メインモニターの撮影範囲
-	 */
-	public Rectangle getMainScreenArea() {
-		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-		GraphicsDevice mainDevice = ge.getDefaultScreenDevice();
-		return mainDevice.getDefaultConfiguration().getBounds();
-
-	}
-
-	/**
-	 * 
-	 * @return マルチモニター込みの撮影範囲
-	 */
-	public Rectangle getFullScreenArea() {
-		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-		GraphicsDevice[] screens = ge.getScreenDevices();
-
-		Rectangle allRectangle = screens[0].getDefaultConfiguration().getBounds();
-		for (GraphicsDevice screen : screens) {
-			allRectangle = allRectangle.union(screen.getDefaultConfiguration().getBounds());
-		}
-		return allRectangle;
-	}
-
-	/**
-	 * プロパティファイルの設定値が不正のときのデフォルト処理
-	 * @return アクティブモニターの撮影範囲
-	 */
-	public Rectangle getDefaultScreenArea() {
-		log.info("撮影範囲をデフォルト値で設定しました");
-		return getActiveScreenArea();
 	}
 }
