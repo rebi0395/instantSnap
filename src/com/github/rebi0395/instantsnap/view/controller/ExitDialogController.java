@@ -47,13 +47,13 @@ public class ExitDialogController {
 	public void initialize() {
 
 		// アプリ終了文言
-		labelExitConfirmMessage.setText(converter.getMessage(MessageKeyConstant.DIALOG_EXIT_CONFIRM_MESSAGE));
+		labelExitConfirmMessage.setText(converter.getMessage(MessageKeyConstant.DIALOG_EXIT_CONFIRM_MESSAGE, "Do you want to exit Instant Snap?"));
 		// フォルダ削除文言
-		labelDeleteTmpConfirmMessage.setText(converter.getMessage(MessageKeyConstant.DIALOG_EXIT_DELETE_TMP));
+		labelDeleteTmpConfirmMessage.setText(converter.getMessage(MessageKeyConstant.DIALOG_EXIT_DELETE_TMP, "Note: The tmp folder will be deleted when the app exits."));
 		// 終了ボタン
-		buttonApply.setText(converter.getMessage(MessageKeyConstant.DIALOG_EXIT_BUTTON_APPLY));
+		buttonApply.setText(converter.getMessage(MessageKeyConstant.DIALOG_EXIT_BUTTON_APPLY, "Exit"));
 		// キャンセルボタン
-		buttonCancel.setText(converter.getMessage(MessageKeyConstant.DIALOG_EXIT_BUTTON_CANCEL));
+		buttonCancel.setText(converter.getMessage(MessageKeyConstant.DIALOG_EXIT_BUTTON_CANCEL, "Cancel"));
 		
 		// 終了ボタン押下処理登録
 		buttonApply.setOnAction(e -> {

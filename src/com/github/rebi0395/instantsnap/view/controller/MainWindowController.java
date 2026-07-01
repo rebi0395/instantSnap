@@ -1,7 +1,9 @@
 package com.github.rebi0395.instantsnap.view.controller;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.github.rebi0395.instantsnap.app.InstantSnapCoordinator;
@@ -16,6 +18,7 @@ import com.github.rebi0395.instantsnap.model.enums.LanguageType;
 import com.github.rebi0395.instantsnap.model.enums.AfterSnapActionType;
 import com.github.rebi0395.instantsnap.model.enums.FileNameDateFormatType;
 import com.github.rebi0395.instantsnap.model.enums.SnapAreaType;
+import com.github.rebi0395.instantsnap.model.enums.StatusType;
 import com.github.rebi0395.instantsnap.model.enums.TriggerType;
 import com.github.rebi0395.instantsnap.service.FilePathService;
 
@@ -23,6 +26,7 @@ import static com.github.rebi0395.instantsnap.common.AppConstant.*;
 import static com.github.rebi0395.instantsnap.common.StrCheckUtil.*;
 import static com.github.kwhat.jnativehook.keyboard.NativeKeyEvent.*;
 
+import javafx.animation.PauseTransition;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -40,6 +44,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.DirectoryChooser;
+import javafx.util.Duration;
 
 /**
  * メイン画面のコントローラクラス
@@ -58,10 +63,16 @@ public class MainWindowController {
 	/** nativeキーコードを保持する変数 */
 	private int nativeCode;
 
+	/** 画面ステータス */
+	private StatusType status = StatusType.STARTING;
+
+	/** 画面ステータスのリセット時計 */
+	private PauseTransition statusResetTimer;
+
 	/** 画面全体の親レイアウト */
 	@FXML
 	private BorderPane rootPane;
-	
+
 	// -- タブ --
 	/** 基本設定タブ */
 	@FXML
@@ -360,6 +371,9 @@ public class MainWindowController {
 		updateFixedTexts();
 		// 不正値項目のスタイル反映
 		updateInvalidStyle(config);
+		// ステータス値を撮影可能にする
+		updateStatus(StatusType.READY);
+
 	}
 
 	/**
@@ -524,7 +538,10 @@ public class MainWindowController {
 	 */
 	@FXML
 	public void onApplyConfig() {
-		
+
+		// 画面ステータスを保存中に変更
+		updateStatus(StatusType.SAVING);
+
 		// 入力部品からフォーカスを外す
 		rootPane.requestFocus();
 
@@ -563,7 +580,9 @@ public class MainWindowController {
 
 		// 更新されたconfigを用いて、司令塔クラスにプロパティ更新を依頼する
 		coordinator.save();
-		labelStatus.setText("ステータス: 設定を反映しました。");
+
+		// 画面ステータスを保存完了とする
+		updateStatus(StatusType.SAVED);
 	}
 
 	/**
@@ -597,7 +616,7 @@ public class MainWindowController {
 		checkNotificationSound.setSelected(DEFAULT_SOUND_NOTIFICATION_ENABLED);
 
 		// -- ステータス更新 --
-		labelStatus.setText("ステータス: 入力値を初期化しました");
+		updateStatus(StatusType.RESET_INPUT);
 
 		// -- 不正値のスタイル除去 --
 		applyInvalidStyle(textFilePath, false);
@@ -609,18 +628,42 @@ public class MainWindowController {
 	 * @param config ユーザー設定値
 	 */
 	private void updateLanguageTexts(ConfigBean config) {
-
 		// ComboBoxの表示を更新
 		updateComboBoxConverters();
-
 		// 撮影後設定のラジオボタン表示を更新
 		updateAfterSnapActionRadioTexts();
-
 		// 適用中ラベルを更新
 		updateSettingLabels(config, config.getCustomKeyBean());
-
 		// 固定文言を更新
 		updateFixedTexts();
+		// ステータス文言の言語切り替え(タイマーはリセットしない)
+		labelStatus.setText(converter.getMessage(status));
+	}
+
+	/**
+	 * ステータス値の更新と、ステータスメッセージを更新する。
+	 * @param statusType
+	 */
+	private void updateStatus(StatusType statusType) {
+		// ステータスタイマーを停止し、nullにする
+		if (statusResetTimer != null) {
+			statusResetTimer.stop();
+			statusResetTimer = null;
+		}
+		// ステータス更新
+		status = statusType;
+		labelStatus.setText(converter.getMessage(status));
+		// 自動切り替えをしない場合は、早期リターン
+		if (status.getChangeSeconds() == 0) {
+			return;
+		}
+		// タイマーを作成し、タイマー終了イベントでステータスを更新する
+		statusResetTimer = new PauseTransition(Duration.seconds(status.getChangeSeconds()));
+		statusResetTimer.setOnFinished(event -> {
+			status = StatusType.READY;
+			labelStatus.setText(converter.getMessage(status));
+		});
+		statusResetTimer.play();
 	}
 
 	/**
@@ -629,10 +672,8 @@ public class MainWindowController {
 	 * @param config ユーザー設定値
 	 */
 	private void updateComboBoxConverters() {
-
 		// 今の選択状態を退避
 		SnapAreaType snapAreaType = comboSnapArea.getValue();
-
 		// 選択値を入れ直して、ComboBoxの表示を再描画させる
 		comboSnapArea.getItems().clear();
 		comboSnapArea.getItems().addAll(SnapAreaType.values());

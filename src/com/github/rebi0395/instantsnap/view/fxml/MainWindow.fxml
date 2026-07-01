@@ -10,7 +10,7 @@
 
 	<top>
 		<HBox styleClass="top-bar">
-        	<Label fx:id="labelStatus" text="起動中..." />
+        	<Label fx:id="labelStatus"/>
         	<Region HBox.hgrow="ALWAYS" />
         	<Label text="Language" />
         	<ComboBox fx:id="comboLanguageType" styleClass="language-combo"/>
