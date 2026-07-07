@@ -32,3 +32,4 @@ replay_pid*
 /tmp/
 config.properties
 config.properties
+/instantsnap.lock
