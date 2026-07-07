@@ -1,7 +1,5 @@
 package com.github.rebi0395.instantsnap.common;
 
-import static com.github.rebi0395.instantsnap.common.AppConstant.*;
-
 import java.nio.file.Path;
 
 /**
@@ -35,6 +33,8 @@ public final class AppConstant {
 	public static final String PROPERTY_USE_SHIFT = "useShift";
 	/** プロパティ 撮影範囲 */
 	public static final String PROPERTY_SNAP_AREA = "snapArea";
+	/** プロパティ マウスカーソルを写すか */
+	public static final String PROPERTY_INCLUDE_CURSOR_ENABLED = "includeCursorEnabled";
 	/** プロパティ 画像保存をするか */
 	public static final String PROPERTY_SAVE_IMAGE_ENABLED = "saveImageEnabled";
 	/** プロパティ クリップボードコピーをするか */
@@ -67,6 +67,8 @@ public final class AppConstant {
 	public static final boolean DEFAULT_USE_ALT = false;
 	/** カスタムキーでShiftキーを使用するかどうかのデフォルト値 */
 	public static final boolean DEFAULT_USE_SHIFT = false;
+	/** 画像にマウスカーソルを含めるかどうかのデフォルト値 */
+	public static final boolean DEFAULT_INCLUDE_CURSOR_ENABLED = false;
 	/** 画像保存を有効にするかどうかのデフォルト値 */
 	public static final boolean DEFAULT_SAVE_IMAGE_ENABLED = true;
 	/** クリップボード保存を有効にするかどうかのデフォルト値 */

@@ -69,6 +69,8 @@ public class PropertiesRepository {
 					properties.getProperty(PROPERTY_TRIGGER)));
 			config.setSnapAreaType(SnapAreaType.parseOrDefault(
 					properties.getProperty(PROPERTY_SNAP_AREA)));
+			config.setIsIncludeCursor(readBooleanOrDefault(
+					properties.getProperty(PROPERTY_INCLUDE_CURSOR_ENABLED), DEFAULT_INCLUDE_CURSOR_ENABLED));
 
 			// 出力設定
 			config.setIsSaveImage(readBooleanOrDefault(
@@ -227,6 +229,7 @@ public class PropertiesRepository {
 		// 撮影設定
 		updateMap.put(PROPERTY_TRIGGER, config.getTriggerType().getValue());
 		updateMap.put(PROPERTY_SNAP_AREA, config.getSnapAreaType().getValue());
+		updateMap.put(PROPERTY_INCLUDE_CURSOR_ENABLED, String.valueOf(config.getIsIncludeCursor()));
 
 		// 出力設定
 		updateMap.put(PROPERTY_SAVE_IMAGE_ENABLED, String.valueOf(config.getIsSaveImage()));
@@ -295,6 +298,9 @@ public class PropertiesRepository {
 			# 3 -> メインモニターを撮影, 4 -> 全てのモニターを撮影
 			snapArea=1
 
+			# マウスカーソルを画像に含める
+			includeCursorEnabled=false
+
 			# ～～ 出力設定 ～～
 			# 画像を保存する（有効にする場合は"true"と記載してください）
 			saveImageEnabled=true
@@ -360,6 +366,9 @@ public class PropertiesRepository {
 			# 1 -> Active window (default), 2 -> Active monitor
 			# 3 -> Main monitor, 4 -> All monitors
 			snapArea=1
+
+			# Include the mouse cursor in the image
+			includeCursorEnabled=false
 
 			# ~~ Output Settings ~~
 			# Save the image (set to "true" to enable)
