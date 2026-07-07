@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,12 +36,6 @@ public class PropertiesRepository {
 
 	/** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(PropertiesRepository.class);
-
-	/** プロパティのファイルパス */
-	private static final Path PROPERTIES_PATH = Path.of(OPTION_FILE_NAME);
-
-	/** プロパティファイルの一時保存パス */
-	private static final Path TEMP_PATH = PROPERTIES_PATH.resolveSibling(PROPERTIES_PATH.getFileName() + ".tmp");
 
 	/**
 	 * コンストラクタ
@@ -187,6 +180,25 @@ public class PropertiesRepository {
 	}
 
 	/**
+	 * 初期起動時に二重起動防止メッセージを出力するため、言語設定のみを取得する
+	 * プロパティファイルの実在チェック、再生成はしない。
+	 * 
+	 * @return 設定している言語設定  取得できない場合は、英語として返す
+	 */
+	public static LanguageType readLanguageOnly() {
+		Properties properties = new Properties();
+		try (BufferedReader reader = Files.newBufferedReader(PROPERTIES_PATH, StandardCharsets.UTF_8)) {
+			properties.load(reader);
+			LanguageType language = LanguageType.parseOrDefault(properties.getProperty(PROPERTY_LANGUAGE));
+			return language;
+
+		} catch (IOException e) {
+			log.warn("初期起動時、言語設定の読み取りに失敗しました");
+			return LanguageType.ENGLISH;
+		}
+	}
+
+	/**
 	 * プロパティファイルの実在チェックを行い、存在しなければ再生成する
 	 * @throws ServiceException Resetが失敗した場合にthrowする
 	 */
@@ -295,7 +307,7 @@ public class PropertiesRepository {
 
 			# ファイル名の先頭文字
 			fileNamePrefix=
-			
+
 			# ファイル名につける日時フォーマット デフォルトは1
 			# 1 -> yyyyMMdd.HHmmss.SSS, 2 -> yyyyMMdd.HHmmss
 			# 3 -> yyyyMMdd_HHmmss_SSS, 4 -> yyyyMMdd_HHmmss
