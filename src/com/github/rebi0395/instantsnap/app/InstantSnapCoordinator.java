@@ -13,6 +13,7 @@ import com.github.rebi0395.instantsnap.model.bean.SnapResultBean;
 import com.github.rebi0395.instantsnap.model.enums.AfterSnapActionType;
 import com.github.rebi0395.instantsnap.repository.PropertiesRepository;
 import com.github.rebi0395.instantsnap.service.KeyEventListener;
+import com.github.rebi0395.instantsnap.service.MouseCursorService;
 import com.github.rebi0395.instantsnap.service.FileOpenService;
 import com.github.rebi0395.instantsnap.service.FilePathService;
 import com.github.rebi0395.instantsnap.service.SnapAreaResolver;
@@ -60,6 +61,8 @@ public class InstantSnapCoordinator implements KeyEventListener {
 	private final SoundPlayer soundPlayer;
 	/** 撮影通知を表示するクラス */
 	private final SnapNotificationPresenter notificationPresenter;
+	/** マウスカーソルを書き込むクラス */
+	private MouseCursorService mouseCursorService;
 
 	/** スレッドセーフに撮影処理を呼び出すためのクラス */
 	private final ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -76,12 +79,13 @@ public class InstantSnapCoordinator implements KeyEventListener {
 		this.areaResolver = new SnapAreaResolver();
 		this.fileOpenService = new FileOpenService();
 		this.soundPlayer = new SoundPlayer();
+		this.mouseCursorService = new MouseCursorService();
 
 		// 依存性の注入があるクラス
 		this.converter = new MessageKeyConverter(config.getLanguageType());
 		this.saveService = new SnapSaveService(filePathService);
 		this.keyManager = new TriggerKeyManager(config, this);
-		this.takeSnapService = new TakeSnapService(areaResolver, saveService, soundPlayer);
+		this.takeSnapService = new TakeSnapService(areaResolver, saveService, soundPlayer, mouseCursorService);
 
 		// Stage情報を持つクラス
 		this.notificationPresenter = notificationPresenter;

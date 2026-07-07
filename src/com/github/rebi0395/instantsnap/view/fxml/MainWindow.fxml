@@ -51,14 +51,31 @@
 									</HBox>
 								</VBox>
 								<VBox spacing="10" styleClass="section-border">
-									<HBox styleClass="setting-header">
-										<Label fx:id="sectionSnapArea" styleClass="section-title"
-											prefWidth="80" maxWidth="80"/><!-- 撮影範囲 -->
-										<Label fx:id="labelSnapArea" styleClass="current-value"/>
-									</HBox>
-									<HBox styleClass="setting-header">
-										<ComboBox fx:id="comboSnapArea"/>
-									</HBox>
+									<GridPane hgap="20">
+										<columnConstraints>
+											<ColumnConstraints percentWidth="50"/>
+											<ColumnConstraints percentWidth="50"/>
+										</columnConstraints>	
+										<VBox spacing="10" GridPane.columnIndex="0">
+											<HBox styleClass="setting-header">
+												<Label fx:id="sectionSnapArea" styleClass="section-title"
+												prefWidth="80" maxWidth="80"/><!-- 撮影範囲 -->
+												<Label fx:id="labelSnapArea" styleClass="current-value"/>
+											</HBox>
+											<HBox spacing="10" styleClass="output-switch-item">
+												<ComboBox fx:id="comboSnapArea"/>
+											</HBox>
+										</VBox>
+										<VBox spacing="10" GridPane.columnIndex="1">
+											<HBox styleClass="setting-header">
+												<Label fx:id="sectionSnapOption" styleClass="section-title"/>
+											</HBox>
+											<HBox spacing="10" styleClass="output-switch-item">
+												<CheckBox fx:id="checkIncludeCursor" prefWidth="160" maxWidth="160"/><!-- マウスカーソルの有無 -->
+												<Label fx:id="labelIncludeCursor" styleClass="current-value"/>
+											</HBox>
+										</VBox>
+									</GridPane>
 								</VBox>
 								<VBox spacing="20">
 									<VBox spacing="10" styleClass="section-border">

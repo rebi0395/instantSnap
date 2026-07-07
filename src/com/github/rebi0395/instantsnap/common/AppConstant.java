@@ -1,5 +1,7 @@
 package com.github.rebi0395.instantsnap.common;
 
+import java.nio.file.Path;
+
 /**
  * 定数管理クラス
  */
@@ -11,6 +13,10 @@ public final class AppConstant {
 
 	// -- プロパティファイル --
 	public static final String OPTION_FILE_NAME = "config.properties";
+	/** プロパティのファイルパス */
+	public static final Path PROPERTIES_PATH = Path.of(OPTION_FILE_NAME);
+	/** プロパティファイルの一時保存パス */
+	public static final Path TEMP_PATH = PROPERTIES_PATH.resolveSibling(PROPERTIES_PATH.getFileName() + ".tmp");
 
 	// -- プロパティの項目名 --
 	/** プロパティ 言語設定 */
@@ -27,6 +33,8 @@ public final class AppConstant {
 	public static final String PROPERTY_USE_SHIFT = "useShift";
 	/** プロパティ 撮影範囲 */
 	public static final String PROPERTY_SNAP_AREA = "snapArea";
+	/** プロパティ マウスカーソルを写すか */
+	public static final String PROPERTY_INCLUDE_CURSOR_ENABLED = "includeCursorEnabled";
 	/** プロパティ 画像保存をするか */
 	public static final String PROPERTY_SAVE_IMAGE_ENABLED = "saveImageEnabled";
 	/** プロパティ クリップボードコピーをするか */
@@ -59,6 +67,8 @@ public final class AppConstant {
 	public static final boolean DEFAULT_USE_ALT = false;
 	/** カスタムキーでShiftキーを使用するかどうかのデフォルト値 */
 	public static final boolean DEFAULT_USE_SHIFT = false;
+	/** 画像にマウスカーソルを含めるかどうかのデフォルト値 */
+	public static final boolean DEFAULT_INCLUDE_CURSOR_ENABLED = false;
 	/** 画像保存を有効にするかどうかのデフォルト値 */
 	public static final boolean DEFAULT_SAVE_IMAGE_ENABLED = true;
 	/** クリップボード保存を有効にするかどうかのデフォルト値 */
@@ -84,7 +94,10 @@ public final class AppConstant {
 	public static final String CSS_NOTIFICATION = "/com/github/rebi0395/instantsnap/view/css/notification.css";
 
 	/** アイコンのpngファイル */
-	public static final String ICON_APP = "/icon/instantsnap.png";
+	public static final String ICON_APP = "/icon/InstantSnap.png";
+	/** マウスポインターのpngファイル */
+	public static final String MOUSE_POINTER = "/icon/MousePointer.png";
+
 	/** 一時保存先ディレクトリ */
 	public static final String TMP_SAVE_DIR = "./tmp/";
 
@@ -97,5 +110,5 @@ public final class AppConstant {
 	public static final String OS_NAME_LINUX = "Linux";
 	/** OS名：その他 */
 	public static final String OS_NAME_OTHER = "Other";
-	
+
 }

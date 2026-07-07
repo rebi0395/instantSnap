@@ -5,6 +5,7 @@ import java.awt.Rectangle;
 import java.awt.Robot;
 import java.awt.image.BufferedImage;
 
+import com.github.rebi0395.instantsnap.common.OsUtil;
 import com.github.rebi0395.instantsnap.exception.ServiceException;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.model.bean.SnapResultBean;
@@ -21,17 +22,22 @@ public class TakeSnapService {
 	private final SnapSaveService saveService;
 	/** 音声を再生するインスタンス */
 	private SoundPlayer soundPlayer;
+	/** マウスカーソルを書き込むクラス */
+	private MouseCursorService mouseCursorService;
 
 	/**
 	 * コンストラクタ
 	 * @param areaResolver 撮影範囲を解決するインスタンス
 	 * @param saveService 画像を保存するインスタンス
 	 * @param soundPlayer 音声を再生するインスタンス
+	 * @param mouseCursorService マウスカーソルを書き込むインスタンス
 	 */
-	public TakeSnapService(SnapAreaResolver areaResolver, SnapSaveService saveService, SoundPlayer soundPlayer) {
+	public TakeSnapService(SnapAreaResolver areaResolver, SnapSaveService saveService, 
+			SoundPlayer soundPlayer, MouseCursorService mouseCursorService) {
 		this.areaResolver = areaResolver;
 		this.saveService = saveService;
 		this.soundPlayer = soundPlayer;
+		this.mouseCursorService = mouseCursorService;
 	}
 
 	/**
@@ -58,6 +64,11 @@ public class TakeSnapService {
 			Robot robot = new Robot();
 			BufferedImage snap = robot.createScreenCapture(snapSize);
 
+			// マウスカーソルを画像に含める設定が有効
+			if (config.getIsIncludeCursor() && OsUtil.isWindows()) {
+				// Windowsカーソルをスクリーンショットに描画する
+				snap = mouseCursorService.drawCursor(snap, snapSize);
+			}
 			// カメラのシャッター音が有効なら、鳴らす
 			if (config.getIsSnapSoundEnabled()) {
 				soundPlayer.playShutterSound();

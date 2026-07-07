@@ -24,7 +24,8 @@ public class ConfigBean {
 	private KeyCombinationBean customKeyBean;
 	/** 撮影範囲 */
 	private SnapAreaType snapAreaType;
-
+	/** マウスカーソルを写す (trueで写す) */
+	private boolean isIncludeCursor;
 	/** 画像を保存する (trueで保存する) */
 	private boolean isSaveImage;
 	/** クリップボードに画像に保存する (trueで保存する) */
@@ -62,6 +63,7 @@ public class ConfigBean {
 				DEFAULT_USE_ALT,
 				DEFAULT_USE_SHIFT);
 		this.snapAreaType = SnapAreaType.ACTIVE_WINDOW;
+		this.isIncludeCursor = DEFAULT_INCLUDE_CURSOR_ENABLED;
 
 		// -- 出力設定
 		this.isSaveImage = DEFAULT_SAVE_IMAGE_ENABLED;
@@ -161,6 +163,22 @@ public class ConfigBean {
 	 */
 	public void setSnapAreaType(SnapAreaType area) {
 		this.snapAreaType = area;
+	}
+
+	/**
+	 * 画像にマウスカーソルを含めるかの設定を返します
+	 * @return isIncludeCursor
+	 */
+	public boolean getIsIncludeCursor() {
+		return isIncludeCursor;
+	}
+
+	/**
+	 * 画像にマウスカーソルを含めるかの設定をセットします
+	 * @param isIncludeCursor セットする
+	 */
+	public void setIsIncludeCursor(boolean isIncludeCursor) {
+		this.isIncludeCursor = isIncludeCursor;
 	}
 
 	/**
