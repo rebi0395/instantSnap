@@ -1,5 +1,9 @@
 package com.github.rebi0395.instantsnap.common;
 
+import static com.github.rebi0395.instantsnap.common.AppConstant.*;
+
+import java.nio.file.Path;
+
 /**
  * 定数管理クラス
  */
@@ -11,6 +15,10 @@ public final class AppConstant {
 
 	// -- プロパティファイル --
 	public static final String OPTION_FILE_NAME = "config.properties";
+	/** プロパティのファイルパス */
+	public static final Path PROPERTIES_PATH = Path.of(OPTION_FILE_NAME);
+	/** プロパティファイルの一時保存パス */
+	public static final Path TEMP_PATH = PROPERTIES_PATH.resolveSibling(PROPERTIES_PATH.getFileName() + ".tmp");
 
 	// -- プロパティの項目名 --
 	/** プロパティ 言語設定 */
@@ -84,7 +92,10 @@ public final class AppConstant {
 	public static final String CSS_NOTIFICATION = "/com/github/rebi0395/instantsnap/view/css/notification.css";
 
 	/** アイコンのpngファイル */
-	public static final String ICON_APP = "/icon/instantsnap.png";
+	public static final String ICON_APP = "/icon/InstantSnap.png";
+	/** マウスポインターのpngファイル */
+	public static final String MOUSE_POINTER = "/icon/MousePointer.png";
+
 	/** 一時保存先ディレクトリ */
 	public static final String TMP_SAVE_DIR = "./tmp/";
 
@@ -97,5 +108,5 @@ public final class AppConstant {
 	public static final String OS_NAME_LINUX = "Linux";
 	/** OS名：その他 */
 	public static final String OS_NAME_OTHER = "Other";
-	
+
 }
