@@ -21,17 +21,22 @@ public class TakeSnapService {
 	private final SnapSaveService saveService;
 	/** 音声を再生するインスタンス */
 	private SoundPlayer soundPlayer;
+	/** マウスカーソルを書き込むクラス */
+	private MouseCursorService mouseCursorService;
 
 	/**
 	 * コンストラクタ
 	 * @param areaResolver 撮影範囲を解決するインスタンス
 	 * @param saveService 画像を保存するインスタンス
 	 * @param soundPlayer 音声を再生するインスタンス
+	 * @param mouseCursorService マウスカーソルを書き込むインスタンス
 	 */
-	public TakeSnapService(SnapAreaResolver areaResolver, SnapSaveService saveService, SoundPlayer soundPlayer) {
+	public TakeSnapService(SnapAreaResolver areaResolver, SnapSaveService saveService, 
+			SoundPlayer soundPlayer, MouseCursorService mouseCursorService) {
 		this.areaResolver = areaResolver;
 		this.saveService = saveService;
 		this.soundPlayer = soundPlayer;
+		this.mouseCursorService = mouseCursorService;
 	}
 
 	/**
@@ -57,6 +62,9 @@ public class TakeSnapService {
 			// 撮影
 			Robot robot = new Robot();
 			BufferedImage snap = robot.createScreenCapture(snapSize);
+
+			// 現在のWindowsカーソルをスクリーンショットに描画する
+			snap = mouseCursorService.drawCursor(snap, snapSize);
 
 			// カメラのシャッター音が有効なら、鳴らす
 			if (config.getIsSnapSoundEnabled()) {
