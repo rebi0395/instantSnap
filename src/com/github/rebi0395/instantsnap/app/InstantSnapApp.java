@@ -8,6 +8,7 @@ import com.github.rebi0395.instantsnap.view.presenter.MainWindowPresenter;
 import com.github.rebi0395.instantsnap.view.presenter.SnapNotificationPresenter;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.stage.Stage;
 
 /**
@@ -54,7 +55,7 @@ public class InstantSnapApp extends Application {
 			if (coordinator != null) {
 				coordinator.exit();
 			} else {
-				System.exit(1);
+				Platform.exit(); // JavaFXを終了させる
 			}
 		}
 	}

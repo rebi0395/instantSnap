@@ -27,6 +27,8 @@ public final class MessageKeyConstant {
 	public static final String SECTION_CUSTOM_KEY = "section.customKey";
 	/** セクション：撮影範囲 */
 	public static final String SECTION_SNAP_AREA = "section.snapArea";
+	/** セクション：撮影オプション */
+	public static final String SECTION_SNAP_OPTION = "section.snapOption";	
 	/** セクション：保存方法 */
 	public static final String SECTION_SAVE_METHOD = "section.saveMethod";
 	/** セクション：保存先フォルダ選択 */
@@ -40,6 +42,8 @@ public final class MessageKeyConstant {
 	/** セクション：サウンド設定 */
 	public static final String SECTION_SOUND = "section.sound";
 
+	/** チェック項目：マウスカーソルを画像に含める */
+	public static final String CHECK_INCLUDE_CURSOR = "check.includeCursor";	
 	/** チェック項目：画像を保存する */
 	public static final String CHECK_SAVE_IMAGE = "check.saveImage";
 	/** チェック項目：クリップボードにコピーする */
@@ -70,7 +74,7 @@ public final class MessageKeyConstant {
 	public static final String LABEL_DISABLED = "label.disabled";
 
 	/** ステータス：起動中 */
-	public static final String STATUS_STARTING = "status.starting";	
+	public static final String STATUS_STARTING = "status.starting";
 	/** ステータス：撮影可能 */
 	public static final String STATUS_CAN_SNAP = "status.canSnap";
 	/** ステータス：設定反映中 */
@@ -123,5 +127,13 @@ public final class MessageKeyConstant {
 	public static final String DIALOG_EXIT_BUTTON_APPLY = "dialog.exit.button.apply";
 	/** 終了ダイアログ：キャンセルボタン */
 	public static final String DIALOG_EXIT_BUTTON_CANCEL = "dialog.exit.button.cancel";
-		
+
+	// -- 二重起動禁止ダイアログ
+	/** 二重起動禁止ダイアログ：タイトル */
+	public static final String DIALOG_SINGLE_INSTANCE_TITLE = "dialog.singleInstance.title";
+	/** 二重起動禁止ダイアログ：メッセージ */
+	public static final String DIALOG_SINGLE_INSTANCE_MESSAGE = "dialog.singleInstance.message";
+	/** 起動時エラーメッセージ */
+	public static final String DIALOG_STARTUP_ERROR = "dialog.startupError.message";
+
 }

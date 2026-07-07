@@ -1,9 +1,7 @@
 package com.github.rebi0395.instantsnap.view.controller;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import com.github.rebi0395.instantsnap.app.InstantSnapCoordinator;
@@ -109,6 +107,10 @@ public class MainWindowController {
 	@FXML
 	private Label sectionSnapArea;
 
+	/** 撮影オプションのラベル */
+	@FXML
+	private Label sectionSnapOption;
+
 	/** 保存方法セクションのラベル */
 	@FXML
 	private Label sectionSaveMethod;
@@ -158,6 +160,10 @@ public class MainWindowController {
 	@FXML
 	private Label labelSnapAfter;
 
+	/** マウスカーソルを画像に含める設定の有効/無効を表示するラベル */
+	@FXML
+	private Label labelIncludeCursor;
+
 	/** 画像を保存する設定の有効/無効を表示するラベル */
 	@FXML
 	private Label labelSaveImage;
@@ -204,6 +210,9 @@ public class MainWindowController {
 	/** コンビネーションキーとしてShiftを使用するかを選択するチェックボックス */
 	@FXML
 	private CheckBox checkShift;
+	/** マウスカーソルを画像に含めるかを設定するチェックボックス */
+	@FXML
+	private CheckBox checkIncludeCursor;
 
 	// -- 出力設定 --
 	/** 画像を保存する設定のチェックボックス */
@@ -332,6 +341,8 @@ public class MainWindowController {
 		comboSnapArea.getItems().addAll(SnapAreaType.values());
 		comboSnapArea.setConverter(SnapAreaType.toConverter(converter)); // コンバーターにより	Enumsをdisplaynameで変換が可能になる
 		comboSnapArea.setValue(config.getSnapAreaType());
+		// マウスカーソルを画像に含めるかのチェックボックスをセット
+		checkIncludeCursor.setSelected(config.getIsIncludeCursor());
 
 		// -- 出力設定 --
 
@@ -557,6 +568,7 @@ public class MainWindowController {
 		customKeys.setUseCtrl(checkCtrl.isSelected());
 		customKeys.setUseAlt(checkAlt.isSelected());
 		customKeys.setUseShift(checkShift.isSelected());
+		config.setIsIncludeCursor(checkIncludeCursor.isSelected()); // マウスカーソルの有無
 
 		// -- 出力設定 --
 		config.setIsSaveImage(checkSaveImage.isSelected()); // 画像保存の有無
@@ -593,13 +605,13 @@ public class MainWindowController {
 		// -- 撮影設定 --
 		comboTriggerType.getSelectionModel().selectFirst();
 		comboSnapArea.getSelectionModel().selectFirst();
+		checkIncludeCursor.setSelected(DEFAULT_INCLUDE_CURSOR_ENABLED); // マウスカーソルの有無
 		// カスタムキーの設定をリセットする
 		textInputKey.clear();
 		checkCtrl.setSelected(DEFAULT_USE_CTRL);
 		checkAlt.setSelected(DEFAULT_USE_ALT);
 		checkShift.setSelected(DEFAULT_USE_SHIFT);
-		// カスタムキーの内部保持値もリセットする
-		nativeCode = VC_UNDEFINED;
+		nativeCode = VC_UNDEFINED; // カスタムキーの内部保持値もリセットする
 
 		// -- 出力設定 --
 		checkSaveImage.setSelected(DEFAULT_SAVE_IMAGE_ENABLED); // チェックを入れる
@@ -705,6 +717,7 @@ public class MainWindowController {
 		labelKeyCombination
 				.setText(config.getTriggerType().resolveKeyCombination(customKeys).resolveKeyCombinationName());
 		labelSnapArea.setText(config.getSnapAreaType().getMessage(converter));
+		labelIncludeCursor.setText(converter.getEnabledMessage(config.getIsIncludeCursor()));
 
 		// -- 出力設定
 		labelSaveImage.setText(converter.getEnabledMessage(config.getIsSaveImage()));
@@ -740,6 +753,7 @@ public class MainWindowController {
 		sectionCustomKey
 				.setText(converter.getMessage(MessageKeyConstant.SECTION_CUSTOM_KEY, "Custom key settings"));
 		sectionSnapArea.setText(converter.getMessage(MessageKeyConstant.SECTION_SNAP_AREA, "Capture area"));
+		sectionSnapOption.setText(converter.getMessage(MessageKeyConstant.SECTION_SNAP_OPTION, "Capture option"));
 		sectionSaveMethod.setText(converter.getMessage(MessageKeyConstant.SECTION_SAVE_METHOD, "Save options"));
 		sectionSelectSaveDirectory.setText(
 				converter.getMessage(MessageKeyConstant.SECTION_SELECT_SAVE_DIRECTORY, "Save destination folder"));
@@ -750,6 +764,8 @@ public class MainWindowController {
 		sectionSoundTitle.setText(converter.getMessage(MessageKeyConstant.SECTION_SOUND, "Sound"));
 
 		// チェックボックス
+		checkIncludeCursor.setText(
+				converter.getMessage(MessageKeyConstant.CHECK_INCLUDE_CURSOR, "Include cursor"));
 		checkSaveImage.setText(converter.getMessage(MessageKeyConstant.CHECK_SAVE_IMAGE, "Save image"));
 		checkClipboard.setText(converter.getMessage(MessageKeyConstant.CHECK_COPY_TO_CLIPBOARD, "Copy to clipboard"));
 		checkNotification
