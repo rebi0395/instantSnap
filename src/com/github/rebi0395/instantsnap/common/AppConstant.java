@@ -90,13 +90,13 @@ public final class AppConstant {
 
 	/** メインウィンドウのCSSファイル */
 	public static final String CSS_MAIN_WINDOW = "/com/github/rebi0395/instantsnap/view/css/main-window.css";
+	/** メインウィンドウのテーマCSS：絵本 */
+	public static final String CSS_MAIN_THEME_STORYBOOK = "/com/github/rebi0395/instantsnap/view/css/theme-storybook.css";
 	/** 通知画面のCSSファイル */
 	public static final String CSS_NOTIFICATION = "/com/github/rebi0395/instantsnap/view/css/notification.css";
 
 	/** アイコンのpngファイル */
-	public static final String ICON_APP = "/icon/InstantSnap.png";
-	/** マウスポインターのpngファイル */
-	public static final String MOUSE_POINTER = "/icon/MousePointer.png";
+	public static final String ICON_APP = "/images/icon/InstantSnap.png";
 
 	/** 一時保存先ディレクトリ */
 	public static final String TMP_SAVE_DIR = "./tmp/";
