@@ -107,7 +107,7 @@
 
 /** 言語ボックスのサイズ指定 */
 .language-combo {
-    -fx-pref-width: 85;
+    -fx-pref-width: 100px;
     -fx-pref-height: 24;
     -fx-font-size: 11px;
 }
@@ -132,6 +132,67 @@
 /* 不正値のテキストフィールド */
 .text-field.invalid-value {
 	-fx-text-fill: #b71c1c;
+}
+
+/* =========================================================
+ * 主操作ボタン
+ * 設定を反映ボタンなど
+ * ========================================================= */
+
+.primary-action {
+    -fx-background-color: linear-gradient(to bottom, #5fc463, #43a047);
+    -fx-background-radius: 3px;
+    -fx-background-insets: 0;
+
+    -fx-border-color: #388e3c;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.primary-action:hover {
+    -fx-background-color: linear-gradient(to bottom, #66cf6a, #4caf50);
+}
+
+.primary-action:pressed {
+    -fx-background-color: #388e3c;
+}
+
+.primary-action:disabled {
+    -fx-opacity: 0.65;
+}
+
+/* =========================================================
+ * 副操作ボタン
+ * 入力値を初期化
+ * ========================================================= */
+
+.secondary-action {
+    -fx-background-color: linear-gradient(to bottom, #ffffff, #e9e9e9);
+    -fx-background-radius: 3px;
+    -fx-background-insets: 0;
+
+    -fx-border-color: #bdbdbd;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+
+    -fx-text-fill: #333333;
+    -fx-font-weight: bold;
+}
+
+.secondary-action:hover {
+    -fx-background-color: linear-gradient(to bottom, #ffffff, #f2f2f2);
+    -fx-border-color: #9e9e9e;
+}
+
+.secondary-action:pressed {
+    -fx-background-color: #dcdcdc;
+}
+
+.secondary-action:disabled {
+    -fx-opacity: 0.65;
 }
 
 /* =========================================================
@@ -282,4 +343,46 @@
 .switch-check-box:selected .mark,
 .switch-check-box:selected:focused .mark {
     -fx-translate-x: 24px;
+}
+
+/* =========================================================
+ * Focus Ring
+ * Tabキー操作時にフォーカス位置を分かりやすくする
+ * border-widthは変えず、effectで表示するためレイアウトは崩れない
+ * ========================================================= */
+
+.button:focused,
+.combo-box-base:focused,
+.text-field:focused,
+.titled-pane:focused > .title {
+    -fx-effect: dropshadow(gaussian, rgba(33, 150, 243, 0.55), 9, 0.35, 0, 0);
+}
+
+/* 主操作ボタン */
+.primary-action:focused {
+    -fx-effect: dropshadow(gaussian, rgba(25, 118, 210, 0.75), 10, 0.35, 0, 0);
+}
+
+/* 副操作ボタン */
+.secondary-action:focused {
+    -fx-effect: dropshadow(gaussian, rgba(33, 150, 243, 0.55), 9, 0.35, 0, 0);
+}
+
+/* CheckBox */
+.check-box:focused .box {
+    -fx-effect: dropshadow(gaussian, rgba(33, 150, 243, 0.65), 8, 0.4, 0, 0);
+}
+
+/* RadioButton */
+.radio-button:focused .radio {
+    -fx-effect: dropshadow(gaussian, rgba(33, 150, 243, 0.65), 8, 0.4, 0, 0);
+}
+
+/* 通常チェックボックスのON/OFFも少し見やすく */
+.check-box:focused {
+    -fx-text-fill: #0d47a1;
+}
+
+.radio-button:focused {
+    -fx-text-fill: #0d47a1;
 }

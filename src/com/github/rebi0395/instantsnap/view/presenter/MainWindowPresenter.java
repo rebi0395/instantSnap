@@ -73,7 +73,7 @@ public class MainWindowPresenter {
 		// シーンの設定 (ウィンドウのファイル、横幅、高さを設定)
 		Scene scene = createScene(mainRoot);
 		StyleSheetUtil.applyStyleSheet(scene, CSS_MAIN_WINDOW); // css適用
-		//StyleSheetUtil.applyTheme(mainRoot, CSS_MAIN_THEME_STORYBOOK, "theme-storybook"); // テーマcss適用
+		StyleSheetUtil.applyTheme(mainRoot, CSS_MAIN_THEME_STORYBOOK, "theme-storybook"); // テーマcss適用
 
 		// ウィンドウを閉じようとすると、確認ウィンドウを表示する処理を登録
 		registerCloseRequest();
