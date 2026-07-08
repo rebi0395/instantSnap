@@ -415,7 +415,7 @@
 .theme-storybook .primary-action {
     -fx-background-color: linear-gradient(to bottom, #ffb261, #ff7f3d);
     -fx-border-color: #db761d;
-    -fx-text-fill: white;
+    -fx-text-fill: #4a2b19;
     -fx-font-size: 13px;
 }
 .theme-storybook .primary-action:hover {
@@ -457,4 +457,45 @@
     -fx-text-fill: #fff7e8;
     -fx-font-size: 11px;
     -fx-padding: 7px 10px 7px 10px;
+}
+
+/* =========================================================
+ * Storybook Focus Ring
+ * Tabキー操作時にフォーカス位置を分かりやすくする
+ * border-widthは変えず、effectで表示する
+ * ========================================================= */
+
+.theme-storybook .button:focused,
+.theme-storybook .combo-box-base:focused,
+.theme-storybook .text-field:focused,
+.theme-storybook .titled-pane:focused > .title {
+    -fx-effect: dropshadow(gaussian, rgba(255, 143, 50, 0.62), 10, 0.35, 0, 0);
+}
+
+/* 主操作ボタン */
+.theme-storybook .primary-action:focused {
+    -fx-effect: dropshadow(gaussian, rgba(255, 127, 61, 0.75), 12, 0.38, 0, 0);
+    -fx-text-fill: rgb(0, 0, 0);
+}
+
+/* 副操作ボタン */
+.theme-storybook .secondary-action:focused {
+    -fx-effect: dropshadow(gaussian, rgba(255, 159, 67, 0.65), 10, 0.35, 0, 0);
+    -fx-text-fill: rgb(0, 0, 0);
+}
+
+/* CheckBox */
+.theme-storybook .check-box:focused .box {
+    -fx-effect: dropshadow(gaussian, rgba(255, 143, 50, 0.72), 9, 0.4, 0, 0);
+}
+
+/* RadioButton */
+.theme-storybook .radio-button:focused .radio {
+    -fx-effect: dropshadow(gaussian, rgba(255, 143, 50, 0.72), 9, 0.4, 0, 0);
+}
+
+/* フォーカス時はラベル文字も少し濃くする */
+.theme-storybook .check-box:focused,
+.theme-storybook .radio-button:focused {
+    -fx-text-fill: rgb(0, 0, 0);
 }

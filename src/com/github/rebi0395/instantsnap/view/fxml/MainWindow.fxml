@@ -146,7 +146,7 @@
 															<HBox styleClass="setting-header">
 																<TextField fx:id="textFileNamePrefix"/>
 																<ComboBox fx:id="comboFileNameDateFormatType"/>
-																<ComboBox fx:id="comboFormatType" prefWidth="70" maxWidth="70"/>
+																<ComboBox fx:id="comboFormatType" prefWidth="90" maxWidth="90"/>
 															</HBox>
 														</VBox>
 													</content>
@@ -237,8 +237,8 @@
 				<Insets top="10" right="20" bottom="20" left="20"/>
 			</padding>
 			<children>
-				<Button fx:id="buttonReset" onAction="#onResetConfig" style="-fx-min-width: 100;"/><!-- 入力値を初期化 -->
-				<Button fx:id="buttonApply" onAction="#onApplyConfig" prefWidth="120" style="-fx-base: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;"/><!-- 設定を反映 -->
+				<Button fx:id="buttonReset" onAction="#onResetConfig" styleClass="secondary-action"/><!-- 入力値を初期化 -->
+				<Button fx:id="buttonApply" onAction="#onApplyConfig" styleClass="primary-action"/><!-- 設定を反映 -->
 			</children>
 		</HBox>
 	</bottom>
