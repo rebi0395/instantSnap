@@ -83,7 +83,7 @@
 /** 項目のヘッダーを整形する */
 .setting-header {
 	-fx-spacing: 15; 
-	-fx-alignment: baseline_left;
+	-fx-alignment: center-left;
 }
 
 /** 現在の設定値をラベル表示する */
@@ -132,6 +132,58 @@
 /* 不正値のテキストフィールド */
 .text-field.invalid-value {
 	-fx-text-fill: #b71c1c;
+}
+
+/* =========================================================
+ * セクション見出しの横に置くアイコン
+ * ========================================================= */
+
+.section-icon {
+    -fx-min-width: 26px;
+    -fx-min-height: 26px;
+    -fx-pref-width: 26px;
+    -fx-pref-height: 26px;
+    -fx-max-width: 26px;
+    -fx-max-height: 26px;
+
+    -fx-background-size: contain;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+}
+
+/* ショートカットキー選択 */
+.icon-shortcut {
+    -fx-background-image: url("/images/theme/default/icon-shortcut-32.png");
+}
+
+/* 撮影範囲 */
+.icon-snap-area {
+    -fx-background-image: url("/images/theme/default/icon-snap-area-32.png");
+}
+
+/* 撮影オプション */
+.icon-snap-option {
+    -fx-background-image: url("/images/theme/default/icon-snap-option-32.png");
+}
+
+/* 保存方法 */
+.icon-save-method {
+    -fx-background-image: url("/images/theme/default/icon-save-method-32.png");
+}
+
+/* 撮影後の動作 */
+.icon-after-snap {
+    -fx-background-image: url("/images/theme/default/icon-after-snap-32.png");
+}
+
+/* 通知表示 */
+.icon-notification {
+    -fx-background-image: url("/images/theme/default/icon-notification-32.png");
+}
+
+/* サウンド設定 */
+.icon-sound {
+    -fx-background-image: url("/images/theme/default/icon-sound-32.png");
 }
 
 /* =========================

@@ -39,7 +39,7 @@ public final class StyleSheetUtil {
 		// rootが持つスタイルシート一覧にCSSのURLを追加し、UIにCSSを適用する
 		scene.getStylesheets().add(cssUrl.toExternalForm());
 	}
-	
+
 	/**
 	 * CSSを適用する
 	 * 
@@ -56,5 +56,23 @@ public final class StyleSheetUtil {
 
 		// rootが持つスタイルシート一覧にCSSのURLを追加し、UIにCSSを適用する
 		root.getStylesheets().add(cssUrl.toExternalForm());
+	}
+
+	/**
+	 * テーマCSSを適用する。
+	 *
+	 * CSSファイルを読み込むだけでなく、
+	 * rootにテーマ用styleClassも付与する。
+	 *
+	 * @param root テーマを適用するルート要素
+	 * @param cssPath テーマCSSのパス
+	 * @param themeClass テーマ用styleClass
+	 */
+	public static void applyTheme(Parent root, String cssPath, String themeClass) {
+		applyStyleSheet(root, cssPath);
+
+		if (!root.getStyleClass().contains(themeClass)) {
+			root.getStyleClass().add(themeClass);
+		}
 	}
 }

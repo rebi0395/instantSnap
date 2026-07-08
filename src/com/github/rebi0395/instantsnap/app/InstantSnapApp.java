@@ -3,6 +3,7 @@ package com.github.rebi0395.instantsnap.app;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.rebi0395.instantsnap.view.StyleSheetUtil;
 import com.github.rebi0395.instantsnap.view.presenter.ExitDialogPresenter;
 import com.github.rebi0395.instantsnap.view.presenter.MainWindowPresenter;
 import com.github.rebi0395.instantsnap.view.presenter.SnapNotificationPresenter;
@@ -34,6 +35,7 @@ public class InstantSnapApp extends Application {
 	@Override
 	public void start(Stage stage) {
 		try {
+			
 			// 通知表示クラスを生成
 			this.notificationPresenter = new SnapNotificationPresenter(stage);
 

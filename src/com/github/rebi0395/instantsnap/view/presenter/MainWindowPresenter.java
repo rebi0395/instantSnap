@@ -39,13 +39,13 @@ public class MainWindowPresenter {
 	private final ExitDialogPresenter exitDialogPresenter;
 
 	/** ウィンドウの最大の横幅 */
-	private static final double SCENE_MAX_WIDTH = 600;
+	private static final double SCENE_MAX_WIDTH = 650;
 
 	/** ウィンドウの最大の高さ */
 	private static final double SCENE_MAX_HEIGHT = 900;
 	 
 	/** ウィンドウの横幅の余白 */
-	private static final double SCENE_MARGIN_WIDTH = 60;
+	private static final double SCENE_MARGIN_WIDTH = 65;
 
 	/** ウィンドウの高さの余白 */
 	private static final double SCENE_MARGIN_HEIGHT = 90;
@@ -73,6 +73,7 @@ public class MainWindowPresenter {
 		// シーンの設定 (ウィンドウのファイル、横幅、高さを設定)
 		Scene scene = createScene(mainRoot);
 		StyleSheetUtil.applyStyleSheet(scene, CSS_MAIN_WINDOW); // css適用
+		//StyleSheetUtil.applyTheme(mainRoot, CSS_MAIN_THEME_STORYBOOK, "theme-storybook"); // テーマcss適用
 
 		// ウィンドウを閉じようとすると、確認ウィンドウを表示する処理を登録
 		registerCloseRequest();
