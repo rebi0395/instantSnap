@@ -56,7 +56,6 @@ public enum AfterSnapActionType implements BaseEnum, MessageEnum {
 	 */
 	@Override
 	public String getMessageKey() {
-		// TODO 自動生成されたメソッド・スタブ
 		return messageKey;
 	}
 

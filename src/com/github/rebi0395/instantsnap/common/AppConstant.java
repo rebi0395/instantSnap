@@ -56,6 +56,9 @@ public final class AppConstant {
 	/** プロパティ 通知音を有効にするか */
 	public static final String PROPERTY_SOUND_NOTIFICATION_ENABLED = "soundNotificationEnabled";
 
+	/** プロパティ テーマ設定 */
+	public static final String PROPERTY_THEME = "theme";
+
 	// -- デフォルト値 --  
 	/** 保存先ディレクトリのデフォルト値 */
 	public static final String DEFAULT_SAVE_DIR = "./screenshots/";
