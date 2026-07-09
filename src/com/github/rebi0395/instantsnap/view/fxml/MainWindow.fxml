@@ -8,7 +8,6 @@
 <?import java.lang.String?>
 
 <BorderPane fx:id="rootPane" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
-
 	<top>
 		<HBox styleClass="top-bar">
         	<Label fx:id="labelStatus"/>
