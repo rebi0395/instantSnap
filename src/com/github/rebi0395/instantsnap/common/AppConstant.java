@@ -95,6 +95,8 @@ public final class AppConstant {
 	public static final String CSS_MAIN_WINDOW = "/com/github/rebi0395/instantsnap/view/css/main-window.css";
 	/** メインウィンドウのテーマCSS：絵本 */
 	public static final String CSS_MAIN_THEME_STORYBOOK = "/com/github/rebi0395/instantsnap/view/css/theme-storybook.css";
+	/** テーマCSSファイル名とテーマstyleClassの接頭辞 */
+	public static final String THEME_CSS_PREFIX = "theme-";
 	/** 通知画面のCSSファイル */
 	public static final String CSS_NOTIFICATION = "/com/github/rebi0395/instantsnap/view/css/notification.css";
 

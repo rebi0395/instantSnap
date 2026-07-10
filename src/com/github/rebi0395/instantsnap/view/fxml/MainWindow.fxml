@@ -10,10 +10,12 @@
 <BorderPane fx:id="rootPane" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
 	<top>
 		<HBox styleClass="top-bar">
-        	<Label fx:id="labelStatus"/>
-        	<Region HBox.hgrow="ALWAYS" />
-        	<Label text="Language" />
-        	<ComboBox fx:id="comboLanguageType" styleClass="language-combo"/>
+			<Label fx:id="labelStatus"/>
+			<Region HBox.hgrow="ALWAYS" />
+			<Label fx:id="sectionTheme" styleClass="top-setting-label"/>
+			<ComboBox fx:id="comboThemeType" styleClass="theme-combo"/>
+			<Label text="Language" styleClass="top-setting-label"/>
+			<ComboBox fx:id="comboLanguageType" styleClass="language-combo"/>
     	</HBox>
 	</top>
 
@@ -22,7 +24,7 @@
 			<tabs>
 				<Tab fx:id="tabBasicSettings"><!-- 基本設定 -->
 					<content>
-						<ScrollPane fitToWidth="true" fitToHeight="true" pannable="true" 
+						<ScrollPane fitToWidth="true" fitToHeight="true" pannable="true"
 						hbarPolicy="NEVER" vbarPolicy="ALWAYS">
 							<VBox spacing="15" styleClass="section-border">
 								<padding>
@@ -36,7 +38,7 @@
 												<String fx:value="icon-shortcut"/>
 											</styleClass>
 										</Region>
-										<Label fx:id="sectionShortcutKey" styleClass="section-title" 
+										<Label fx:id="sectionShortcutKey" styleClass="section-title"
 											prefWidth="120" maxWidth="120"/><!-- ショートカットキー選択 -->
 										<Label fx:id="labelKeyCombination" styleClass="current-value"/>
 									</HBox>
@@ -61,7 +63,7 @@
 										<columnConstraints>
 											<ColumnConstraints percentWidth="50"/>
 											<ColumnConstraints percentWidth="50"/>
-										</columnConstraints>	
+										</columnConstraints>
 										<VBox spacing="10" GridPane.columnIndex="0">
 											<HBox styleClass="setting-header">
 												<Region>
@@ -109,7 +111,7 @@
 											<columnConstraints>
 												<ColumnConstraints percentWidth="50"/>
 												<ColumnConstraints percentWidth="50"/>
-											</columnConstraints>	
+											</columnConstraints>
 											<VBox spacing="10" GridPane.columnIndex="0">
 												<HBox spacing="10" styleClass="output-switch-item">
 													<CheckBox fx:id="checkSaveImage" styleClass="switch-check-box"/>

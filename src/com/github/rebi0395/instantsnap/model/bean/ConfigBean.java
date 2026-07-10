@@ -9,6 +9,7 @@ import com.github.rebi0395.instantsnap.model.enums.LanguageType;
 import com.github.rebi0395.instantsnap.model.enums.AfterSnapActionType;
 import com.github.rebi0395.instantsnap.model.enums.FileNameDateFormatType;
 import com.github.rebi0395.instantsnap.model.enums.SnapAreaType;
+import com.github.rebi0395.instantsnap.model.enums.ThemeType;
 import com.github.rebi0395.instantsnap.model.enums.TriggerType;
 
 /**
@@ -18,6 +19,8 @@ public class ConfigBean {
 
 	/** 言語設定 */
 	private LanguageType languageType;
+	/** テーマ設定 */
+	private ThemeType themeType;
 	/** 撮影キー */
 	private TriggerType triggerType;
 	/** 撮影カスタムキーの保存クラス */
@@ -54,6 +57,8 @@ public class ConfigBean {
 	public ConfigBean() {
 		// -- 言語設定
 		this.languageType = LanguageType.ENGLISH;
+		// -- テーマ設定
+		this.themeType = ThemeType.STORYBOOK;
 
 		// -- 撮影設定
 		this.triggerType = TriggerType.SHIFT_PRINTSCREEN;
@@ -115,6 +120,22 @@ public class ConfigBean {
 	 */
 	public void setLanguageType(LanguageType languageType) {
 		this.languageType = languageType;
+	}
+
+	/**
+	 * テーマ設定を取得する
+	 * @return themeType テーマ設定
+	 */
+	public ThemeType getThemeType() {
+		return themeType;
+	}
+
+	/**
+	 * テーマ設定をセットする
+	 * @param themeType セットする
+	 */
+	public void setThemeType(ThemeType themeType) {
+		this.themeType = themeType;
 	}
 
 	/**

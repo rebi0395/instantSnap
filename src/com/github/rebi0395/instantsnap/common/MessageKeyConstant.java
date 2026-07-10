@@ -41,6 +41,8 @@ public final class MessageKeyConstant {
 	public static final String SECTION_NOTIFICATION = "section.notification";
 	/** セクション：サウンド設定 */
 	public static final String SECTION_SOUND = "section.sound";
+	/** セクション：テーマ */
+	public static final String SECTION_THEME = "section.theme";
 
 	/** チェック項目：マウスカーソルを画像に含める */
 	public static final String CHECK_INCLUDE_CURSOR = "check.includeCursor";
@@ -72,7 +74,6 @@ public final class MessageKeyConstant {
 	public static final String LABEL_ENABLED = "label.enabled";
 	/** ラベルで無効を表示するメッセージキー */
 	public static final String LABEL_DISABLED = "label.disabled";
-
 	/** ステータス：起動中 */
 	public static final String STATUS_STARTING = "status.starting";
 	/** ステータス：撮影可能 */
