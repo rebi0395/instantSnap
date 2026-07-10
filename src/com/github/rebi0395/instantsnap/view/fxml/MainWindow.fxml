@@ -10,15 +10,18 @@
 <BorderPane fx:id="rootPane" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
 	<top>
 		<HBox styleClass="top-bar">
-			<Label fx:id="labelStatus"/>
-			<Region HBox.hgrow="ALWAYS" />
-			<Label fx:id="sectionTheme" styleClass="top-setting-label"/>
-			<ComboBox fx:id="comboThemeType" styleClass="theme-combo"/>
-			<Label text="Language" styleClass="top-setting-label"/>
-			<ComboBox fx:id="comboLanguageType" styleClass="language-combo"/>
-    	</HBox>
+			<StackPane fx:id="statusArea" HBox.hgrow="ALWAYS" styleClass="status-area">
+				<Label fx:id="labelStatus" styleClass="status-label"/>
+			</StackPane>
+		
+		    <GridPane hgap="8" vgap="2" styleClass="top-setting-grid">
+		    	<Label fx:id="sectionTheme" GridPane.columnIndex="0" GridPane.rowIndex="0" styleClass="top-setting-label"/>
+				<Label text="Language" GridPane.columnIndex="1" GridPane.rowIndex="0" styleClass="top-setting-label"/>
+				<ComboBox fx:id="comboThemeType" GridPane.columnIndex="0" GridPane.rowIndex="1" styleClass="theme-combo"/>
+				<ComboBox fx:id="comboLanguageType" GridPane.columnIndex="1" GridPane.rowIndex="1" styleClass="language-combo"/>
+			</GridPane>
+		</HBox>
 	</top>
-
 	<center>
 		<TabPane fx:id="mainTabPane" tabClosingPolicy="UNAVAILABLE" styleClass="main-tab-pane">
 			<tabs>
@@ -74,7 +77,8 @@
 												</Region>
 												<Label fx:id="sectionSnapArea" styleClass="section-title"
 												prefWidth="80" maxWidth="80"/><!-- 撮影範囲 -->
-												<Label fx:id="labelSnapArea" styleClass="current-value"/>											</HBox>
+												<Label fx:id="labelSnapArea" styleClass="current-value"/>
+											</HBox>
 											<HBox spacing="10" styleClass="output-switch-item">
 												<ComboBox fx:id="comboSnapArea"/>
 											</HBox>
@@ -220,12 +224,52 @@
 				</Tab>
 				<Tab fx:id="tabOtherSettings"><!-- その他設定 -->
 					<content>
-						<VBox spacing="20">
-							<padding>
-								<Insets top="20" right="20" bottom="20" left="20"/>
-							</padding>
-							<Label text="ここに新しい設定項目や、履歴などを追加できます。" />
-						</VBox>
+						<ScrollPane fitToWidth="true" fitToHeight="true" pannable="true"
+						hbarPolicy="NEVER" vbarPolicy="ALWAYS">
+							<VBox spacing="15" styleClass="section-border">
+								<padding>
+									<Insets top="20" right="20" bottom="20" left="20"/>
+								</padding>
+								<VBox spacing="10" styleClass="section-border">
+									<GridPane hgap="20">
+										<columnConstraints>
+											<ColumnConstraints percentWidth="50"/>
+											<ColumnConstraints percentWidth="50"/>
+										</columnConstraints>
+										<VBox spacing="10" GridPane.columnIndex="0">
+											<HBox styleClass="setting-header">
+												<Region>
+													<styleClass>
+														<String fx:value="section-icon"/>
+														<String fx:value="icon-snap-area"/>
+													</styleClass>
+												</Region>
+												<Label text="テーマ" styleClass="section-title"
+												prefWidth="80" maxWidth="80"/><!-- テーマ -->
+											</HBox>
+											<HBox spacing="10" styleClass="output-switch-item">
+												<ComboBox/>
+											</HBox>
+										</VBox>
+										<VBox spacing="10" GridPane.columnIndex="1">
+											<HBox styleClass="setting-header">
+												<Region>
+													<styleClass>
+														<String fx:value="section-icon"/>
+														<String fx:value="icon-snap-option"/>
+													</styleClass>
+												</Region>
+												<Label fx:id="sectionSnapOption" styleClass="section-title"/>
+											</HBox>
+											<HBox spacing="10" styleClass="output-switch-item">
+												<CheckBox prefWidth="160" maxWidth="160"/><!-- 仮置き -->
+												<Label text="仮置き" styleClass="current-value"/>
+											</HBox>
+										</VBox>
+									</GridPane>
+								</VBox>
+							</VBox>
+						</ScrollPane>
 					</content>
 				</Tab>
 			</tabs>
