@@ -45,20 +45,23 @@
 											prefWidth="120" maxWidth="120"/><!-- ショートカットキー選択 -->
 										<Label fx:id="labelKeyCombination" styleClass="current-value"/>
 									</HBox>
-									<HBox styleClass="setting-header">
+									<HBox styleClass="shortcut-setting-row">
 										<ComboBox fx:id="comboTriggerType"/>
-									</HBox>
-									<HBox>
-										<Label fx:id="sectionCustomKey"/><!-- カスタムキー設定 -->
-									</HBox>
-									<HBox styleClass="setting-header">
-										<TextField fx:id="textInputKey" disable="true"/>
-										<Label text="+"/>
-										<CheckBox fx:id="checkCtrl" text="Ctrl"/>
-										<Label text="+"/>
-										<CheckBox fx:id="checkAlt" text="Alt"/>
-										<Label text="+"/>
-										<CheckBox fx:id="checkShift" text="Shift"/>
+										<VBox spacing="4" styleClass="custom-key-area">
+											<Label fx:id="sectionCustomKey" styleClass="section-title"/><!-- カスタムキー設定 -->
+											<GridPane hgap="8" vgap="0" styleClass="custom-key-grid">
+												<TextField fx:id="textInputKey" disable="true" GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.rowSpan="2" styleClass="custom-key-text-field"/>
+												<Label text="+" GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.rowSpan="2" styleClass="custom-key-plus"/>
+												<Label text="Ctrl" GridPane.columnIndex="2" GridPane.rowIndex="0" styleClass="custom-key-modifier-label"/>
+												<CheckBox fx:id="checkCtrl" GridPane.columnIndex="2" GridPane.rowIndex="1" styleClass="custom-key-check"/>
+												<Label text="+" GridPane.columnIndex="3" GridPane.rowIndex="0" GridPane.rowSpan="2" styleClass="custom-key-plus"/>
+												<Label text="Alt" GridPane.columnIndex="4" GridPane.rowIndex="0" styleClass="custom-key-modifier-label"/>
+												<CheckBox fx:id="checkAlt" GridPane.columnIndex="4" GridPane.rowIndex="1" styleClass="custom-key-check"/>
+												<Label text="+" GridPane.columnIndex="5" GridPane.rowIndex="0" GridPane.rowSpan="2" styleClass="custom-key-plus"/>
+												<Label text="Shift" GridPane.columnIndex="6" GridPane.rowIndex="0" styleClass="custom-key-modifier-label"/>
+												<CheckBox fx:id="checkShift" GridPane.columnIndex="6" GridPane.rowIndex="1" styleClass="custom-key-check"/>
+											</GridPane>
+										</VBox>
 									</HBox>
 								</VBox>
 								<VBox spacing="10" styleClass="section-border">
@@ -77,7 +80,12 @@
 												</Region>
 												<Label fx:id="sectionSnapArea" styleClass="section-title"
 												prefWidth="80" maxWidth="80"/><!-- 撮影範囲 -->
-												<Label fx:id="labelSnapArea" styleClass="current-value"/>
+												<Label fx:id="labelSnapArea">
+													<styleClass>
+														<String fx:value="current-value"/>
+														<String fx:value="current-value-wide"/>
+													</styleClass>
+												</Label>
 											</HBox>
 											<HBox spacing="10" styleClass="output-switch-item">
 												<ComboBox fx:id="comboSnapArea"/>
