@@ -183,6 +183,21 @@
     -fx-text-fill: -storybook-brown;
 }
 
+
+/* =========================================================
+ * カスタムキー設定
+ * ========================================================= */
+.theme-storybook .custom-key-frame {
+    -fx-background-color: rgba(255, 253, 248, 0.92);
+    -fx-background-radius: 14px;
+    -fx-border-color: #edc180;
+    -fx-border-radius: 14px;
+}
+
+.theme-storybook .custom-key-frame-title {
+    -fx-background-color: linear-gradient(to bottom, rgba(255,247,234,1), rgba(255,242,220,1));
+    -fx-text-fill: -storybook-brown;
+}
 /* =========================================================
  * 絵本テーマ用アイコン
  * main.css のシンプルアイコンを上書きする
