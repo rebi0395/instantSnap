@@ -1,4 +1,50 @@
 
+/** 画面上部バー全体 */
+.top-bar {
+    -fx-alignment: center-left;
+    -fx-spacing: 12px;
+    -fx-padding: 8 15 6 3;
+}
+
+/** ステータスメッセージの表示領域。長い文言を2行表示できる高さを確保する */
+.status-area {
+    -fx-alignment: center;
+    -fx-min-height: 42px;
+    -fx-padding: 4 20 4 20;
+    -fx-border-color: rgb(0, 0, 0);
+    -fx-border-width: 1.5;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+}
+
+/** ステータスメッセージ */
+.status-label {
+    -fx-wrap-text: true;
+    -fx-text-alignment: center;
+    -fx-alignment: center;
+    -fx-max-width: 320px;
+}
+
+/** 上部設定項目のグリッド */
+.top-setting-grid {
+    -fx-alignment: center-right;
+}
+
+/** 上部設定項目のラベル */
+.top-setting-label {
+    -fx-font-size: 11px;
+    -fx-min-width: 100px;
+    -fx-pref-width: 100px;
+}
+
+/** 上部設定項目のコンボボックス */
+.theme-combo,
+.language-combo {
+    -fx-pref-width: 100px;
+    -fx-pref-height: 24px;
+    -fx-font-size: 11px;
+}
+
 /** 項目のメインタイトル文字のサイズ指定、太字にする */
 .section-main-title {
     -fx-font-size: 15px;
@@ -98,32 +144,16 @@
     -fx-font-weight: bold;
 }
 
-/** .top-bar上でタブヘッダー右に重ねて表示 */
-.top-bar {
-    -fx-alignment: center-left;
-    -fx-spacing: 8;
-    -fx-padding: 8 15 3 3; /* 上右下左 */
-}
-
-/** 上部設定項目のラベル */
-.top-setting-label {
-    -fx-min-width: 54px;
-    -fx-pref-width: 54px;
-    -fx-max-width: 54px;
-    -fx-font-size: 11px;
-    -fx-text-overrun: clip;
-}
-
 /** 言語ボックスのサイズ指定 */
 .language-combo {
-    -fx-pref-width: 100px;
+    -fx-pref-width: 120px;
     -fx-pref-height: 24;
     -fx-font-size: 11px;
 }
 
 /** テーマボックスのサイズ指定 */
 .theme-combo {
-    -fx-pref-width: 100px;
+    -fx-pref-width: 120px;
     -fx-pref-height: 24;
     -fx-font-size: 11px;
 }
