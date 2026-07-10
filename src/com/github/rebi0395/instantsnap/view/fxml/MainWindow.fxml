@@ -259,7 +259,7 @@
 														<String fx:value="icon-snap-option"/>
 													</styleClass>
 												</Region>
-												<Label fx:id="sectionSnapOption" styleClass="section-title"/>
+												<Label text="撮影オプション" styleClass="section-title"/>
 											</HBox>
 											<HBox spacing="10" styleClass="output-switch-item">
 												<CheckBox prefWidth="160" maxWidth="160"/><!-- 仮置き -->

@@ -49,8 +49,15 @@
 
 /** ステータスメッセージの表示領域 */
 .theme-storybook .status-area {
-    -fx-border-color: #f6b35f;
-    -fx-background-color: rgba(255, 250, 240, 0.45);
+    -fx-background-color: linear-gradient(to right, #fffdf8, #fff3df);
+    -fx-border-color: #ff9a45 #f2c98f #f2c98f #ff9a45;
+    -fx-border-width: 1px 1px 1px 5px;
+    -fx-effect: dropshadow(gaussian, rgba(139, 83, 35, 0.14), 8, 0.14, 0, 1);
+}
+
+/** 絵本テーマのステータスメッセージ */
+.theme-storybook .status-label {
+    -fx-text-fill: -storybook-brown;
 }
 
 /* =========================================================
@@ -85,11 +92,11 @@
     -fx-background-color: transparent;
     -fx-tab-min-width: 120px;
     -fx-tab-max-width: 160px;
-    -fx-tab-min-height: 32px;
+    -fx-tab-min-height: 15px;
 }
 
 .theme-storybook .tab-pane .tab-header-area {
-    -fx-padding: 3px 10px 8px;
+    -fx-padding: 3px 10px 0px;
 }
 
 .theme-storybook .tab-pane .tab-header-background {
@@ -104,7 +111,7 @@
     -fx-border-color: #f1c487;
     -fx-border-radius: 15px 15px 0 0;
     -fx-border-width: 1px 1px 0 1px;
-    -fx-padding: 6px 22px 7px 22px;
+    -fx-padding: 3px 22px 3px 22px;
 }
 
 .theme-storybook .tab:selected {
@@ -172,7 +179,7 @@
 
 .theme-storybook .section-title {
     -fx-font-weight: bold;
-    -fx-font-size: 14px;
+    -fx-font-size: 13px;
     -fx-text-fill: -storybook-brown;
 }
 
@@ -427,7 +434,7 @@
     -fx-background-color: linear-gradient(to bottom, #ffb261, #ff7f3d);
     -fx-border-color: #db761d;
     -fx-text-fill: #4a2b19;
-    -fx-font-size: 13px;
+    -fx-font-size: 12px;
 }
 .theme-storybook .primary-action:hover {
     -fx-background-color: linear-gradient(to bottom, #ffc27c, #ff8d49);
