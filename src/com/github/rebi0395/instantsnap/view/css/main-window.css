@@ -1,7 +1,7 @@
 
 /** 画面全体 */
 .root {
-    -fx-background-color: #f4f6f8;
+    -fx-background-color: #f8fafc;
     -fx-font-family: "Yu Gothic UI", "Meiryo", sans-serif;
     -fx-font-size: 12px;
 }
@@ -18,11 +18,12 @@
     -fx-alignment: center;
     -fx-min-height: 42px;
     -fx-padding: 4 20 4 20;
-    -fx-background-color: linear-gradient(to bottom, #ffffff, #f7fafc);
-    -fx-border-color: #263238;
-    -fx-border-width: 1.5;
-    -fx-border-radius: 6;
-    -fx-background-radius: 6;
+    -fx-background-color: #ffffff;
+    -fx-border-color: #2f80c9 #d8e2ec #d8e2ec #2f80c9;
+    -fx-border-width: 1px 1px 1px 5px;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-effect: dropshadow(gaussian, rgba(31, 45, 61, 0.10), 7, 0.12, 0, 1);
 }
 
 /** ステータスメッセージ */
@@ -31,6 +32,8 @@
     -fx-text-alignment: center;
     -fx-alignment: center;
     -fx-max-width: 320px;
+    -fx-text-fill: #263238;
+    -fx-font-weight: bold;
 }
 
 /** 上部設定項目のグリッド */
@@ -79,13 +82,13 @@
 
     -fx-padding: 0 10 0 10;
 
-    -fx-background-color: linear-gradient(to bottom, #ffffff, #f4f7fa);
-    -fx-background-radius: 8;
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 3;
     -fx-background-insets: 0;
 
     -fx-border-color: #aeb8c2;
     -fx-border-width: 1px;
-    -fx-border-radius: 8;
+    -fx-border-radius: 3;
     -fx-text-fill: #263238;
 }
 
@@ -103,7 +106,7 @@
 .text-field:hover,
 .combo-box-base:hover {
     -fx-border-color: #7e95aa;
-    -fx-background-color: linear-gradient(to bottom, #ffffff, #eef4f8);
+    -fx-background-color: #f9fbfd;
 }
 
 /** 上部設定項目のコンボボックス。通常コンボボックスより小さく固定する */
@@ -139,30 +142,30 @@
 	-fx-background-color: transparent;
 	-fx-tab-min-width: 120px;
 	-fx-tab-max-width: 160px;
-	-fx-tab-min-height: 32px;
+	-fx-tab-min-height: 15px;
 }
 
 /** タブヘッダーの背景 */
 .main-tab-pane .tab-header-background {
-	-fx-background-color: linear-gradient(to bottom, #e7eaed, #d5d9dd);
+	-fx-background-color: linear-gradient(to bottom, #fbfcfe, #edf2f7);
 	-fx-border-color: #b8c0c8;
 	-fx-border-width: 1px 0 1px 0;
 }
 
 /** タブヘッダーの余白 */
 .main-tab-pane .tab-header-area {
-	-fx-padding: 3px 10px 8px;
+	-fx-padding: 3px 10px 0px;
 }
 
 /** タブ真ん中 */
 .main-tab-pane .tab {
 	-fx-alignment: CENTER;
 	-fx-background-color: linear-gradient(to bottom, #f9fafb, #dfe4e8);
-	-fx-background-radius: 8px 8px 0 0;
+	-fx-background-radius: 3px 3px 0 0;
 	-fx-border-color: #aeb8c2;
-	-fx-border-radius: 8px 8px 0 0;
+	-fx-border-radius: 3px 3px 0 0;
 	-fx-border-width: 1px 1px 0 1px;
-	-fx-padding: 6px 22px 7px 22px;
+	-fx-padding: 3px 22px 3px 22px;
 }
 
 /** 選択中のタブ */
