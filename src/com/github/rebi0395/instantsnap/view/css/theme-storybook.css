@@ -102,7 +102,7 @@
 .theme-storybook .tab-pane .tab-header-background {
     -fx-background-color: rgba(255, 238, 205, 0.78);
     -fx-border-color: rgba(230, 155, 75, 0.45);
-    -fx-border-width: 0 0 1px 0;
+    -fx-border-width: 0;
 }
 
 .theme-storybook .tab {
@@ -324,6 +324,12 @@
 }
 
 .theme-storybook .check-box .box {
+    -fx-min-width: 18px;
+    -fx-min-height: 18px;
+    -fx-pref-width: 18px;
+    -fx-pref-height: 18px;
+    -fx-max-width: 18px;
+    -fx-max-height: 18px;
     -fx-background-color: #fffdf8;
     -fx-background-radius: 5px;
     -fx-border-color: #e2b272;
@@ -339,6 +345,18 @@
 }
 .theme-storybook .check-box:disabled {
     -fx-opacity: 0.50;
+}
+
+/* スイッチ型チェックボックスは横長の形を維持する */
+.theme-storybook .switch-check-box .box {
+    -fx-pref-width: 48px;
+    -fx-pref-height: 24px;
+    -fx-min-width: 48px;
+    -fx-min-height: 24px;
+    -fx-max-width: 48px;
+    -fx-max-height: 24px;
+    -fx-background-radius: 12px;
+    -fx-border-radius: 12px;
 }
 
 .theme-storybook .radio-button .radio {
@@ -431,16 +449,16 @@
 }
 
 .theme-storybook .primary-action {
-    -fx-background-color: linear-gradient(to bottom, #ffb261, #ff7f3d);
-    -fx-border-color: #db761d;
-    -fx-text-fill: #4a2b19;
+    -fx-background-color: linear-gradient(to bottom, #66c76a, #43a047);
+    -fx-border-color: #388e3c;
+    -fx-text-fill: #ffffff;
     -fx-font-size: 12px;
 }
 .theme-storybook .primary-action:hover {
-    -fx-background-color: linear-gradient(to bottom, #ffc27c, #ff8d49);
+    -fx-background-color: linear-gradient(to bottom, #70d174, #4caf50);
 }
 .theme-storybook .primary-action:pressed {
-    -fx-background-color: #ed7f25;
+    -fx-background-color: #388e3c;
 }
 .theme-storybook .secondary-action {
     -fx-background-color: linear-gradient(to bottom, #fffdf8, #fff0d8);
@@ -492,8 +510,8 @@
 
 /* 主操作ボタン */
 .theme-storybook .primary-action:focused {
-    -fx-effect: dropshadow(gaussian, rgba(255, 127, 61, 0.75), 12, 0.38, 0, 0);
-    -fx-text-fill: rgb(0, 0, 0);
+    -fx-effect: dropshadow(gaussian, rgba(56, 142, 60, 0.72), 12, 0.38, 0, 0);
+    -fx-text-fill: #ffffff;
 }
 
 /* 副操作ボタン */

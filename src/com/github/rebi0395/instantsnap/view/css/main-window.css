@@ -206,13 +206,130 @@
     -fx-background-color: #e8f0fe;
     -fx-background-radius: 12;
 
-    -fx-padding: 2 10 2 10;
+    -fx-padding: 4 12 4 12;
 
     -fx-text-fill: #1565c0;
     -fx-font-size: 12px;
     -fx-font-weight: bold;
 }
 
+/** 長めの現在値を省略せずに表示する */
+.current-value-wide {
+    -fx-min-width: 150px;
+    -fx-pref-width: 150px;
+    -fx-alignment: center;
+}
+
+/** ショートカットキーとカスタムキー設定を横並びにする */
+.shortcut-setting-row {
+    -fx-spacing: 18px;
+    -fx-alignment: bottom-left;
+}
+
+/** カスタムキー設定の入力まとまり */
+.custom-key-area {
+    -fx-alignment: bottom-left;
+}
+
+/** カスタムキー入力欄と修飾キーを2段で揃える */
+.custom-key-grid {
+    -fx-alignment: center-left;
+}
+
+/** カスタムキー入力欄。横並びでも収まるように通常入力欄より少し短くする */
+.custom-key-text-field {
+    -fx-pref-width: 160px;
+    -fx-min-width: 160px;
+    -fx-max-width: 160px;
+}
+
+/** 修飾キー名。テキストフィールドの上端に揃える */
+.custom-key-modifier-label {
+    -fx-min-width: 38px;
+    -fx-pref-width: 38px;
+    -fx-alignment: center;
+    -fx-font-size: 11px;
+}
+
+/** 修飾キー間のプラス記号 */
+.custom-key-plus {
+    -fx-alignment: center;
+    -fx-padding: 0 2 0 2;
+}
+
+/** カスタムキー用チェックボックス */
+.custom-key-check {
+    -fx-min-width: 38px;
+    -fx-pref-width: 38px;
+    -fx-alignment: center;
+}
+
+/* =========================================================
+ * Accordion / TitledPane
+ * ========================================================= */
+
+.accordion {
+    -fx-background-color: transparent;
+}
+
+.titled-pane {
+    -fx-text-fill: #263238;
+}
+
+.titled-pane > .title {
+    -fx-min-height: 34px;
+    -fx-pref-height: 34px;
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 3;
+    -fx-border-color: #aeb8c2;
+    -fx-border-radius: 3;
+    -fx-border-width: 1px;
+    -fx-padding: 0 10 0 10;
+}
+
+.titled-pane > .title:hover {
+    -fx-background-color: #f9fbfd;
+    -fx-border-color: #7e95aa;
+}
+
+.titled-pane > .title > .text {
+    -fx-fill: #263238;
+    -fx-font-weight: bold;
+}
+
+.titled-pane > .content {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #dbe3ea;
+    -fx-border-width: 0 1px 1px 1px;
+    -fx-padding: 10px;
+}
+
+/* =========================================================
+ * CheckBox / RadioButton
+ * ========================================================= */
+
+.check-box .box {
+    -fx-min-width: 18px;
+    -fx-min-height: 18px;
+    -fx-pref-width: 18px;
+    -fx-pref-height: 18px;
+    -fx-max-width: 18px;
+    -fx-max-height: 18px;
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 3;
+    -fx-border-color: #aeb8c2;
+    -fx-border-radius: 3;
+    -fx-border-width: 1px;
+}
+
+.check-box:selected .box {
+    -fx-background-color: #43a047;
+    -fx-border-color: #388e3c;
+}
+
+.check-box:selected .mark {
+    -fx-background-color: #ffffff;
+}
 .output-switch-row {
     -fx-spacing: 90px;
     -fx-alignment: center-left;
@@ -240,11 +357,11 @@
  * ========================================================= */
 
 .primary-action {
-    -fx-background-color: linear-gradient(to bottom, #4fa3e3, #2f80c9);
+    -fx-background-color: linear-gradient(to bottom, #5fc463, #43a047);
     -fx-background-radius: 3px;
     -fx-background-insets: 0;
 
-    -fx-border-color: #256aa7;
+    -fx-border-color: #388e3c;
     -fx-border-width: 1px;
     -fx-border-radius: 3px;
 
@@ -253,11 +370,11 @@
 }
 
 .primary-action:hover {
-    -fx-background-color: linear-gradient(to bottom, #5ab0ef, #358bd7);
+    -fx-background-color: linear-gradient(to bottom, #66cf6a, #4caf50);
 }
 
 .primary-action:pressed {
-    -fx-background-color: #256aa7;
+    -fx-background-color: #388e3c;
 }
 
 .primary-action:disabled {
@@ -460,7 +577,7 @@
 
 /* 主操作ボタン */
 .primary-action:focused {
-    -fx-effect: dropshadow(gaussian, rgba(25, 118, 210, 0.75), 10, 0.35, 0, 0);
+    -fx-effect: dropshadow(gaussian, rgba(56, 142, 60, 0.72), 10, 0.35, 0, 0);
 }
 
 /* 副操作ボタン */
