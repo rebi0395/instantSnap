@@ -13,9 +13,9 @@ import javafx.util.StringConverter;
 public enum ThemeType implements BaseEnum, MessageEnum {
 
 	/** デフォルト テーマなし */
-	DEFAULT("0", "None", THEME_DEFAULT, null),
+	DEFAULT("0", "Default", THEME_DEFAULT, null, null),
 	/** 絵本テーマ */
-	STORYBOOK("1", "Storybook", THEME_STORYBOOK, CSS_MAIN_THEME_STORYBOOK);
+	STORYBOOK("1", "Storybook", THEME_STORYBOOK, CSS_MAIN_THEME_STORYBOOK, "theme-storybook");
 
 	/** プロパティファイルと紐つく値 */
 	private final String value;
@@ -25,13 +25,16 @@ public enum ThemeType implements BaseEnum, MessageEnum {
 	private final String messageKey;
 	/** cssのファイルパス */
 	private final String cssFilePath;
+	/** テーマを適用するためのstyleClass */
+	private final String styleClass;
 
 	/** コンストラクタ */
-	ThemeType(String value, String baseDisplayName, String messageKey, String cssFilePath) {
+	ThemeType(String value, String baseDisplayName, String messageKey, String cssFilePath, String styleClass) {
 		this.value = value;
 		this.baseDisplayName = baseDisplayName;
 		this.messageKey = messageKey;
 		this.cssFilePath = cssFilePath;
+		this.styleClass = styleClass;
 	}
 
 	/**
@@ -57,12 +60,19 @@ public enum ThemeType implements BaseEnum, MessageEnum {
 	public String getMessageKey() {
 		return messageKey;
 	}
-	
+
 	/**
 	 * @return cssFilePath cssのファイルパスをStringで返す
 	 */
 	public String getCssFilePath() {
 		return cssFilePath;
+	}
+
+	/**
+	 * @return styleClass テーマを適用するためのstyleClassを返す
+	 */
+	public String getStyleClass() {
+		return styleClass;
 	}
 
 	/**
@@ -72,7 +82,7 @@ public enum ThemeType implements BaseEnum, MessageEnum {
 	 * @return 対応する ThemeType、またはデフォルトの ThemeType
 	 */
 	public static ThemeType parseOrDefault(String raw) {
-		return BaseEnum.parseOrDefault(ThemeType.class, raw, DEFAULT, PROPERTY_THEME);
+		return BaseEnum.parseOrDefault(ThemeType.class, raw, STORYBOOK, PROPERTY_THEME);
 	}
 
 	/**

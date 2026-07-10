@@ -105,8 +105,24 @@
     -fx-padding: 8 15 3 3; /* 上右下左 */
 }
 
+/** 上部設定項目のラベル */
+.top-setting-label {
+    -fx-min-width: 54px;
+    -fx-pref-width: 54px;
+    -fx-max-width: 54px;
+    -fx-font-size: 11px;
+    -fx-text-overrun: clip;
+}
+
 /** 言語ボックスのサイズ指定 */
 .language-combo {
+    -fx-pref-width: 100px;
+    -fx-pref-height: 24;
+    -fx-font-size: 11px;
+}
+
+/** テーマボックスのサイズ指定 */
+.theme-combo {
     -fx-pref-width: 100px;
     -fx-pref-height: 24;
     -fx-font-size: 11px;
