@@ -33,8 +33,6 @@
     -fx-background-radius: 4px;
 }
 
-
-
 /** ステータスメッセージ */
 .status-label {
 	-fx-min-height: 36px;
