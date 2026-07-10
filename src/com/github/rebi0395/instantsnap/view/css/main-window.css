@@ -225,20 +225,16 @@
     -fx-alignment: top-left;
 }
 
-/** ショートカットキー選択側 */
-.shortcut-main-area {
-    -fx-alignment: top-left;
-}
-
-/** ショートカットキー選択コンボボックス行 */
+/** ショートカットキー選択コンボボックス行。右側の入力欄と上端を合わせる */
 .shortcut-trigger-row {
-    -fx-alignment: center-left;
+    -fx-alignment: top-left;
+    -fx-padding: 6 0 0 0;
 }
 
-/** カスタムキー設定の外枠 */
+/** カスタムキー設定の外枠。上線を見出し行とコンボボックス行の間に合わせる */
 .custom-key-frame {
-    -fx-min-height: 76px;
-    -fx-pref-height: 76px;
+    -fx-min-height: 46px;
+    -fx-pref-height: 46px;
     -fx-padding: 0 6 0 6;
     -fx-background-color: #ffffff;
     -fx-background-radius: 3;
@@ -247,29 +243,39 @@
     -fx-border-radius: 3;
 }
 
-/** カスタムキー設定の枠タイトル。枠線の上に乗せる */
+/** カスタムキー設定の枠タイトル。入力欄に干渉しにくいよう右寄せにする */
 .custom-key-frame-title {
     -fx-background-color: #ffffff;
-    -fx-padding: 0 10 0 10;
+    -fx-padding: 0 8 0 8;
     -fx-translate-y: -8px;
-    -fx-font-size: 13px;
+    -fx-font-size: 12px;
     -fx-font-weight: bold;
     -fx-text-fill: #263238;
 }
 
-/** カスタムキー入力欄と修飾キーを2段で揃える */
-.custom-key-grid {
-    -fx-alignment: center-left;
+/** カスタムキー入力欄と修飾キーを横並びにする */
+.custom-key-input-row {
+    -fx-alignment: top-left;
 }
 
-/** カスタムキー入力欄。横並びでも収まるように通常入力欄より少し短くする */
+/** カスタムキー入力欄。ショートカットキー選択コンボと同じ高さにする */
 .custom-key-text-field {
     -fx-pref-width: 115px;
     -fx-min-width: 115px;
     -fx-max-width: 115px;
+    -fx-pref-height: 34px;
+    -fx-min-height: 34px;
+    -fx-max-height: 34px;
 }
 
-/** 修飾キー名。チェックボックスの中央に合わせつつ、入力欄の上端に寄せる */
+/** 修飾キー名とチェックボックスのまとまり */
+.custom-key-modifier-group {
+    -fx-min-width: 32px;
+    -fx-pref-width: 32px;
+    -fx-alignment: top-center;
+}
+
+/** 修飾キー名。チェックボックスから見て中央に揃える */
 .custom-key-modifier-label {
     -fx-min-width: 32px;
     -fx-pref-width: 32px;
@@ -279,8 +285,12 @@
 
 /** 修飾キー間のプラス記号 */
 .custom-key-plus {
+    -fx-min-width: 10px;
+    -fx-pref-width: 10px;
     -fx-alignment: center;
-    -fx-padding: 0 2 0 2;
+    -fx-padding: 9 0 0 0;
+    -fx-text-fill: #263238;
+    -fx-font-weight: bold;
 }
 
 /** カスタムキー用チェックボックス */
