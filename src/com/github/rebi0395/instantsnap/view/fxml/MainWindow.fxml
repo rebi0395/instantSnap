@@ -76,7 +76,7 @@
 													</styleClass>
 												</Region>
 												<Label fx:id="sectionSnapArea" styleClass="section-title"
-												prefWidth="80" maxWidth="80"/><!-- 撮影範囲 -->
+												prefWidth="65" maxWidth="65"/><!-- 撮影範囲 -->
 												<Label fx:id="labelSnapArea" styleClass="current-value"/>
 											</HBox>
 											<HBox spacing="10" styleClass="output-switch-item">

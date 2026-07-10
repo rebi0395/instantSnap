@@ -10,30 +10,44 @@
 .top-bar {
     -fx-alignment: center-left;
     -fx-spacing: 12px;
-    -fx-padding: 8 15 6 3;
+    -fx-padding: 8px 15px 6px 3px;
+
+    -fx-min-height: 58px;
+    -fx-pref-height: 58px;
+    -fx-max-height: 58px;
 }
 
 /** ステータスメッセージの表示領域。長い文言を2行表示できる高さを確保する */
 .status-area {
     -fx-alignment: center;
-    -fx-min-height: 42px;
-    -fx-padding: 4 20 4 20;
+    -fx-min-height: 46px;
+    -fx-pref-height: 46px;
+    -fx-max-height: 46px;
+
+    -fx-padding: 4px 10px;
+
     -fx-background-color: #ffffff;
     -fx-border-color: #2f80c9 #d8e2ec #d8e2ec #2f80c9;
     -fx-border-width: 1px 1px 1px 5px;
-    -fx-border-radius: 4;
-    -fx-background-radius: 4;
-    -fx-effect: dropshadow(gaussian, rgba(31, 45, 61, 0.10), 7, 0.12, 0, 1);
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
 }
+
+
 
 /** ステータスメッセージ */
 .status-label {
+	-fx-min-height: 36px;
+	-fx-pref-height: 36px;
+	-fx-max-height: 36px;
+
     -fx-wrap-text: true;
     -fx-text-alignment: center;
     -fx-alignment: center;
-    -fx-max-width: 320px;
+    -fx-max-width: 360px;
     -fx-text-fill: #263238;
     -fx-font-weight: bold;
+	-fx-text-overrun: ellipsis;
 }
 
 /** 上部設定項目のグリッド */
