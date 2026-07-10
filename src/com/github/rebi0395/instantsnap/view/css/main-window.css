@@ -1,4 +1,11 @@
 
+/** 画面全体 */
+.root {
+    -fx-background-color: #f4f6f8;
+    -fx-font-family: "Yu Gothic UI", "Meiryo", sans-serif;
+    -fx-font-size: 12px;
+}
+
 /** 画面上部バー全体 */
 .top-bar {
     -fx-alignment: center-left;
@@ -11,7 +18,8 @@
     -fx-alignment: center;
     -fx-min-height: 42px;
     -fx-padding: 4 20 4 20;
-    -fx-border-color: rgb(0, 0, 0);
+    -fx-background-color: linear-gradient(to bottom, #ffffff, #f7fafc);
+    -fx-border-color: #263238;
     -fx-border-width: 1.5;
     -fx-border-radius: 6;
     -fx-background-radius: 6;
@@ -37,14 +45,6 @@
     -fx-pref-width: 100px;
 }
 
-/** 上部設定項目のコンボボックス */
-.theme-combo,
-.language-combo {
-    -fx-pref-width: 100px;
-    -fx-pref-height: 24px;
-    -fx-font-size: 11px;
-}
-
 /** 項目のメインタイトル文字のサイズ指定、太字にする */
 .section-main-title {
     -fx-font-size: 15px;
@@ -62,23 +62,60 @@
     -fx-pref-width: 200px;
 }
 
-/** テキストフィールド共通 */
-.text-field {
+/** ボタン高さ統一 */
+.button {
+    -fx-min-height: 34px;
+    -fx-pref-height: 34px;
+}
+
+/** テキストフィールド、コンボボックス共通 */
+.text-field,
+.combo-box-base {
     -fx-pref-width: 200px;
 
-    -fx-pref-height: 26px;
-    -fx-min-height: 26px;
-    -fx-max-height: 26px;
+    -fx-pref-height: 34px;
+    -fx-min-height: 34px;
+    -fx-max-height: 34px;
 
-    -fx-padding: 3 7 3 7;
+    -fx-padding: 0 10 0 10;
 
-    -fx-background-color: white;
-    -fx-background-radius: 3;
+    -fx-background-color: linear-gradient(to bottom, #ffffff, #f4f7fa);
+    -fx-background-radius: 8;
     -fx-background-insets: 0;
 
-    -fx-border-color: #bdbdbd;
+    -fx-border-color: #aeb8c2;
     -fx-border-width: 1px;
-    -fx-border-radius: 3;
+    -fx-border-radius: 8;
+    -fx-text-fill: #263238;
+}
+
+/** コンボボックスの矢印ボタン */
+.combo-box-base .arrow-button {
+    -fx-background-color: transparent;
+}
+
+/** コンボボックスの矢印 */
+.combo-box-base .arrow {
+    -fx-background-color: #52616f;
+}
+
+/** テキストフィールド、コンボボックスのホバー */
+.text-field:hover,
+.combo-box-base:hover {
+    -fx-border-color: #7e95aa;
+    -fx-background-color: linear-gradient(to bottom, #ffffff, #eef4f8);
+}
+
+/** 上部設定項目のコンボボックス。通常コンボボックスより小さく固定する */
+.theme-combo,
+.language-combo {
+    -fx-pref-width: 120px;
+    -fx-min-width: 120px;
+    -fx-max-width: 120px;
+    -fx-min-height: 34px;
+    -fx-pref-height: 34px;
+    -fx-max-height: 34px;
+    -fx-font-size: 11px;
 }
 
 /** 非活性のテキストフィールド */
@@ -99,31 +136,60 @@
 
 /** タブ幅固定 */
 .main-tab-pane {
-	-fx-tab-min-width: 110px;
-	-fx-tab-max-width: 110px;
+	-fx-background-color: transparent;
+	-fx-tab-min-width: 120px;
+	-fx-tab-max-width: 160px;
+	-fx-tab-min-height: 32px;
+}
+
+/** タブヘッダーの背景 */
+.main-tab-pane .tab-header-background {
+	-fx-background-color: linear-gradient(to bottom, #e7eaed, #d5d9dd);
+	-fx-border-color: #b8c0c8;
+	-fx-border-width: 1px 0 1px 0;
+}
+
+/** タブヘッダーの余白 */
+.main-tab-pane .tab-header-area {
+	-fx-padding: 3px 10px 8px;
 }
 
 /** タブ真ん中 */
 .main-tab-pane .tab {
 	-fx-alignment: CENTER;
+	-fx-background-color: linear-gradient(to bottom, #f9fafb, #dfe4e8);
+	-fx-background-radius: 8px 8px 0 0;
+	-fx-border-color: #aeb8c2;
+	-fx-border-radius: 8px 8px 0 0;
+	-fx-border-width: 1px 1px 0 1px;
+	-fx-padding: 6px 22px 7px 22px;
+}
+
+/** 選択中のタブ */
+.main-tab-pane .tab:selected {
+	-fx-background-color: #ffffff;
+	-fx-border-color: #607d9b;
 }
 
 /** タブのラベル固定 */
 .main-tab-pane .tab-label {
-	-fx-min-width: 100px;
-	-fx-pref-width: 100px;
-	-fx-max-width: 100px;
+	-fx-min-width: 110px;
+	-fx-pref-width: 110px;
+	-fx-max-width: 110px;
 	-fx-alignment: CENTER;
 	-fx-text-alignment: CENTER;
+	-fx-text-fill: #263238;
+	-fx-font-weight: bold;
 }
 
 /** 小項目の区切り */
 .section-border {
-    -fx-background-color: #f8f8f8;
+    -fx-background-color: #ffffff;
     -fx-padding: 15;
-    -fx-border-color: #ddd;
+    -fx-border-color: #dbe3ea;
     -fx-border-radius: 5;
     -fx-background-radius: 5;
+    -fx-effect: dropshadow(gaussian, rgba(35, 47, 58, 0.08), 8, 0.12, 0, 2);
 }
 
 /** 項目のヘッダーを整形する */
@@ -143,21 +209,6 @@
     -fx-font-size: 12px;
     -fx-font-weight: bold;
 }
-
-/** 言語ボックスのサイズ指定 */
-.language-combo {
-    -fx-pref-width: 120px;
-    -fx-pref-height: 24;
-    -fx-font-size: 11px;
-}
-
-/** テーマボックスのサイズ指定 */
-.theme-combo {
-    -fx-pref-width: 120px;
-    -fx-pref-height: 24;
-    -fx-font-size: 11px;
-}
-
 
 .output-switch-row {
     -fx-spacing: 90px;
@@ -186,11 +237,11 @@
  * ========================================================= */
 
 .primary-action {
-    -fx-background-color: linear-gradient(to bottom, #5fc463, #43a047);
+    -fx-background-color: linear-gradient(to bottom, #4fa3e3, #2f80c9);
     -fx-background-radius: 3px;
     -fx-background-insets: 0;
 
-    -fx-border-color: #388e3c;
+    -fx-border-color: #256aa7;
     -fx-border-width: 1px;
     -fx-border-radius: 3px;
 
@@ -199,11 +250,11 @@
 }
 
 .primary-action:hover {
-    -fx-background-color: linear-gradient(to bottom, #66cf6a, #4caf50);
+    -fx-background-color: linear-gradient(to bottom, #5ab0ef, #358bd7);
 }
 
 .primary-action:pressed {
-    -fx-background-color: #388e3c;
+    -fx-background-color: #256aa7;
 }
 
 .primary-action:disabled {

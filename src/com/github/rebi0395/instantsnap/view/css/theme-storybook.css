@@ -85,11 +85,11 @@
     -fx-background-color: transparent;
     -fx-tab-min-width: 120px;
     -fx-tab-max-width: 160px;
-    -fx-tab-min-height: 15px;
+    -fx-tab-min-height: 32px;
 }
 
 .theme-storybook .tab-pane .tab-header-area {
-    -fx-padding: 3px 10px 10px;
+    -fx-padding: 3px 10px 8px;
 }
 
 .theme-storybook .tab-pane .tab-header-background {
@@ -247,12 +247,15 @@
  * ========================================================= */
 .theme-storybook .combo-box-base,
 .theme-storybook .text-field {
+    -fx-pref-height: 34px;
+    -fx-min-height: 34px;
+    -fx-max-height: 34px;
     -fx-background-color: rgba(255, 253, 248, 0.95);
     -fx-background-radius: 10px;
     -fx-border-color: #edc180;
     -fx-border-radius: 10px;
     -fx-border-width: 1px;
-    -fx-padding: 4px 8px 4px 8px;
+    -fx-padding: 0 10px 0 10px;
     -fx-text-fill: -storybook-text;
 }
 
