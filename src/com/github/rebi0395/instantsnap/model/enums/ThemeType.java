@@ -3,8 +3,6 @@ package com.github.rebi0395.instantsnap.model.enums;
 import static com.github.rebi0395.instantsnap.common.AppConstant.*;
 import static com.github.rebi0395.instantsnap.common.MessageKeyConstant.*;
 
-import java.nio.file.Path;
-
 import com.github.rebi0395.instantsnap.common.MessageKeyConverter;
 
 import javafx.util.StringConverter;
@@ -17,7 +15,7 @@ public enum ThemeType implements BaseEnum, MessageEnum {
 	/** デフォルト テーマなし */
 	DEFAULT("0", "None", THEME_DEFAULT, null),
 	/** 絵本テーマ */
-	STORY_BOOK("1", "storybook", THEME_STORYBOOK, CSS_MAIN_THEME_STORYBOOK);
+	STORYBOOK("1", "Storybook", THEME_STORYBOOK, CSS_MAIN_THEME_STORYBOOK);
 
 	/** プロパティファイルと紐つく値 */
 	private final String value;
