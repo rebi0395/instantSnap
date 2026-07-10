@@ -34,52 +34,44 @@
 									<Insets top="20" right="20" bottom="20" left="20"/>
 								</padding>
 								<VBox spacing="10" styleClass="section-border">
-									<GridPane hgap="12" vgap="6" styleClass="shortcut-setting-layout">
+									<GridPane hgap="12" vgap="8" styleClass="shortcut-setting-layout">
 										<columnConstraints>
 											<ColumnConstraints minWidth="280" prefWidth="280"/>
 											<ColumnConstraints hgrow="ALWAYS"/>
 										</columnConstraints>
-										<rowConstraints>
-											<RowConstraints minHeight="26" prefHeight="26"/>
-											<RowConstraints minHeight="46" prefHeight="46"/>
-										</rowConstraints>
-										<HBox GridPane.columnIndex="0" GridPane.rowIndex="0" styleClass="setting-header">
-											<Region>
-												<styleClass>
-													<String fx:value="section-icon"/>
-													<String fx:value="icon-shortcut"/>
-												</styleClass>
-											</Region>
-											<Label fx:id="sectionShortcutKey" styleClass="section-title"
-												prefWidth="120" maxWidth="120"/><!-- ショートカットキー選択 -->
-											<Label fx:id="labelKeyCombination" styleClass="current-value"/>
-										</HBox>
-										<HBox GridPane.columnIndex="0" GridPane.rowIndex="1" styleClass="shortcut-trigger-row">
-											<ComboBox fx:id="comboTriggerType"/>
-										</HBox>
-										<StackPane GridPane.columnIndex="1" GridPane.rowIndex="1" styleClass="custom-key-frame">
-											<Label fx:id="sectionCustomKey" styleClass="custom-key-frame-title" StackPane.alignment="TOP_RIGHT"/><!-- カスタムキー設定 -->
-											<HBox spacing="5" styleClass="custom-key-input-row" StackPane.alignment="CENTER_LEFT">
-												<StackPane.margin>
-													<Insets top="6" right="8" bottom="6" left="8"/>
-												</StackPane.margin>
-												<TextField fx:id="textInputKey" disable="true" styleClass="custom-key-text-field"/>
-												<Label text="+" styleClass="custom-key-plus"/>
-												<VBox spacing="1" styleClass="custom-key-modifier-group">
-													<Label text="Ctrl" styleClass="custom-key-modifier-label"/>
-													<CheckBox fx:id="checkCtrl" styleClass="custom-key-check"/>
-												</VBox>
-												<Label text="+" styleClass="custom-key-plus"/>
-												<VBox spacing="1" styleClass="custom-key-modifier-group">
-													<Label text="Alt" styleClass="custom-key-modifier-label"/>
-													<CheckBox fx:id="checkAlt" styleClass="custom-key-check"/>
-												</VBox>
-												<Label text="+" styleClass="custom-key-plus"/>
-												<VBox spacing="1" styleClass="custom-key-modifier-group">
-													<Label text="Shift" styleClass="custom-key-modifier-label"/>
-													<CheckBox fx:id="checkShift" styleClass="custom-key-check"/>
-												</VBox>
+										<VBox spacing="10" GridPane.columnIndex="0" GridPane.rowIndex="0" styleClass="shortcut-main-area">
+											<HBox styleClass="setting-header">
+												<Region>
+													<styleClass>
+														<String fx:value="section-icon"/>
+														<String fx:value="icon-shortcut"/>
+													</styleClass>
+												</Region>
+												<Label fx:id="sectionShortcutKey" styleClass="section-title"
+													prefWidth="120" maxWidth="120"/><!-- ショートカットキー選択 -->
+												<Label fx:id="labelKeyCombination" styleClass="current-value"/>
 											</HBox>
+											<HBox styleClass="shortcut-trigger-row">
+												<ComboBox fx:id="comboTriggerType"/>
+											</HBox>
+										</VBox>
+										<StackPane GridPane.columnIndex="1" GridPane.rowIndex="0" styleClass="custom-key-frame">
+											<Label fx:id="sectionCustomKey" styleClass="custom-key-frame-title" StackPane.alignment="TOP_CENTER"/><!-- カスタムキー設定 -->
+											<GridPane hgap="4" vgap="0" styleClass="custom-key-grid" StackPane.alignment="CENTER_LEFT">
+												<StackPane.margin>
+													<Insets top="12" right="8" bottom="10" left="8"/>
+												</StackPane.margin>
+												<TextField fx:id="textInputKey" disable="true" GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.rowSpan="2" styleClass="custom-key-text-field"/>
+												<Label text="+" GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.rowSpan="2" styleClass="custom-key-plus"/>
+												<Label text="Ctrl" GridPane.columnIndex="2" GridPane.rowIndex="0" styleClass="custom-key-modifier-label"/>
+												<CheckBox fx:id="checkCtrl" GridPane.columnIndex="2" GridPane.rowIndex="1" styleClass="custom-key-check"/>
+												<Label text="+" GridPane.columnIndex="3" GridPane.rowIndex="0" GridPane.rowSpan="2" styleClass="custom-key-plus"/>
+												<Label text="Alt" GridPane.columnIndex="4" GridPane.rowIndex="0" styleClass="custom-key-modifier-label"/>
+												<CheckBox fx:id="checkAlt" GridPane.columnIndex="4" GridPane.rowIndex="1" styleClass="custom-key-check"/>
+												<Label text="+" GridPane.columnIndex="5" GridPane.rowIndex="0" GridPane.rowSpan="2" styleClass="custom-key-plus"/>
+												<Label text="Shift" GridPane.columnIndex="6" GridPane.rowIndex="0" styleClass="custom-key-modifier-label"/>
+												<CheckBox fx:id="checkShift" GridPane.columnIndex="6" GridPane.rowIndex="1" styleClass="custom-key-check"/>
+											</GridPane>
 										</StackPane>
 									</GridPane>
 								</VBox>
