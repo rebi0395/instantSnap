@@ -39,13 +39,13 @@ public class MainWindowPresenter {
 	private final ExitDialogPresenter exitDialogPresenter;
 
 	/** ウィンドウの最大の横幅 */
-	private static final double SCENE_MAX_WIDTH = 650;
+	private static final double SCENE_MAX_WIDTH = 680;
 
 	/** ウィンドウの最大の高さ */
 	private static final double SCENE_MAX_HEIGHT = 900;
 	 
 	/** ウィンドウの横幅の余白 */
-	private static final double SCENE_MARGIN_WIDTH = 65;
+	private static final double SCENE_MARGIN_WIDTH = 68;
 
 	/** ウィンドウの高さの余白 */
 	private static final double SCENE_MARGIN_HEIGHT = 90;

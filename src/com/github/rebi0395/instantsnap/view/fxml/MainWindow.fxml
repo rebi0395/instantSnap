@@ -42,7 +42,7 @@
 											</styleClass>
 										</Region>
 										<Label fx:id="sectionShortcutKey" styleClass="section-title"
-											prefWidth="120" maxWidth="120"/><!-- ショートカットキー選択 -->
+											prefWidth="150" maxWidth="150"/><!-- ショートカットキー選択 -->
 										<Label fx:id="labelKeyCombination" styleClass="current-value"/>
 									</HBox>
 									<HBox styleClass="setting-header">
@@ -76,7 +76,7 @@
 													</styleClass>
 												</Region>
 												<Label fx:id="sectionSnapArea" styleClass="section-title"
-												prefWidth="65" maxWidth="65"/><!-- 撮影範囲 -->
+												prefWidth="80" maxWidth="80"/><!-- 撮影範囲 -->
 												<Label fx:id="labelSnapArea" styleClass="current-value"/>
 											</HBox>
 											<HBox spacing="10" styleClass="output-switch-item">
