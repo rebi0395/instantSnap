@@ -220,19 +220,41 @@
     -fx-alignment: center;
 }
 
-/** ショートカットキー設定全体。左に通常設定、右に枠付きのカスタムキー設定を置く */
-.shortcut-setting-layout {
-    -fx-alignment: top-left;
+/** ショートカットキー見出し行。セクション名と現在値を必ず表示する */
+.shortcut-header-row {
+    -fx-alignment: center-left;
+    -fx-spacing: 10px;
 }
 
-/** ショートカットキー選択コンボボックス行。右側の入力欄と上端を合わせる */
-.shortcut-trigger-row {
-    -fx-alignment: top-left;
-    -fx-padding: 6 0 0 0;
+/** ショートカットキー選択ラベル。長めの文言でも見切れにくくする */
+.shortcut-title-label {
+    -fx-min-width: 150px;
+    -fx-pref-width: 150px;
 }
 
-/** カスタムキー設定の外枠。上線を見出し行とコンボボックス行の間に合わせる */
+/** ショートカットキーの現在値ラベル */
+.shortcut-current-value {
+    -fx-min-width: 130px;
+    -fx-pref-width: 130px;
+    -fx-alignment: center;
+}
+
+/** ショートカットキー入力行。二分割せず左寄せで配置する */
+.shortcut-input-line {
+    -fx-alignment: top-left;
+    -fx-spacing: 10px;
+}
+
+/** ショートカットキー選択コンボ。右側テキストフィールドと上下ラインを合わせる */
+.shortcut-trigger-combo {
+    -fx-translate-y: 6px;
+}
+
+/** カスタムキー設定の外枠。コンボと同じ行に左寄せで置く */
 .custom-key-frame {
+    -fx-min-width: 330px;
+    -fx-pref-width: 330px;
+    -fx-max-width: 330px;
     -fx-min-height: 46px;
     -fx-pref-height: 46px;
     -fx-padding: 0 6 0 6;
@@ -260,9 +282,9 @@
 
 /** カスタムキー入力欄。ショートカットキー選択コンボと同じ高さにする */
 .custom-key-text-field {
-    -fx-pref-width: 115px;
-    -fx-min-width: 115px;
-    -fx-max-width: 115px;
+    -fx-pref-width: 160px;
+    -fx-min-width: 160px;
+    -fx-max-width: 160px;
     -fx-pref-height: 34px;
     -fx-min-height: 34px;
     -fx-max-height: 34px;
@@ -279,7 +301,6 @@
 .custom-key-modifier-label {
     -fx-min-width: 32px;
     -fx-pref-width: 32px;
-    -fx-alignment: center;
     -fx-font-size: 11px;
 }
 
