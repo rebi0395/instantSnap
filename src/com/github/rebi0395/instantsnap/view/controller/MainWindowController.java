@@ -100,6 +100,10 @@ public class MainWindowController {
 	private Button buttonApply;
 
 	// -- セクションラベル --
+	/** テーマ設定の項目名を表示するセクション */
+	@FXML
+	private Label sectionTheme;
+	
 	/** ショートカットキー選択セクションのラベル */
 	@FXML
 	private Label sectionShortcutKey;
@@ -144,10 +148,6 @@ public class MainWindowController {
 	/** 操作完了やエラーメッセージを表示するラベル */
 	@FXML
 	private Label labelStatus;
-
-	/** テーマ設定の項目名を表示するセクション */
-	@FXML
-	private Label sectionTheme;
 
 	/** 適応中のキー設定を表示するラベル */
 	@FXML
