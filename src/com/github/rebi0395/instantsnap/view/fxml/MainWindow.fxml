@@ -141,8 +141,8 @@
 																<Label fx:id="labelFilePath" styleClass="current-value"/>
 															</HBox>
 															<HBox styleClass="setting-header">
-																<Button fx:id="buttonSelectFile" onAction="#onSelectFile"/><!-- 選択...-->
-																<TextField fx:id="textFilePath" editable="true" styleClass="readonly-text-field"/>
+																<Button fx:id="buttonSelectFile" onAction="#onSelectFile" styleClass="folder-select-button"/><!-- 選択...-->
+																<TextField fx:id="textFilePath" editable="true"/>
 															</HBox>
 															<HBox styleClass="setting-header">
 																<Label fx:id="sectionFileName" styleClass="section-title" prefWidth="140" maxWidth="140"/><!-- ファイル名の設定 -->

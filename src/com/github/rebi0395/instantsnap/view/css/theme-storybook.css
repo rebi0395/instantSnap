@@ -2,7 +2,7 @@
  * InstantSnap Storybook Theme
  *
  * 配置も右側モックにかなり寄せる版。
- * main.css は残したまま、このCSSを後から読み込む想定。
+ * main-window.css を共通スタイルとして、このCSSを後から読み込む想定。
  * root に theme-storybook を付けた時だけ効く。
  *
  * 推奨配置:
@@ -31,13 +31,12 @@
     -storybook-shadow: rgba(139, 83, 35, 0.16);
 
     -fx-background-color: linear-gradient(to bottom, -storybook-bg-top, -storybook-bg-bottom);
-    -fx-font-family: "Yu Gothic UI", "Meiryo", sans-serif;
-    -fx-font-size: 12px;
     -fx-text-fill: -storybook-text;
     -fx-focus-color: #ffad62;
     -fx-faint-focus-color: rgba(255, 173, 98, 0.22);
 }
 
+/** 絵本テーマ内で使用するラベルの共通文字色 */
 .theme-storybook .label {
     -fx-text-fill: -storybook-text;
 }
@@ -88,21 +87,10 @@
 /* =========================================================
  * タブ
  * ========================================================= */
-.theme-storybook .tab-pane {
-    -fx-background-color: transparent;
-    -fx-tab-min-width: 120px;
-    -fx-tab-max-width: 160px;
-    -fx-tab-min-height: 15px;
-}
-
-.theme-storybook .tab-pane .tab-header-area {
-    -fx-padding: 3px 10px 0px;
-}
-
 .theme-storybook .tab-pane .tab-header-background {
     -fx-background-color: rgba(255, 238, 205, 0.78);
     -fx-border-color: rgba(230, 155, 75, 0.45);
-    -fx-border-width: 0 0 1px 0;
+    -fx-border-width: 0;
 }
 
 .theme-storybook .tab {
@@ -111,7 +99,6 @@
     -fx-border-color: #f1c487;
     -fx-border-radius: 15px 15px 0 0;
     -fx-border-width: 1px 1px 0 1px;
-    -fx-padding: 3px 22px 3px 22px;
 }
 
 .theme-storybook .tab:selected {
@@ -121,7 +108,6 @@
 
 .theme-storybook .tab .tab-label {
     -fx-text-fill: -storybook-brown;
-    -fx-font-weight: bold;
 }
 
 .theme-storybook .tab:selected .tab-label {
@@ -162,8 +148,6 @@
     -fx-background-radius: 18px;
     -fx-border-color: -storybook-border-soft;
     -fx-border-radius: 18px;
-    -fx-border-width: 1.3px;
-    -fx-padding: 15px;
     -fx-effect: dropshadow(gaussian, -storybook-shadow, 12, 0.18, 0, 3);
 }
 
@@ -172,20 +156,13 @@
     -fx-background-color: linear-gradient(to bottom right, rgba(255,255,255,0.98), rgba(255,244,220,0.96));
 }
 
-.theme-storybook .setting-header {
-    -fx-alignment: center-left;
-    -fx-spacing: 9px;
-}
-
 .theme-storybook .section-title {
-    -fx-font-weight: bold;
-    -fx-font-size: 13px;
     -fx-text-fill: -storybook-brown;
 }
 
 /* =========================================================
  * 絵本テーマ用アイコン
- * main.css のシンプルアイコンを上書きする
+ * main-window.css のシンプルアイコンを上書きする
  * ========================================================= */
 
 /* ショートカットキー選択 */
@@ -225,7 +202,7 @@
 
 /* =========================================================
  * 絵本テーマ用バッチ
- * main.css のシンプルバッチを上書きする
+ * main-window.css のシンプルバッチを上書きする
  * ========================================================= */
 
 /* 現在値の丸いバッジ */
@@ -234,10 +211,7 @@
     -fx-background-radius: 999px;
     -fx-border-color: #bfe0fb;
     -fx-border-radius: 999px;
-    -fx-border-width: 1px;
-    -fx-padding: 4px 12px 4px 12px;
     -fx-text-fill: #2f82c8;
-    -fx-font-weight: bold;
     -fx-effect: innershadow(gaussian, rgba(255,255,255,0.9), 3, 0.2, 0, 1);
 }
 
@@ -254,15 +228,10 @@
  * ========================================================= */
 .theme-storybook .combo-box-base,
 .theme-storybook .text-field {
-    -fx-pref-height: 34px;
-    -fx-min-height: 34px;
-    -fx-max-height: 34px;
     -fx-background-color: rgba(255, 253, 248, 0.95);
     -fx-background-radius: 10px;
     -fx-border-color: #edc180;
     -fx-border-radius: 10px;
-    -fx-border-width: 1px;
-    -fx-padding: 0 10px 0 10px;
     -fx-text-fill: -storybook-text;
 }
 
@@ -272,10 +241,10 @@
     -fx-background-color: #fffdf9;
 }
 
+/** フォーカス時の枠色。影はファイル末尾のFocus Ringで指定する */
 .theme-storybook .combo-box-base:focused,
 .theme-storybook .text-field:focused {
     -fx-border-color: #ff9f43;
-    -fx-effect: dropshadow(gaussian, rgba(255, 159, 67, 0.28), 8, 0.2, 0, 0);
 }
 
 .theme-storybook .combo-box-base:disabled,
@@ -391,18 +360,15 @@
     -fx-background-radius: 10px;
     -fx-border-color: #e7bd80;
     -fx-border-radius: 10px;
-    -fx-padding: 6px 10px 6px 10px;
 }
 .theme-storybook .titled-pane > .title > .text {
     -fx-fill: -storybook-brown;
-    -fx-font-weight: bold;
 }
 .theme-storybook .titled-pane > .content {
     -fx-background-color: rgba(255, 253, 248, 0.92);
     -fx-background-radius: 0 0 12px 12px;
     -fx-border-color: #e7bd80;
     -fx-border-radius: 0 0 12px 12px;
-    -fx-padding: 10px;
 }
 
 /* =========================================================
@@ -431,16 +397,15 @@
 }
 
 .theme-storybook .primary-action {
-    -fx-background-color: linear-gradient(to bottom, #ffb261, #ff7f3d);
-    -fx-border-color: #db761d;
-    -fx-text-fill: #4a2b19;
-    -fx-font-size: 12px;
+    -fx-background-color: linear-gradient(to bottom, -primary-action-top, -primary-action-bottom);
+    -fx-border-color: -primary-action-border;
+    -fx-text-fill: white;
 }
 .theme-storybook .primary-action:hover {
-    -fx-background-color: linear-gradient(to bottom, #ffc27c, #ff8d49);
+    -fx-background-color: linear-gradient(to bottom, -primary-action-hover-top, -primary-action-hover-bottom);
 }
 .theme-storybook .primary-action:pressed {
-    -fx-background-color: #ed7f25;
+    -fx-background-color: -primary-action-pressed;
 }
 .theme-storybook .secondary-action {
     -fx-background-color: linear-gradient(to bottom, #fffdf8, #fff0d8);
@@ -485,15 +450,17 @@
 
 .theme-storybook .button:focused,
 .theme-storybook .combo-box-base:focused,
-.theme-storybook .text-field:focused,
-.theme-storybook .titled-pane:focused > .title {
+.theme-storybook .text-field:focused {
     -fx-effect: dropshadow(gaussian, rgba(255, 143, 50, 0.62), 10, 0.35, 0, 0);
+}
+
+.theme-storybook .titled-pane:focused > .title {
+    -fx-effect: innershadow(gaussian, rgba(255, 143, 50, 0.62), 6, 0.35, 0, 0);
 }
 
 /* 主操作ボタン */
 .theme-storybook .primary-action:focused {
-    -fx-effect: dropshadow(gaussian, rgba(255, 127, 61, 0.75), 12, 0.38, 0, 0);
-    -fx-text-fill: rgb(0, 0, 0);
+    -fx-effect: dropshadow(gaussian, -primary-action-focus, 12, 0.38, 0, 0);
 }
 
 /* 副操作ボタン */
