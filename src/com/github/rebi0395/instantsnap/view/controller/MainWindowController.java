@@ -1,7 +1,7 @@
 package com.github.rebi0395.instantsnap.view.controller;
 
 import java.io.File;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.github.rebi0395.instantsnap.app.InstantSnapCoordinator;
@@ -103,7 +103,7 @@ public class MainWindowController {
 	/** テーマ設定の項目名を表示するセクション */
 	@FXML
 	private Label sectionTheme;
-	
+
 	/** ショートカットキー選択セクションのラベル */
 	@FXML
 	private Label sectionShortcutKey;
@@ -555,8 +555,7 @@ public class MainWindowController {
 	 * @return SnapAfterと各種ラジオボタンを紐付けたマップ
 	 */
 	private Map<AfterSnapActionType, RadioButton> createAfterSnapActionRadioMap() {
-		//
-		Map<AfterSnapActionType, RadioButton> afterSnapActionRadioMap = new HashMap<AfterSnapActionType, RadioButton>();
+		Map<AfterSnapActionType, RadioButton> afterSnapActionRadioMap = new LinkedHashMap<AfterSnapActionType, RadioButton>();
 		afterSnapActionRadioMap.put(AfterSnapActionType.NONE, radioSnapAfterNothing);
 		afterSnapActionRadioMap.put(AfterSnapActionType.OPEN_IMAGE, radioSnapAfterOpenImage);
 		afterSnapActionRadioMap.put(AfterSnapActionType.OPEN_PAINT, radioSnapAfterOpenPaint);

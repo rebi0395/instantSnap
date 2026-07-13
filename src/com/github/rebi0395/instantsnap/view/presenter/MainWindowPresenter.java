@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import com.github.rebi0395.instantsnap.app.InstantSnapCoordinator;
 import com.github.rebi0395.instantsnap.exception.ServiceException;
+import com.github.rebi0395.instantsnap.view.EnterKeyNavigation;
 import com.github.rebi0395.instantsnap.view.StyleSheetUtil;
 import com.github.rebi0395.instantsnap.view.controller.MainWindowController;
 
@@ -43,7 +44,7 @@ public class MainWindowPresenter {
 
 	/** ウィンドウの最大の高さ */
 	private static final double SCENE_MAX_HEIGHT = 900;
-	 
+
 	/** ウィンドウの横幅の余白 */
 	private static final double SCENE_MARGIN_WIDTH = 68;
 
@@ -77,6 +78,9 @@ public class MainWindowPresenter {
 
 		// ウィンドウを閉じようとすると、確認ウィンドウを表示する処理を登録
 		registerCloseRequest();
+
+		// エンターキーの動作を登録
+		EnterKeyNavigation.enableEnterAction(mainRoot);
 
 		// アイコンを設定する
 		setIcon();
