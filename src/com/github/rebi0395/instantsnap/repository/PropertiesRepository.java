@@ -22,6 +22,7 @@ import com.github.rebi0395.instantsnap.model.enums.LanguageType;
 import com.github.rebi0395.instantsnap.model.enums.AfterSnapActionType;
 import com.github.rebi0395.instantsnap.model.enums.FileNameDateFormatType;
 import com.github.rebi0395.instantsnap.model.enums.SnapAreaType;
+import com.github.rebi0395.instantsnap.model.enums.ThemeType;
 import com.github.rebi0395.instantsnap.model.enums.TriggerType;
 
 import static com.github.rebi0395.instantsnap.common.NativeKeyCodeConverter.*;
@@ -63,6 +64,10 @@ public class PropertiesRepository {
 			// 言語設定
 			config.setLanguageType(LanguageType.parseOrDefault(
 					properties.getProperty(PROPERTY_LANGUAGE)));
+
+			// テーマ設定
+			config.setThemeType(ThemeType.parseOrDefault(
+					properties.getProperty(PROPERTY_THEME)));
 
 			// 撮影設定
 			config.setTriggerType(TriggerType.parseOrDefault(
@@ -226,6 +231,9 @@ public class PropertiesRepository {
 		// 言語設定
 		updateMap.put(PROPERTY_LANGUAGE, config.getLanguageType().getValue());
 
+		// テーマ設定
+		updateMap.put(PROPERTY_THEME, config.getThemeType().getValue());
+
 		// 撮影設定
 		updateMap.put(PROPERTY_TRIGGER, config.getTriggerType().getValue());
 		updateMap.put(PROPERTY_SNAP_AREA, config.getSnapAreaType().getValue());
@@ -277,6 +285,10 @@ public class PropertiesRepository {
 
 			# 言語を指定してください
 			language=ja
+
+			# テーマを指定してください
+			# 0 -> デフォルト, 1 -> 絵本
+			theme=1
 
 			# ～～ 撮影設定 ～～
 			# スクショ発動キーの選択
@@ -346,6 +358,10 @@ public class PropertiesRepository {
 
 			# Please specify the language
 			language=en
+
+			# Please specify the theme
+			# 0 -> Default, 1 -> Storybook
+			theme=1
 
 			# ~~ Capture Settings ~~
 			# Select the screenshot trigger key

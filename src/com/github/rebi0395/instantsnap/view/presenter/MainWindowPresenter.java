@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import com.github.rebi0395.instantsnap.app.InstantSnapCoordinator;
 import com.github.rebi0395.instantsnap.exception.ServiceException;
+import com.github.rebi0395.instantsnap.view.EnterKeyNavigation;
 import com.github.rebi0395.instantsnap.view.StyleSheetUtil;
 import com.github.rebi0395.instantsnap.view.controller.MainWindowController;
 
@@ -39,13 +40,13 @@ public class MainWindowPresenter {
 	private final ExitDialogPresenter exitDialogPresenter;
 
 	/** ウィンドウの最大の横幅 */
-	private static final double SCENE_MAX_WIDTH = 600;
+	private static final double SCENE_MAX_WIDTH = 680;
 
 	/** ウィンドウの最大の高さ */
 	private static final double SCENE_MAX_HEIGHT = 900;
-	 
+
 	/** ウィンドウの横幅の余白 */
-	private static final double SCENE_MARGIN_WIDTH = 60;
+	private static final double SCENE_MARGIN_WIDTH = 68;
 
 	/** ウィンドウの高さの余白 */
 	private static final double SCENE_MARGIN_HEIGHT = 90;
@@ -73,9 +74,13 @@ public class MainWindowPresenter {
 		// シーンの設定 (ウィンドウのファイル、横幅、高さを設定)
 		Scene scene = createScene(mainRoot);
 		StyleSheetUtil.applyStyleSheet(scene, CSS_MAIN_WINDOW); // css適用
+		StyleSheetUtil.changeTheme(mainRoot, coordinator.getConfigBean().getThemeType()); // テーマcss適用
 
 		// ウィンドウを閉じようとすると、確認ウィンドウを表示する処理を登録
 		registerCloseRequest();
+
+		// エンターキーの動作を登録
+		EnterKeyNavigation.enableEnterAction(mainRoot);
 
 		// アイコンを設定する
 		setIcon();

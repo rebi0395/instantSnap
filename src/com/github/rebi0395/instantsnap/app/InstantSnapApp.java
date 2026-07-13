@@ -34,6 +34,7 @@ public class InstantSnapApp extends Application {
 	@Override
 	public void start(Stage stage) {
 		try {
+			
 			// 通知表示クラスを生成
 			this.notificationPresenter = new SnapNotificationPresenter(stage);
 
