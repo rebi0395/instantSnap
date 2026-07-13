@@ -56,6 +56,9 @@ public final class AppConstant {
 	/** プロパティ 通知音を有効にするか */
 	public static final String PROPERTY_SOUND_NOTIFICATION_ENABLED = "soundNotificationEnabled";
 
+	/** プロパティ テーマ設定 */
+	public static final String PROPERTY_THEME = "theme";
+
 	// -- デフォルト値 --  
 	/** 保存先ディレクトリのデフォルト値 */
 	public static final String DEFAULT_SAVE_DIR = "./screenshots/";
@@ -90,13 +93,15 @@ public final class AppConstant {
 
 	/** メインウィンドウのCSSファイル */
 	public static final String CSS_MAIN_WINDOW = "/com/github/rebi0395/instantsnap/view/css/main-window.css";
+	/** メインウィンドウのテーマCSS：絵本 */
+	public static final String CSS_MAIN_THEME_STORYBOOK = "/com/github/rebi0395/instantsnap/view/css/theme-storybook.css";
+	/** テーマCSSファイル名とテーマstyleClassの接頭辞 */
+	public static final String THEME_CSS_PREFIX = "theme-";
 	/** 通知画面のCSSファイル */
 	public static final String CSS_NOTIFICATION = "/com/github/rebi0395/instantsnap/view/css/notification.css";
 
 	/** アイコンのpngファイル */
-	public static final String ICON_APP = "/icon/InstantSnap.png";
-	/** マウスポインターのpngファイル */
-	public static final String MOUSE_POINTER = "/icon/MousePointer.png";
+	public static final String ICON_APP = "/images/icon/InstantSnap.png";
 
 	/** 一時保存先ディレクトリ */
 	public static final String TMP_SAVE_DIR = "./tmp/";

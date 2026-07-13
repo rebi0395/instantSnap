@@ -1,7 +1,7 @@
 package com.github.rebi0395.instantsnap.view.controller;
 
 import java.io.File;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.github.rebi0395.instantsnap.app.InstantSnapCoordinator;
@@ -17,8 +17,10 @@ import com.github.rebi0395.instantsnap.model.enums.AfterSnapActionType;
 import com.github.rebi0395.instantsnap.model.enums.FileNameDateFormatType;
 import com.github.rebi0395.instantsnap.model.enums.SnapAreaType;
 import com.github.rebi0395.instantsnap.model.enums.StatusType;
+import com.github.rebi0395.instantsnap.model.enums.ThemeType;
 import com.github.rebi0395.instantsnap.model.enums.TriggerType;
 import com.github.rebi0395.instantsnap.service.FilePathService;
+import com.github.rebi0395.instantsnap.view.StyleSheetUtil;
 
 import static com.github.rebi0395.instantsnap.common.AppConstant.*;
 import static com.github.rebi0395.instantsnap.common.StrCheckUtil.*;
@@ -67,6 +69,9 @@ public class MainWindowController {
 	/** 画面ステータスのリセット時計 */
 	private PauseTransition statusResetTimer;
 
+	/** ComboBoxの表示更新中かを判定するフラグ */
+	private boolean updatingComboBoxConverters = false;
+
 	/** 画面全体の親レイアウト */
 	@FXML
 	private BorderPane rootPane;
@@ -95,6 +100,10 @@ public class MainWindowController {
 	private Button buttonApply;
 
 	// -- セクションラベル --
+	/** テーマ設定の項目名を表示するセクション */
+	@FXML
+	private Label sectionTheme;
+
 	/** ショートカットキー選択セクションのラベル */
 	@FXML
 	private Label sectionShortcutKey;
@@ -188,6 +197,11 @@ public class MainWindowController {
 	/** 撮影ショートカットキーを選択するコンボボックス */
 	@FXML
 	private ComboBox<LanguageType> comboLanguageType;
+
+	// -- テーマ設定 --
+	/** 画面テーマを選択するコンボボックス */
+	@FXML
+	private ComboBox<ThemeType> comboThemeType;
 
 	// -- 撮影設定 --
 	/** 撮影ショートカットキーを選択するコンボボックス */
@@ -297,7 +311,7 @@ public class MainWindowController {
 		this.converter = coordinator.getMessageKeyConverter(); // メッセージキー変換クラス
 		this.filePathService = coordinator.getFilePathService(); // ファイル名生成、ディレクトリ解決を行うクラス
 
-		// -- 活性・非活性の動的な制御の登録 -- 
+		// -- 活性・非活性の動的な制御の登録 --
 		// ショートカットキーのリストを監視するリスナー
 		comboTriggerType.valueProperty().addListener((obs, oldType, newType) -> {
 			updateCustomKeyFieldState();
@@ -312,12 +326,17 @@ public class MainWindowController {
 		// ファイル名の先頭文字の置換処理
 		registerTextFieldFocusOutListener();
 
-		// ～～ ユーザー設定値のセット ～～ 
+		// ～～ ユーザー設定値のセット ～～
 		// 言語設定のリスト、コンバーター(変換ルール)、初期設定値をセット
 		comboLanguageType.getItems().addAll(LanguageType.values());
 		comboLanguageType.setConverter(LanguageType.toConverter());
 		comboLanguageType.setValue(config.getLanguageType());
 		registerLanguageChangeListener(); // 言語切り替え時の処理を設定
+		// テーマ設定のリスト、コンバーター(変換ルール)、初期設定値をセット
+		comboThemeType.getItems().addAll(ThemeType.values());
+		comboThemeType.setConverter(ThemeType.toConverter(converter));
+		comboThemeType.setValue(config.getThemeType());
+		registerThemeChangeListener(); // テーマ切り替え時の処理を設定
 
 		// -- 撮影設定 --
 
@@ -403,6 +422,25 @@ public class MainWindowController {
 
 			converter.changeLanguage(config.getLanguageType()); // リソースバンドルを読み直す
 			updateLanguageTexts(config); // 言語変更を反映させる
+		});
+	}
+
+	/**
+	 * テーマ設定が変更されたときのリスナーを登録する
+	 * テーマ設定は見た目に直接関わるため、設定反映ボタンを待たずに
+	 * プロパティファイルの更新とCSSの切り替えを即時に行う。
+	 */
+	private void registerThemeChangeListener() {
+		comboThemeType.valueProperty().addListener((obs, oldVal, newVal) -> {
+			if (updatingComboBoxConverters || newVal == null || newVal == oldVal) {
+				return;
+			}
+
+			ConfigBean config = coordinator.getConfigBean();
+			config.setThemeType(newVal); // 最新のテーマ設定をセット
+			coordinator.save(); // 内部では全項目更新
+
+			StyleSheetUtil.changeTheme(rootPane, config.getThemeType()); // テーマCSSを即時反映
 		});
 	}
 
@@ -517,8 +555,7 @@ public class MainWindowController {
 	 * @return SnapAfterと各種ラジオボタンを紐付けたマップ
 	 */
 	private Map<AfterSnapActionType, RadioButton> createAfterSnapActionRadioMap() {
-		// 
-		Map<AfterSnapActionType, RadioButton> afterSnapActionRadioMap = new HashMap<AfterSnapActionType, RadioButton>();
+		Map<AfterSnapActionType, RadioButton> afterSnapActionRadioMap = new LinkedHashMap<AfterSnapActionType, RadioButton>();
 		afterSnapActionRadioMap.put(AfterSnapActionType.NONE, radioSnapAfterNothing);
 		afterSnapActionRadioMap.put(AfterSnapActionType.OPEN_IMAGE, radioSnapAfterOpenImage);
 		afterSnapActionRadioMap.put(AfterSnapActionType.OPEN_PAINT, radioSnapAfterOpenPaint);
@@ -545,7 +582,7 @@ public class MainWindowController {
 	}
 
 	/**
-	 * 「設定を反映」ボタンが押されたとき、ユーザーの設定値を保存する	
+	 * 「設定を反映」ボタンが押されたとき、ユーザーの設定値を保存する
 	 */
 	@FXML
 	public void onApplyConfig() {
@@ -558,6 +595,7 @@ public class MainWindowController {
 
 		ConfigBean config = coordinator.getConfigBean();
 		config.setLanguageType(comboLanguageType.getValue()); // 言語設定
+		config.setThemeType(comboThemeType.getValue()); // テーマ設定
 
 		// -- 撮影設定 --
 		config.setTriggerType(comboTriggerType.getValue()); // トリガーキー
@@ -619,7 +657,7 @@ public class MainWindowController {
 		textFilePath.setText(DEFAULT_SAVE_DIR); // フォルダパスをデフォルトに設定
 		textFileNamePrefix.setText(DEFAULT_FILE_NAME_PREFIX); // ファイル名の先頭文字をデフォルトに設定
 		comboFileNameDateFormatType.getSelectionModel().selectFirst(); // 日時フォーマット
-		comboFormatType.getSelectionModel().selectFirst(); // 拡張子 
+		comboFormatType.getSelectionModel().selectFirst(); // 拡張子
 
 		// -- 撮影後設定 --
 		radioSnapAfterGroup.selectToggle(radioSnapAfterNothing);
@@ -636,7 +674,7 @@ public class MainWindowController {
 
 	/**
 	 * 言語切り替え後、画面表示を更新する
-	 * 
+	 *
 	 * @param config ユーザー設定値
 	 */
 	private void updateLanguageTexts(ConfigBean config) {
@@ -680,17 +718,28 @@ public class MainWindowController {
 
 	/**
 	 * ComboBoxのコンバーターを再設定し、表示を更新する
-	 * 
-	 * @param config ユーザー設定値
+	 *
 	 */
 	private void updateComboBoxConverters() {
-		// 今の選択状態を退避
-		SnapAreaType snapAreaType = comboSnapArea.getValue();
-		// 選択値を入れ直して、ComboBoxの表示を再描画させる
-		comboSnapArea.getItems().clear();
-		comboSnapArea.getItems().addAll(SnapAreaType.values());
-		comboSnapArea.setConverter(SnapAreaType.toConverter(converter)); // コンバーターにより	Enumsをdisplaynameで変換が可能になる
-		comboSnapArea.setValue(snapAreaType);
+		updatingComboBoxConverters = true;
+		try {
+			// 今の選択状態を退避
+			SnapAreaType snapAreaType = comboSnapArea.getValue();
+			ThemeType themeType = comboThemeType.getValue();
+
+			// 選択値を入れ直して、ComboBoxの表示を再描画させる
+			comboSnapArea.getItems().clear();
+			comboSnapArea.getItems().addAll(SnapAreaType.values());
+			comboSnapArea.setConverter(SnapAreaType.toConverter(converter)); // コンバーターによりEnumsをdisplayNameで変換できるようにする
+			comboSnapArea.setValue(snapAreaType);
+
+			comboThemeType.getItems().clear();
+			comboThemeType.getItems().addAll(ThemeType.values());
+			comboThemeType.setConverter(ThemeType.toConverter(converter)); // コンバーターによりEnumsをdisplayNameで変換できるようにする
+			comboThemeType.setValue(themeType);
+		} finally {
+			updatingComboBoxConverters = false;
+		}
 	}
 
 	/**
@@ -749,6 +798,7 @@ public class MainWindowController {
 		tabOtherSettings.setText(converter.getMessage(MessageKeyConstant.TAB_OTHER_SETTINGS, "Other settings"));
 
 		// セクション
+		sectionTheme.setText(converter.getMessage(MessageKeyConstant.SECTION_THEME, "Theme"));
 		sectionShortcutKey.setText(converter.getMessage(MessageKeyConstant.SECTION_SHORTCUT_KEY, "Shortcut key"));
 		sectionCustomKey
 				.setText(converter.getMessage(MessageKeyConstant.SECTION_CUSTOM_KEY, "Custom key settings"));
@@ -800,7 +850,7 @@ public class MainWindowController {
 
 	/**
 	 * 不正値用のスタイルを反映する
-	 * 
+	 *
 	 * @param node 反映対象
 	 * @param invalid 不正値の場合true
 	 */

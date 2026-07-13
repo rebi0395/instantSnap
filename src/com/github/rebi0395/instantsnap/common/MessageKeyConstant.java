@@ -28,7 +28,7 @@ public final class MessageKeyConstant {
 	/** セクション：撮影範囲 */
 	public static final String SECTION_SNAP_AREA = "section.snapArea";
 	/** セクション：撮影オプション */
-	public static final String SECTION_SNAP_OPTION = "section.snapOption";	
+	public static final String SECTION_SNAP_OPTION = "section.snapOption";
 	/** セクション：保存方法 */
 	public static final String SECTION_SAVE_METHOD = "section.saveMethod";
 	/** セクション：保存先フォルダ選択 */
@@ -41,9 +41,11 @@ public final class MessageKeyConstant {
 	public static final String SECTION_NOTIFICATION = "section.notification";
 	/** セクション：サウンド設定 */
 	public static final String SECTION_SOUND = "section.sound";
+	/** セクション：テーマ */
+	public static final String SECTION_THEME = "section.theme";
 
 	/** チェック項目：マウスカーソルを画像に含める */
-	public static final String CHECK_INCLUDE_CURSOR = "check.includeCursor";	
+	public static final String CHECK_INCLUDE_CURSOR = "check.includeCursor";
 	/** チェック項目：画像を保存する */
 	public static final String CHECK_SAVE_IMAGE = "check.saveImage";
 	/** チェック項目：クリップボードにコピーする */
@@ -72,7 +74,6 @@ public final class MessageKeyConstant {
 	public static final String LABEL_ENABLED = "label.enabled";
 	/** ラベルで無効を表示するメッセージキー */
 	public static final String LABEL_DISABLED = "label.disabled";
-
 	/** ステータス：起動中 */
 	public static final String STATUS_STARTING = "status.starting";
 	/** ステータス：撮影可能 */
@@ -83,6 +84,12 @@ public final class MessageKeyConstant {
 	public static final String STATUS_SAVED = "status.saved";
 	/** ステータス：入力値初期化完了 */
 	public static final String STATUS_RESET_INPUT = "status.resetInput";
+
+	// -- ThemeType --
+	/** テーマ：デフォルト */
+	public static final String THEME_DEFAULT = "theme.default";
+	/** テーマ：絵本 */
+	public static final String THEME_STORYBOOK = "theme.storybook";
 
 	// -- SnapAreaType --
 	/** 撮影範囲：使用しているウィンドウのみ撮影 */
