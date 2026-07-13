@@ -151,7 +151,7 @@
 															<HBox styleClass="setting-header">
 																<TextField fx:id="textFileNamePrefix"/>
 																<ComboBox fx:id="comboFileNameDateFormatType"/>
-																<ComboBox fx:id="comboFormatType" prefWidth="90" maxWidth="90"/>
+																<ComboBox fx:id="comboFormatType" prefWidth="110" maxWidth="110"/>
 															</HBox>
 														</VBox>
 													</content>
