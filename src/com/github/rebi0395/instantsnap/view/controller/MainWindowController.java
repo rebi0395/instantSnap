@@ -512,6 +512,7 @@ public class MainWindowController {
 			}
 
 			if (nativeCode == VC_UNDEFINED) {
+				textField.clear(); // マップにないキーはテキストフィールドをクリアする
 				return; // マップにないキーは入力処理、イベント消費をしない
 			}
 
