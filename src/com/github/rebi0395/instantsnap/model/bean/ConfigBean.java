@@ -10,7 +10,6 @@ import com.github.rebi0395.instantsnap.model.enums.AfterSnapActionType;
 import com.github.rebi0395.instantsnap.model.enums.FileNameDateFormatType;
 import com.github.rebi0395.instantsnap.model.enums.SnapAreaType;
 import com.github.rebi0395.instantsnap.model.enums.ThemeType;
-import com.github.rebi0395.instantsnap.model.enums.TriggerType;
 
 /**
  * 設定値保管クラス。セット時に値の安全性も保証する
@@ -21,10 +20,10 @@ public class ConfigBean {
 	private LanguageType languageType;
 	/** テーマ設定 */
 	private ThemeType themeType;
-	/** 撮影キー */
-	private TriggerType triggerType;
-	/** 撮影カスタムキーの保存クラス */
-	private KeyCombinationBean customKeyBean;
+	/** 撮影キーの組み合わせ */
+	private KeyCombinationBean snapKeyBean;
+	/** 範囲選択キーの組み合わせ */
+	private KeyCombinationBean selectionKeyBean;
 	/** 撮影範囲 */
 	private SnapAreaType snapAreaType;
 	/** マウスカーソルを写す (trueで写す) */
@@ -61,12 +60,8 @@ public class ConfigBean {
 		this.themeType = ThemeType.STORYBOOK;
 
 		// -- 撮影設定
-		this.triggerType = TriggerType.SHIFT_PRINTSCREEN;
-		this.customKeyBean = new KeyCombinationBean(
-				VC_UNDEFINED,
-				DEFAULT_USE_CTRL,
-				DEFAULT_USE_ALT,
-				DEFAULT_USE_SHIFT);
+		this.snapKeyBean = createDefaultSnapKey();
+		this.selectionKeyBean = createDefaultSelectionKey();
 		this.snapAreaType = SnapAreaType.ACTIVE_WINDOW;
 		this.isIncludeCursor = DEFAULT_INCLUDE_CURSOR_ENABLED;
 
@@ -139,35 +134,59 @@ public class ConfigBean {
 	}
 
 	/**
-	 * 撮影ショートカットキーを取得する
-	 * @return triggerType
+	 * 撮影キーの組み合わせを取得する
+	 * @return snapKeyBean
 	 */
-	public TriggerType getTriggerType() {
-		return triggerType;
+	public KeyCombinationBean getSnapKeyBean() {
+		return snapKeyBean;
 	}
 
 	/**
-	 * 撮影ショートカットキーをセットする
-	 * @param triggerType セットする
+	 * 撮影キーの組み合わせをセットする
+	 * @param snapKeyBean 撮影キーの組み合わせ
 	 */
-	public void setTriggerType(TriggerType triggerType) {
-		this.triggerType = triggerType;
+	public void setSnapKeyBean(KeyCombinationBean snapKeyBean) {
+		this.snapKeyBean = snapKeyBean;
 	}
 
 	/**
-	 * カスタム設定のキーの組み合わせを取得する
-	 * @return customKeyBean
+	 * 範囲選択キーの組み合わせを取得する
+	 * @return selectionKeyBean
 	 */
-	public KeyCombinationBean getCustomKeyBean() {
-		return customKeyBean;
+	public KeyCombinationBean getSelectionKeyBean() {
+		return selectionKeyBean;
 	}
 
 	/**
-	 * カスタム設定のキーの組み合わせをセットする
-	 * @param customKeyBean
+	 * 範囲選択キーの組み合わせをセットする
+	 * @param selectionKeyBean 範囲選択キーの組み合わせ
 	 */
-	public void setCustomKeyBean(KeyCombinationBean customKeyBean) {
-		this.customKeyBean = customKeyBean;
+	public void setSelectionKeyBean(KeyCombinationBean selectionKeyBean) {
+		this.selectionKeyBean = selectionKeyBean;
+	}
+
+	/**
+	 * 撮影キーのデフォルト設定を作成する
+	 * @return Shift + Print Screenのキー設定
+	 */
+	public static KeyCombinationBean createDefaultSnapKey() {
+		return new KeyCombinationBean(
+				VC_PRINTSCREEN,
+				DEFAULT_SNAP_USE_CTRL,
+				DEFAULT_SNAP_USE_ALT,
+				DEFAULT_SNAP_USE_SHIFT);
+	}
+
+	/**
+	 * 範囲選択キーのデフォルト設定を作成する
+	 * @return F10のキー設定
+	 */
+	public static KeyCombinationBean createDefaultSelectionKey() {
+		return new KeyCombinationBean(
+				VC_F10,
+				DEFAULT_SELECTION_USE_CTRL,
+				DEFAULT_SELECTION_USE_ALT,
+				DEFAULT_SELECTION_USE_SHIFT);
 	}
 
 	/**

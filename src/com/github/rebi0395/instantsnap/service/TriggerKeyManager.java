@@ -110,7 +110,7 @@ public class TriggerKeyManager implements NativeKeyListener {
 		}
 
 		// 撮影キーのショートカットキーを取得
-		KeyCombinationBean keys = config.getTriggerType().resolveKeyCombination(config.getCustomKeyBean());
+		KeyCombinationBean keys = config.getSnapKeyBean();
 
 		// 押下状態を更新する
 		updateKeyStates(nativeKeyCode, true, keys);
@@ -133,7 +133,7 @@ public class TriggerKeyManager implements NativeKeyListener {
 		int nativeKeyCode = NativeKeyCodeConverter.normalizeNativeKeyCode(e.getKeyCode());
 
 		// 撮影キーのショートカットキーを取得
-		KeyCombinationBean keys = config.getTriggerType().resolveKeyCombination(config.getCustomKeyBean());
+		KeyCombinationBean keys = config.getSnapKeyBean();
 
 		// 押下状態を更新し、条件キーが完全一致で押されているかを判定する
 		updateKeyStates(nativeKeyCode, false, keys);

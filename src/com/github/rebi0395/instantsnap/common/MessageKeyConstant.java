@@ -21,10 +21,10 @@ public final class MessageKeyConstant {
 	/** キャプション：出力 */
 	public static final String CAPTION_OUTPUT = "caption.output";
 
-	/** セクション：ショートカットキー選択 */
-	public static final String SECTION_SHORTCUT_KEY = "section.shortcutKey";
-	/** セクション：カスタムキー設定 */
-	public static final String SECTION_CUSTOM_KEY = "section.customKey";
+	/** セクション：撮影ショートカットキー選択 */
+	public static final String SECTION_SNAP_SHORTCUT_KEY = "section.snapShortcutKey";
+	/** セクション：範囲選択ショートカットキー */
+	public static final String SECTION_SELECTION_SHORTCUT_KEY = "section.selectionShortcutKey";
 	/** セクション：撮影範囲 */
 	public static final String SECTION_SNAP_AREA = "section.snapArea";
 	/** セクション：撮影オプション */
@@ -67,8 +67,8 @@ public final class MessageKeyConstant {
 	/** ボタン：ファイル選択ボタン */
 	public static final String BUTTON_SELECT_FILE = "button.selectFile";
 
-	/** 入力欄：カスタムキー */
-	public static final String PROMPT_CUSTOM_KEY = "prompt.customKey";
+	/** 入力欄：ショートカットキー */
+	public static final String PROMPT_SHORTCUT_KEY = "prompt.shortcutKey";
 
 	/** ラベルの有効を表示するメッセージキー */
 	public static final String LABEL_ENABLED = "label.enabled";
