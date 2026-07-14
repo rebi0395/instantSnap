@@ -25,6 +25,11 @@ public class KeyCombinationBean {
 		this.useAlt = useAlt;
 		this.useShift = useShift;
 	}
+	
+	/** 未定義のキー設定を作成するコンストラクタ */
+	public KeyCombinationBean() {
+		this(VC_UNDEFINED, false, false, false);
+	}
 
 	/**
 	 * 現在の設定しているキー設定を文字列で取得する

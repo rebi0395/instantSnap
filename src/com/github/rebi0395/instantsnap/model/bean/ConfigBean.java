@@ -143,10 +143,15 @@ public class ConfigBean {
 
 	/**
 	 * 撮影キーの組み合わせをセットする
+	 * トリガーキーが未定義の場合、デフォルト設定にフォールバックする
 	 * @param snapKeyBean 撮影キーの組み合わせ
 	 */
 	public void setSnapKeyBean(KeyCombinationBean snapKeyBean) {
-		this.snapKeyBean = snapKeyBean;
+		if (snapKeyBean == null || snapKeyBean.getTriggerKey() == VC_UNDEFINED) {
+			this.snapKeyBean = createDefaultSnapKey();
+		} else {
+			this.snapKeyBean = snapKeyBean;
+		}
 	}
 
 	/**
