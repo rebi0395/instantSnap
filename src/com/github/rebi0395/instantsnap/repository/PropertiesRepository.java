@@ -101,7 +101,7 @@ public class PropertiesRepository {
 					properties.getProperty(PROPERTY_SOUND_NOTIFICATION_ENABLED), DEFAULT_SOUND_NOTIFICATION_ENABLED));
 
 			// 撮影キー
-			KeyCombinationBean snapKeys = config.getSnapKeyBean();
+			KeyCombinationBean snapKeys = new KeyCombinationBean();
 			snapKeys.setTriggerKey(toNativeKeyCode(
 					properties.getProperty(PROPERTY_SNAP_KEY)));
 			snapKeys.setUseAlt(readBooleanOrDefault(
@@ -110,6 +110,7 @@ public class PropertiesRepository {
 					properties.getProperty(PROPERTY_SNAP_USE_CTRL), DEFAULT_SNAP_USE_CTRL));
 			snapKeys.setUseShift(readBooleanOrDefault(
 					properties.getProperty(PROPERTY_SNAP_USE_SHIFT), DEFAULT_SNAP_USE_SHIFT));
+			config.setSnapKeyBean(snapKeys);
 
 			// 範囲選択キー
 			KeyCombinationBean selectionKeys = config.getSelectionKeyBean();

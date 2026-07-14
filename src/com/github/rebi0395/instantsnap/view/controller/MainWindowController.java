@@ -338,12 +338,12 @@ public class MainWindowController {
 
 		// ～～ ユーザー設定値のセット ～～
 		// 言語設定のリスト、コンバーター(変換ルール)、初期設定値をセット
-		comboLanguageType.getItems().addAll(LanguageType.values());
+		comboLanguageType.getItems().setAll(LanguageType.values());
 		comboLanguageType.setConverter(LanguageType.toConverter());
 		comboLanguageType.setValue(config.getLanguageType());
 		registerLanguageChangeListener(); // 言語切り替え時の処理を設定
 		// テーマ設定のリスト、コンバーター(変換ルール)、初期設定値をセット
-		comboThemeType.getItems().addAll(ThemeType.values());
+		comboThemeType.getItems().setAll(ThemeType.values());
 		comboThemeType.setConverter(ThemeType.toConverter(converter));
 		comboThemeType.setValue(config.getThemeType());
 		registerThemeChangeListener(); // テーマ切り替え時の処理を設定
@@ -374,7 +374,7 @@ public class MainWindowController {
 		checkSelectionAlt.setSelected(selectionKeys.isUseAlt());
 		checkSelectionShift.setSelected(selectionKeys.isUseShift());
 		// 撮影範囲のリスト、コンバーター(変換ルール)、初期設定値をセット
-		comboSnapArea.getItems().addAll(SnapAreaType.values());
+		comboSnapArea.getItems().setAll(SnapAreaType.values());
 		comboSnapArea.setConverter(SnapAreaType.toConverter(converter)); // コンバーターにより	Enumsをdisplaynameで変換が可能になる
 		comboSnapArea.setValue(config.getSnapAreaType());
 		// マウスカーソルを画像に含めるかのチェックボックスをセット
@@ -391,11 +391,11 @@ public class MainWindowController {
 		// ファイル名の先頭文字を取得し、テキストフィールドの初期値にセット
 		textFileNamePrefix.setText(config.getFileNamePrefix());
 		// 日時フォーマットのリスト、コンバーター(変換ルール)、初期設定値をセット
-		comboFileNameDateFormatType.getItems().addAll(FileNameDateFormatType.values());
+		comboFileNameDateFormatType.getItems().setAll(FileNameDateFormatType.values());
 		comboFileNameDateFormatType.setConverter(FileNameDateFormatType.toConverter());
 		comboFileNameDateFormatType.setValue(config.getFileNameDateFormatType());
 		// 拡張子のリスト、コンバーター(変換ルール)、初期設定値をセット
-		comboFormatType.getItems().addAll(FormatType.values());
+		comboFormatType.getItems().setAll(FormatType.values());
 		comboFormatType.setConverter(FormatType.toConverter());
 		comboFormatType.setValue(config.getFormatType());
 
@@ -503,14 +503,16 @@ public class MainWindowController {
 
 			// Nativeキーコードに変換し、フィールドで保持
 			int nativeCode = NativeKeyCodeConverter.toNativeKeyCode(keyCode);
-			if (nativeCode == VC_UNDEFINED) {
-				return; // マップにないキーは入力処理、イベント消費をしない
-			}
 
+			// フィールドの値は先に更新する
 			if (textField == textSnapInputKey) {
 				snapNativeCode = nativeCode;
 			} else if (textField == textSelectionInputKey) {
 				selectionNativeCode = nativeCode;
+			}
+
+			if (nativeCode == VC_UNDEFINED) {
+				return; // マップにないキーは入力処理、イベント消費をしない
 			}
 
 			// 通常のキー押下イベントを消費させる
@@ -648,17 +650,21 @@ public class MainWindowController {
 		// -- 撮影設定 --
 		config.setSnapAreaType(comboSnapArea.getValue()); // 撮影範囲
 		// 撮影キー
-		KeyCombinationBean snapKeys = config.getSnapKeyBean();
+		KeyCombinationBean snapKeys = new KeyCombinationBean();
 		snapKeys.setTriggerKey(snapNativeCode); // 保持しているキーコードをいれる
 		snapKeys.setUseCtrl(checkSnapCtrl.isSelected());
 		snapKeys.setUseAlt(checkSnapAlt.isSelected());
 		snapKeys.setUseShift(checkSnapShift.isSelected());
+		config.setSnapKeyBean(snapKeys);
+
 		// 範囲選択キー
-		KeyCombinationBean selectionKeys = config.getSelectionKeyBean();
+		KeyCombinationBean selectionKeys = new KeyCombinationBean();
 		selectionKeys.setTriggerKey(selectionNativeCode);
 		selectionKeys.setUseCtrl(checkSelectionCtrl.isSelected());
 		selectionKeys.setUseAlt(checkSelectionAlt.isSelected());
 		selectionKeys.setUseShift(checkSelectionShift.isSelected());
+		config.setSelectionKeyBean(selectionKeys);
+
 		config.setIsIncludeCursor(checkIncludeCursor.isSelected()); // マウスカーソルの有無
 
 		// -- 出力設定 --
