@@ -147,7 +147,7 @@ public class ConfigBean {
 	 * @param snapKeyBean 撮影キーの組み合わせ
 	 */
 	public void setSnapKeyBean(KeyCombinationBean snapKeyBean) {
-		if (snapKeyBean == null || snapKeyBean.getTriggerKey() == VC_UNDEFINED) {
+		if (snapKeyBean == null || !snapKeyBean.isTriggerKeyDefined()) {
 			this.snapKeyBean = createDefaultSnapKey();
 		} else {
 			this.snapKeyBean = snapKeyBean;
