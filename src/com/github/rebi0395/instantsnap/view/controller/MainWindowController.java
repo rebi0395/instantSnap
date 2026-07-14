@@ -3,6 +3,7 @@ package com.github.rebi0395.instantsnap.view.controller;
 import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.IntConsumer;
 
 import com.github.rebi0395.instantsnap.app.InstantSnapCoordinator;
 import com.github.rebi0395.instantsnap.common.AppLogger;
@@ -18,7 +19,6 @@ import com.github.rebi0395.instantsnap.model.enums.FileNameDateFormatType;
 import com.github.rebi0395.instantsnap.model.enums.SnapAreaType;
 import com.github.rebi0395.instantsnap.model.enums.StatusType;
 import com.github.rebi0395.instantsnap.model.enums.ThemeType;
-import com.github.rebi0395.instantsnap.model.enums.TriggerType;
 import com.github.rebi0395.instantsnap.service.FilePathService;
 import com.github.rebi0395.instantsnap.view.StyleSheetUtil;
 
@@ -60,8 +60,11 @@ public class MainWindowController {
 	/** ファイル名生成、ディレクトリ解決を行うクラス */
 	private FilePathService filePathService;
 
-	/** nativeキーコードを保持する変数 */
-	private int nativeCode;
+	/** 撮影キーのnativeキーコードを保持する変数 */
+	private int snapNativeCode;
+
+	/** 範囲選択キーのnativeキーコードを保持する変数 */
+	private int selectionNativeCode;
 
 	/** 画面ステータス */
 	private StatusType status = StatusType.STARTING;
@@ -106,11 +109,11 @@ public class MainWindowController {
 
 	/** ショートカットキー選択セクションのラベル */
 	@FXML
-	private Label sectionShortcutKey;
+	private Label sectionSnapShortcutKey;
 
-	/** カスタムキー設定セクションのラベル */
+	/** 範囲選択ショートカットキーセクションのラベル */
 	@FXML
-	private Label sectionCustomKey;
+	private Label sectionSelectionShortcutKey;
 
 	/** 撮影範囲セクションのラベル */
 	@FXML
@@ -151,7 +154,11 @@ public class MainWindowController {
 
 	/** 適応中のキー設定を表示するラベル */
 	@FXML
-	private Label labelKeyCombination;
+	private Label labelSnapKeyCombination;
+
+	/** 適用中の範囲選択キー設定を表示するラベル */
+	@FXML
+	private Label labelSelectionKeyCombination;
 
 	/** 適応中の保存先ファイルパスを表示するラベル */
 	@FXML
@@ -204,26 +211,34 @@ public class MainWindowController {
 	private ComboBox<ThemeType> comboThemeType;
 
 	// -- 撮影設定 --
-	/** 撮影ショートカットキーを選択するコンボボックス */
-	@FXML
-	private ComboBox<TriggerType> comboTriggerType;
-
 	/** 撮影範囲を選択するコンボボックス */
 	@FXML
 	private ComboBox<SnapAreaType> comboSnapArea;
 
-	/** カスタムキー設定のキー入力を受け付けるテキストフィールド */
+	/** 撮影キーの入力を受け付けるテキストフィールド */
 	@FXML
-	private TextField textInputKey;
-	/** コンビネーションキーとしてAltを使用するかを選択するチェックボックス */
+	private TextField textSnapInputKey;
+	/** 撮影キーのコンビネーションキーとしてAltを使用するかを選択するチェックボックス */
 	@FXML
-	private CheckBox checkAlt;
-	/** コンビネーションキーとしてCtrlを使用するかを選択するチェックボックス */
+	private CheckBox checkSnapAlt;
+	/** 撮影キーのコンビネーションキーとしてCtrlを使用するかを選択するチェックボックス */
 	@FXML
-	private CheckBox checkCtrl;
-	/** コンビネーションキーとしてShiftを使用するかを選択するチェックボックス */
+	private CheckBox checkSnapCtrl;
+	/** 撮影キーのコンビネーションキーとしてShiftを使用するかを選択するチェックボックス */
 	@FXML
-	private CheckBox checkShift;
+	private CheckBox checkSnapShift;
+	/** 範囲選択キーの入力を受け付けるテキストフィールド */
+	@FXML
+	private TextField textSelectionInputKey;
+	/** 範囲選択キーでAltを使用するかを選択するチェックボックス */
+	@FXML
+	private CheckBox checkSelectionAlt;
+	/** 範囲選択キーでCtrlを使用するかを選択するチェックボックス */
+	@FXML
+	private CheckBox checkSelectionCtrl;
+	/** 範囲選択キーでShiftを使用するかを選択するチェックボックス */
+	@FXML
+	private CheckBox checkSelectionShift;
 	/** マウスカーソルを画像に含めるかを設定するチェックボックス */
 	@FXML
 	private CheckBox checkIncludeCursor;
@@ -311,18 +326,9 @@ public class MainWindowController {
 		this.converter = coordinator.getMessageKeyConverter(); // メッセージキー変換クラス
 		this.filePathService = coordinator.getFilePathService(); // ファイル名生成、ディレクトリ解決を行うクラス
 
-		// -- 活性・非活性の動的な制御の登録 --
-		// ショートカットキーのリストを監視するリスナー
-		comboTriggerType.valueProperty().addListener((obs, oldType, newType) -> {
-			updateCustomKeyFieldState();
-		});
-		// カスタムキーのテキストフィールドを監視するリスナー
-		textInputKey.textProperty().addListener((obs, oldVal, newVal) -> {
-			updateCustomKeyFieldState();
-		});
-
-		// カスタムキーのテキストフィールドの挙動を設定
-		inputCustomKey(textInputKey);
+		// ショートカットキーのテキストフィールドの挙動を設定
+		inputShortcutKey(textSnapInputKey, keyCode -> snapNativeCode = keyCode);
+		inputShortcutKey(textSelectionInputKey, keyCode -> selectionNativeCode = keyCode);
 		// ファイル名の先頭文字の置換処理
 		registerTextFieldFocusOutListener();
 
@@ -340,22 +346,29 @@ public class MainWindowController {
 
 		// -- 撮影設定 --
 
-		// ショートカットキーのリスト、コンバーター(変換ルール)、初期設定値をセット
-		comboTriggerType.getItems().addAll(TriggerType.values());
-		comboTriggerType.setConverter(TriggerType.toConverter());
-		comboTriggerType.setValue(config.getTriggerType());
-		// カスタムキーの取得
-		KeyCombinationBean customKeys = config.getCustomKeyBean();
-		// トリガーキーの保持、名前変換
-		nativeCode = customKeys.getTriggerKey(); // nativeキーコードを保持
-		if (!(nativeCode == VC_UNDEFINED)) {
+		// 撮影キーの初期値を設定
+		KeyCombinationBean snapKeys = config.getSnapKeyBean();
+		snapNativeCode = snapKeys.getTriggerKey(); // nativeキーコードを保持
+		if (!(snapNativeCode == VC_UNDEFINED)) {
 			// 未定義でない場合、テキストフィールドにキーの名前をセットする
-			textInputKey.setText(NativeKeyCodeConverter.toFXKeyName(nativeCode));
+			textSnapInputKey.setText(NativeKeyCodeConverter.toFXKeyName(snapNativeCode));
 		}
 		// 修飾キーの初期値を設定
-		checkCtrl.setSelected(customKeys.isUseCtrl());
-		checkAlt.setSelected(customKeys.isUseAlt());
-		checkShift.setSelected(customKeys.isUseShift());
+		checkSnapCtrl.setSelected(snapKeys.isUseCtrl());
+		checkSnapAlt.setSelected(snapKeys.isUseAlt());
+		checkSnapShift.setSelected(snapKeys.isUseShift());
+
+		// 範囲選択キーの初期値を設定
+		KeyCombinationBean selectionKeys = config.getSelectionKeyBean();
+		selectionNativeCode = selectionKeys.getTriggerKey();
+		if (!(selectionNativeCode == VC_UNDEFINED)) {
+			// 未定義でない場合、テキストフィールドにキーの名前をセットする
+			textSelectionInputKey.setText(NativeKeyCodeConverter.toFXKeyName(selectionNativeCode));
+		}
+		// 修飾キーの初期値を設定
+		checkSelectionCtrl.setSelected(selectionKeys.isUseCtrl());
+		checkSelectionAlt.setSelected(selectionKeys.isUseAlt());
+		checkSelectionShift.setSelected(selectionKeys.isUseShift());
 		// 撮影範囲のリスト、コンバーター(変換ルール)、初期設定値をセット
 		comboSnapArea.getItems().addAll(SnapAreaType.values());
 		comboSnapArea.setConverter(SnapAreaType.toConverter(converter)); // コンバーターにより	Enumsをdisplaynameで変換が可能になる
@@ -396,7 +409,7 @@ public class MainWindowController {
 		checkSnapSound.setSelected(config.getIsSnapSoundEnabled());
 
 		// -- 適用設定表示ラベルの反映 --
-		updateSettingLabels(config, customKeys);
+		updateSettingLabels(config);
 		// 固定文言の反映
 		updateFixedTexts();
 		// 不正値項目のスタイル反映
@@ -462,10 +475,11 @@ public class MainWindowController {
 	}
 
 	/**
-	 * カスタムキーの入力処理を行う、リスナーを登録する
+	 * ショートカットキーの入力処理を行うリスナーを登録する
 	 * @param textField テキストフィールド
+	 * @param nativeCodeSetter 入力されたnativeキーコードの保持処理
 	 */
-	public void inputCustomKey(TextField textField) {
+	private void inputShortcutKey(TextField textField, IntConsumer nativeCodeSetter) {
 		// IMEによる入力文字の確定をキャンセルする
 		textField.addEventFilter(InputMethodEvent.INPUT_METHOD_TEXT_CHANGED, event -> {
 			event.consume();
@@ -485,32 +499,17 @@ public class MainWindowController {
 			AppLogger.keyPressed(keyCode);
 
 			// Nativeキーコードに変換し、フィールドで保持
-			nativeCode = NativeKeyCodeConverter.toNativeKeyCode(keyCode);
+			int nativeCode = NativeKeyCodeConverter.toNativeKeyCode(keyCode);
 			if (nativeCode == VC_UNDEFINED) {
 				return; // マップにないキーは入力処理、イベント消費をしない
 			}
+			nativeCodeSetter.accept(nativeCode); // 対象のショートカットキーとして保持
 			// 通常のキー押下イベントを消費させる
 			event.consume();
 			// テキストフィールドに表示する処理
 			textField.setText(NativeKeyCodeConverter.toFXKeyName(nativeCode)); // JavaFXのキーコード使用
 			textField.end(); // カーソルを右に移動
 		});
-	}
-
-	/**
-	 * カスタムキーのテキストフィールド、チェックボックスの活性、非活性を制御する
-	 */
-	public void updateCustomKeyFieldState() {
-		boolean isCustom = (comboTriggerType.getValue() == TriggerType.CUSTOM);
-		boolean hasKey = (isNotBlankSafe(textInputKey.getText()));
-
-		// Custom設定ならテキストフィールドを活性
-		textInputKey.setDisable(!isCustom);
-
-		// Custom設定かつ、カスタムキーのテキストフィールドに値があれば活性
-		checkCtrl.setDisable(!(isCustom && hasKey));
-		checkAlt.setDisable(!(isCustom && hasKey));
-		checkShift.setDisable(!(isCustom && hasKey));
 	}
 
 	/**
@@ -598,14 +597,19 @@ public class MainWindowController {
 		config.setThemeType(comboThemeType.getValue()); // テーマ設定
 
 		// -- 撮影設定 --
-		config.setTriggerType(comboTriggerType.getValue()); // トリガーキー
 		config.setSnapAreaType(comboSnapArea.getValue()); // 撮影範囲
-		// カスタムキー
-		KeyCombinationBean customKeys = config.getCustomKeyBean();
-		customKeys.setTriggerKey(nativeCode); // 保持しているキーコードをいれる
-		customKeys.setUseCtrl(checkCtrl.isSelected());
-		customKeys.setUseAlt(checkAlt.isSelected());
-		customKeys.setUseShift(checkShift.isSelected());
+		// 撮影キー
+		KeyCombinationBean snapKeys = config.getSnapKeyBean();
+		snapKeys.setTriggerKey(snapNativeCode); // 保持しているキーコードをいれる
+		snapKeys.setUseCtrl(checkSnapCtrl.isSelected());
+		snapKeys.setUseAlt(checkSnapAlt.isSelected());
+		snapKeys.setUseShift(checkSnapShift.isSelected());
+		// 範囲選択キー
+		KeyCombinationBean selectionKeys = config.getSelectionKeyBean();
+		selectionKeys.setTriggerKey(selectionNativeCode);
+		selectionKeys.setUseCtrl(checkSelectionCtrl.isSelected());
+		selectionKeys.setUseAlt(checkSelectionAlt.isSelected());
+		selectionKeys.setUseShift(checkSelectionShift.isSelected());
 		config.setIsIncludeCursor(checkIncludeCursor.isSelected()); // マウスカーソルの有無
 
 		// -- 出力設定 --
@@ -641,15 +645,22 @@ public class MainWindowController {
 	@FXML
 	public void onResetConfig() {
 		// -- 撮影設定 --
-		comboTriggerType.getSelectionModel().selectFirst();
 		comboSnapArea.getSelectionModel().selectFirst();
 		checkIncludeCursor.setSelected(DEFAULT_INCLUDE_CURSOR_ENABLED); // マウスカーソルの有無
-		// カスタムキーの設定をリセットする
-		textInputKey.clear();
-		checkCtrl.setSelected(DEFAULT_USE_CTRL);
-		checkAlt.setSelected(DEFAULT_USE_ALT);
-		checkShift.setSelected(DEFAULT_USE_SHIFT);
-		nativeCode = VC_UNDEFINED; // カスタムキーの内部保持値もリセットする
+		// ショートカットキーの設定をリセットする
+		KeyCombinationBean defaultSnapKeys = ConfigBean.createDefaultSnapKey();
+		snapNativeCode = defaultSnapKeys.getTriggerKey();
+		textSnapInputKey.setText(NativeKeyCodeConverter.toFXKeyName(snapNativeCode));
+		checkSnapCtrl.setSelected(defaultSnapKeys.isUseCtrl());
+		checkSnapAlt.setSelected(defaultSnapKeys.isUseAlt());
+		checkSnapShift.setSelected(defaultSnapKeys.isUseShift());
+
+		KeyCombinationBean defaultSelectionKeys = ConfigBean.createDefaultSelectionKey();
+		selectionNativeCode = defaultSelectionKeys.getTriggerKey();
+		textSelectionInputKey.setText(NativeKeyCodeConverter.toFXKeyName(selectionNativeCode));
+		checkSelectionCtrl.setSelected(defaultSelectionKeys.isUseCtrl());
+		checkSelectionAlt.setSelected(defaultSelectionKeys.isUseAlt());
+		checkSelectionShift.setSelected(defaultSelectionKeys.isUseShift());
 
 		// -- 出力設定 --
 		checkSaveImage.setSelected(DEFAULT_SAVE_IMAGE_ENABLED); // チェックを入れる
@@ -683,7 +694,7 @@ public class MainWindowController {
 		// 撮影後設定のラジオボタン表示を更新
 		updateAfterSnapActionRadioTexts();
 		// 適用中ラベルを更新
-		updateSettingLabels(config, config.getCustomKeyBean());
+		updateSettingLabels(config);
 		// 固定文言を更新
 		updateFixedTexts();
 		// ステータス文言の言語切り替え(タイマーはリセットしない)
@@ -758,13 +769,12 @@ public class MainWindowController {
 	/**
 	 * 設定更新時、現在の設定値を表示するラベルを一斉に更新する
 	 * @param config ユーザー設定値
-	 * @param customKeys ユーザーのカスタムキーの設定値
 	 */
-	public void updateSettingLabels(ConfigBean config, KeyCombinationBean customKeys) {
+	public void updateSettingLabels(ConfigBean config) {
 
 		// -- 撮影設定
-		labelKeyCombination
-				.setText(config.getTriggerType().resolveKeyCombination(customKeys).resolveKeyCombinationName());
+		labelSnapKeyCombination.setText(config.getSnapKeyBean().resolveKeyCombinationName());
+		labelSelectionKeyCombination.setText(config.getSelectionKeyBean().resolveKeyCombinationName());
 		labelSnapArea.setText(config.getSnapAreaType().getMessage(converter));
 		labelIncludeCursor.setText(converter.getEnabledMessage(config.getIsIncludeCursor()));
 
@@ -799,9 +809,12 @@ public class MainWindowController {
 
 		// セクション
 		sectionTheme.setText(converter.getMessage(MessageKeyConstant.SECTION_THEME, "Theme"));
-		sectionShortcutKey.setText(converter.getMessage(MessageKeyConstant.SECTION_SHORTCUT_KEY, "Shortcut key"));
-		sectionCustomKey
-				.setText(converter.getMessage(MessageKeyConstant.SECTION_CUSTOM_KEY, "Custom key settings"));
+		sectionSnapShortcutKey.setText(
+				converter.getMessage(MessageKeyConstant.SECTION_SNAP_SHORTCUT_KEY, "Capture shortcut key"));
+		sectionSelectionShortcutKey.setText(
+				converter.getMessage(
+						MessageKeyConstant.SECTION_SELECTION_SHORTCUT_KEY,
+						"Range selection shortcut key"));
 		sectionSnapArea.setText(converter.getMessage(MessageKeyConstant.SECTION_SNAP_AREA, "Capture area"));
 		sectionSnapOption.setText(converter.getMessage(MessageKeyConstant.SECTION_SNAP_OPTION, "Capture option"));
 		sectionSaveMethod.setText(converter.getMessage(MessageKeyConstant.SECTION_SAVE_METHOD, "Save options"));
@@ -835,7 +848,10 @@ public class MainWindowController {
 		buttonSelectFile.setText(converter.getMessage(MessageKeyConstant.BUTTON_SELECT_FILE, "Select...."));
 
 		// プロンプト(テキストフィールドの初期説明文)
-		textInputKey.setPromptText(converter.getMessage(MessageKeyConstant.PROMPT_CUSTOM_KEY, "Press a shortcut key"));
+		String shortcutKeyPrompt =
+				converter.getMessage(MessageKeyConstant.PROMPT_SHORTCUT_KEY, "Press a shortcut key");
+		textSnapInputKey.setPromptText(shortcutKeyPrompt);
+		textSelectionInputKey.setPromptText(shortcutKeyPrompt);
 	}
 
 	/**

@@ -21,16 +21,22 @@ public final class AppConstant {
 	// -- プロパティの項目名 --
 	/** プロパティ 言語設定 */
 	public static final String PROPERTY_LANGUAGE = "language";
-	/** プロパティ トリガーキー設定 */
-	public static final String PROPERTY_TRIGGER = "trigger";
-	/** プロパティ カスタムキー */
-	public static final String PROPERTY_CUSTOM_KEY = "customKey";
-	/** プロパティ Altキー */
-	public static final String PROPERTY_USE_ALT = "useAlt";
-	/** プロパティ Ctrlキー */
-	public static final String PROPERTY_USE_CTRL = "useCtrl";
-	/** プロパティ Shiftキー */
-	public static final String PROPERTY_USE_SHIFT = "useShift";
+	/** プロパティ 撮影キー */
+	public static final String PROPERTY_SNAP_KEY = "snapKey";
+	/** プロパティ 撮影キーでAltキーを使用するか */
+	public static final String PROPERTY_SNAP_USE_ALT = "snapIsUseAlt";
+	/** プロパティ 撮影キーでCtrlキーを使用するか */
+	public static final String PROPERTY_SNAP_USE_CTRL = "snapIsUseCtrl";
+	/** プロパティ 撮影キーでShiftキーを使用するか */
+	public static final String PROPERTY_SNAP_USE_SHIFT = "snapIsUseShift";
+	/** プロパティ 範囲選択キー */
+	public static final String PROPERTY_SELECTION_KEY = "selectionKey";
+	/** プロパティ 範囲選択キーでAltキーを使用するか */
+	public static final String PROPERTY_SELECTION_USE_ALT = "selectionIsUseAlt";
+	/** プロパティ 範囲選択キーでCtrlキーを使用するか */
+	public static final String PROPERTY_SELECTION_USE_CTRL = "selectionIsUseCtrl";
+	/** プロパティ 範囲選択キーでShiftキーを使用するか */
+	public static final String PROPERTY_SELECTION_USE_SHIFT = "selectionIsUseShift";
 	/** プロパティ 撮影範囲 */
 	public static final String PROPERTY_SNAP_AREA = "snapArea";
 	/** プロパティ マウスカーソルを写すか */
@@ -64,12 +70,18 @@ public final class AppConstant {
 	public static final String DEFAULT_SAVE_DIR = "./screenshots/";
 	/** 保存先ディレクトリのデフォルト値 */
 	public static final String DEFAULT_FILE_NAME_PREFIX = "";
-	/** カスタムキーでCtrlキーを使用するかどうかのデフォルト値 */
-	public static final boolean DEFAULT_USE_CTRL = false;
-	/** カスタムキーでAltキーを使用するかどうかのデフォルト値 */
-	public static final boolean DEFAULT_USE_ALT = false;
-	/** カスタムキーでShiftキーを使用するかどうかのデフォルト値 */
-	public static final boolean DEFAULT_USE_SHIFT = false;
+	/** 撮影キーでCtrlキーを使用するかどうかのデフォルト値 */
+	public static final boolean DEFAULT_SNAP_USE_CTRL = false;
+	/** 撮影キーでAltキーを使用するかどうかのデフォルト値 */
+	public static final boolean DEFAULT_SNAP_USE_ALT = false;
+	/** 撮影キーでShiftキーを使用するかどうかのデフォルト値 */
+	public static final boolean DEFAULT_SNAP_USE_SHIFT = true;
+	/** 範囲選択キーでCtrlキーを使用するかどうかのデフォルト値 */
+	public static final boolean DEFAULT_SELECTION_USE_CTRL = false;
+	/** 範囲選択キーでAltキーを使用するかどうかのデフォルト値 */
+	public static final boolean DEFAULT_SELECTION_USE_ALT = false;
+	/** 範囲選択キーでShiftキーを使用するかどうかのデフォルト値 */
+	public static final boolean DEFAULT_SELECTION_USE_SHIFT = false;
 	/** 画像にマウスカーソルを含めるかどうかのデフォルト値 */
 	public static final boolean DEFAULT_INCLUDE_CURSOR_ENABLED = false;
 	/** 画像保存を有効にするかどうかのデフォルト値 */
