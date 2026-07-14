@@ -3,7 +3,6 @@ package com.github.rebi0395.instantsnap.view.controller;
 import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.function.IntConsumer;
 
 import com.github.rebi0395.instantsnap.app.InstantSnapCoordinator;
 import com.github.rebi0395.instantsnap.common.AppLogger;
@@ -326,9 +325,14 @@ public class MainWindowController {
 		this.converter = coordinator.getMessageKeyConverter(); // メッセージキー変換クラス
 		this.filePathService = coordinator.getFilePathService(); // ファイル名生成、ディレクトリ解決を行うクラス
 
+		// トリガーキーの入力状態に応じて修飾キーの活性、非活性を切り替える
+		registerModifierKeyStateListener(textSnapInputKey, checkSnapCtrl, checkSnapAlt, checkSnapShift);
+		registerModifierKeyStateListener(textSelectionInputKey, checkSelectionCtrl, checkSelectionAlt,
+				checkSelectionShift);
+
 		// ショートカットキーのテキストフィールドの挙動を設定
-		inputShortcutKey(textSnapInputKey, keyCode -> snapNativeCode = keyCode);
-		inputShortcutKey(textSelectionInputKey, keyCode -> selectionNativeCode = keyCode);
+		inputShortcutKey(textSnapInputKey);
+		inputShortcutKey(textSelectionInputKey);
 		// ファイル名の先頭文字の置換処理
 		registerTextFieldFocusOutListener();
 
@@ -477,9 +481,8 @@ public class MainWindowController {
 	/**
 	 * ショートカットキーの入力処理を行うリスナーを登録する
 	 * @param textField テキストフィールド
-	 * @param nativeCodeSetter 入力されたnativeキーコードの保持処理
 	 */
-	private void inputShortcutKey(TextField textField, IntConsumer nativeCodeSetter) {
+	private void inputShortcutKey(TextField textField) {
 		// IMEによる入力文字の確定をキャンセルする
 		textField.addEventFilter(InputMethodEvent.INPUT_METHOD_TEXT_CHANGED, event -> {
 			event.consume();
@@ -503,13 +506,59 @@ public class MainWindowController {
 			if (nativeCode == VC_UNDEFINED) {
 				return; // マップにないキーは入力処理、イベント消費をしない
 			}
-			nativeCodeSetter.accept(nativeCode); // 対象のショートカットキーとして保持
+
+			if (textField == textSnapInputKey) {
+				snapNativeCode = nativeCode;
+			} else if (textField == textSelectionInputKey) {
+				selectionNativeCode = nativeCode;
+			}
+
 			// 通常のキー押下イベントを消費させる
 			event.consume();
 			// テキストフィールドに表示する処理
 			textField.setText(NativeKeyCodeConverter.toFXKeyName(nativeCode)); // JavaFXのキーコード使用
 			textField.end(); // カーソルを右に移動
 		});
+	}
+
+	/**
+	 * トリガーキーの入力状態に応じて、修飾キーの活性、非活性を切り替える。
+	 * トリガーキーは必須のため、未入力時は修飾キーを操作できないようにする。
+	 *
+	 * @param textField トリガーキーのテキストフィールド
+	 * @param ctrlCheckBox Ctrlキーのチェックボックス
+	 * @param altCheckBox Altキーのチェックボックス
+	 * @param shiftCheckBox Shiftキーのチェックボックス
+	 */
+	private void registerModifierKeyStateListener(
+			TextField textField,
+			CheckBox ctrlCheckBox,
+			CheckBox altCheckBox,
+			CheckBox shiftCheckBox) {
+		// 値が更新されたときに、修飾キーの活性・非活性を切り替える
+		textField.textProperty().addListener((obs, oldValue, newValue) -> {
+			updateModifierKeyState(textField, ctrlCheckBox, altCheckBox, shiftCheckBox);
+		});
+		updateModifierKeyState(textField, ctrlCheckBox, altCheckBox, shiftCheckBox); // 初期表示時
+	}
+
+	/**
+	 * トリガーキーが入力されている場合のみ、修飾キーを活性にする。
+	 *
+	 * @param textField トリガーキーのテキストフィールド
+	 * @param ctrlCheckBox Ctrlキーのチェックボックス
+	 * @param altCheckBox Altキーのチェックボックス
+	 * @param shiftCheckBox Shiftキーのチェックボックス
+	 */
+	private void updateModifierKeyState(
+			TextField textField,
+			CheckBox ctrlCheckBox,
+			CheckBox altCheckBox,
+			CheckBox shiftCheckBox) {
+		boolean hasTriggerKey = isNotBlankSafe(textField.getText());
+		ctrlCheckBox.setDisable(!hasTriggerKey);
+		altCheckBox.setDisable(!hasTriggerKey);
+		shiftCheckBox.setDisable(!hasTriggerKey);
 	}
 
 	/**
@@ -848,8 +897,7 @@ public class MainWindowController {
 		buttonSelectFile.setText(converter.getMessage(MessageKeyConstant.BUTTON_SELECT_FILE, "Select...."));
 
 		// プロンプト(テキストフィールドの初期説明文)
-		String shortcutKeyPrompt =
-				converter.getMessage(MessageKeyConstant.PROMPT_SHORTCUT_KEY, "Press a shortcut key");
+		String shortcutKeyPrompt = converter.getMessage(MessageKeyConstant.PROMPT_SHORTCUT_KEY, "Press a shortcut key");
 		textSnapInputKey.setPromptText(shortcutKeyPrompt);
 		textSelectionInputKey.setPromptText(shortcutKeyPrompt);
 	}
