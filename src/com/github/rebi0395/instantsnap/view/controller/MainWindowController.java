@@ -664,6 +664,8 @@ public class MainWindowController {
 	@FXML
 	public void onApplyConfig() {
 
+		// 不正値スタイル除去
+		clearAllInvalidStyle();
 		// 画面ステータスを保存中に変更
 		updateStatus(StatusType.SAVING);
 
@@ -690,9 +692,16 @@ public class MainWindowController {
 		selectionKeys.setUseCtrl(checkSelectionCtrl.isSelected());
 		selectionKeys.setUseAlt(checkSelectionAlt.isSelected());
 		selectionKeys.setUseShift(checkSelectionShift.isSelected());
-		config.setSelectionKeyBean(selectionKeys);
 
-		config.setIsIncludeCursor(checkIncludeCursor.isSelected()); // マウスカーソルの有無
+		if (selectionKeys.isSameKeyCombination(config.getSnapKeyBean())) {
+			// 範囲キーが撮影キーと同じである場合、範囲キーを未定義にフォールバック
+			selectionKeys = new KeyCombinationBean();
+			textSelectionInputKey.clear();
+			applyInvalidStyle(textSelectionInputKey, true); // 範囲キー項目を赤くする
+		}
+		config.setSelectionKeyBean(selectionKeys);
+		// マウスカーソルの有無
+		config.setIsIncludeCursor(checkIncludeCursor.isSelected());
 
 		// -- 出力設定 --
 		config.setIsSaveImage(checkSaveImage.isSelected()); // 画像保存の有無
@@ -717,7 +726,7 @@ public class MainWindowController {
 		// 更新されたconfigを用いて、司令塔クラスにプロパティ更新を依頼する
 		coordinator.save();
 
-		// 設定値再読み込み
+		// 設定値再読み込み(ショートカットキーのなどのフォールバック反映)
 		applyConfigValues(config);
 
 		// 画面ステータスを保存完了とする
@@ -729,6 +738,10 @@ public class MainWindowController {
 	 */
 	@FXML
 	public void onResetConfig() {
+
+		// 不正値スタイル除去
+		clearAllInvalidStyle();
+
 		// -- 撮影設定 --
 		comboSnapArea.getSelectionModel().selectFirst();
 		checkIncludeCursor.setSelected(DEFAULT_INCLUDE_CURSOR_ENABLED); // マウスカーソルの有無
@@ -763,9 +776,6 @@ public class MainWindowController {
 
 		// -- ステータス更新 --
 		updateStatus(StatusType.RESET_INPUT);
-
-		// -- 不正値のスタイル除去 --
-		applyInvalidStyle(textFilePath, false);
 	}
 
 	/**
@@ -964,6 +974,15 @@ public class MainWindowController {
 
 		if (invalid) {
 			node.getStyleClass().add(STYLE_INVALID_VALUE);
+		}
+	}
+
+	/**
+	 * 不正値用のスタイルを完全に除去する
+	 */
+	private void clearAllInvalidStyle() {
+		for (Node node : rootPane.lookupAll("." + STYLE_INVALID_VALUE)) {
+			node.getStyleClass().removeAll(STYLE_INVALID_VALUE);
 		}
 	}
 }

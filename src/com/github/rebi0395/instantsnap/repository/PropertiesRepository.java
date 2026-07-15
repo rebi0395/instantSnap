@@ -113,7 +113,7 @@ public class PropertiesRepository {
 			config.setSnapKeyBean(snapKeys);
 
 			// 範囲選択キー
-			KeyCombinationBean selectionKeys = config.getSelectionKeyBean();
+			KeyCombinationBean selectionKeys = new KeyCombinationBean();
 			selectionKeys.setTriggerKey(toNativeKeyCode(
 					properties.getProperty(PROPERTY_SELECTION_KEY)));
 			selectionKeys.setUseAlt(readBooleanOrDefault(
@@ -125,6 +125,7 @@ public class PropertiesRepository {
 			selectionKeys.setUseShift(readBooleanOrDefault(
 					properties.getProperty(PROPERTY_SELECTION_USE_SHIFT),
 					DEFAULT_SELECTION_USE_SHIFT));
+			config.setSelectionKeyBean(selectionKeys);
 
 		} catch (IOException ie) {
 			throw new ServiceException("プロパティファイルの読み込みに失敗しました", ie);
