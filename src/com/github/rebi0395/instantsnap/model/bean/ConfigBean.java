@@ -164,10 +164,15 @@ public class ConfigBean {
 
 	/**
 	 * 範囲選択キーの組み合わせをセットする
+	 * トリガーキーが未定義の場合、修飾キーも全部falseにフォールバックする
 	 * @param selectionKeyBean 範囲選択キーの組み合わせ
 	 */
 	public void setSelectionKeyBean(KeyCombinationBean selectionKeyBean) {
-		this.selectionKeyBean = selectionKeyBean;
+		if (selectionKeyBean == null || !selectionKeyBean.isTriggerKeyDefined()) {
+			this.selectionKeyBean = new KeyCombinationBean(); // 未定義でフォールバック
+		} else {
+			this.selectionKeyBean = selectionKeyBean;
+		}
 	}
 
 	/**
