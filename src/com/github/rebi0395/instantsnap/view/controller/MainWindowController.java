@@ -795,13 +795,11 @@ public class MainWindowController {
 			ThemeType themeType = comboThemeType.getValue();
 
 			// 選択値を入れ直して、ComboBoxの表示を再描画させる
-			comboSnapArea.getItems().clear();
-			comboSnapArea.getItems().addAll(SnapAreaType.values());
+			comboSnapArea.getItems().setAll(SnapAreaType.values());
 			comboSnapArea.setConverter(SnapAreaType.toConverter(converter)); // コンバーターによりEnumsをdisplayNameで変換できるようにする
 			comboSnapArea.setValue(snapAreaType);
 
-			comboThemeType.getItems().clear();
-			comboThemeType.getItems().addAll(ThemeType.values());
+			comboThemeType.getItems().setAll(ThemeType.values());
 			comboThemeType.setConverter(ThemeType.toConverter(converter)); // コンバーターによりEnumsをdisplayNameで変換できるようにする
 			comboThemeType.setValue(themeType);
 		} finally {
@@ -830,7 +828,14 @@ public class MainWindowController {
 
 		// -- 撮影設定
 		labelSnapKeyCombination.setText(config.getSnapKeyBean().resolveKeyCombinationName());
-		labelSelectionKeyCombination.setText(config.getSelectionKeyBean().resolveKeyCombinationName());
+
+		if (config.getSelectionKeyBean().isTriggerKeyDefined()) {
+			labelSelectionKeyCombination.setText(config.getSelectionKeyBean().resolveKeyCombinationName());
+		} else {
+			// トリガーキーが未定義の場合、無効ラベルを表示する
+			labelSelectionKeyCombination.setText(converter.getEnabledMessage(false));
+		}
+
 		labelSnapArea.setText(config.getSnapAreaType().getMessage(converter));
 		labelIncludeCursor.setText(converter.getEnabledMessage(config.getIsIncludeCursor()));
 
