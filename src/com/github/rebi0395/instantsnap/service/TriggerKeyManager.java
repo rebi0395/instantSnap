@@ -44,6 +44,21 @@ public class TriggerKeyManager implements NativeKeyListener {
 	private boolean canSnap = true;
 
 	/**
+	 * キー押下を通知するインタフェースです
+	 */
+	public interface KeyEventListener {
+
+		/** 撮影キーが押された事を通知する */
+		void requestSnap();
+		
+		/** 範囲キーが押された事を通知する */
+		void requestRangeSelection();
+		
+		/** アプリの終了を通知する */
+		void requestExit();
+	}
+	
+	/**
 	 * コンストラクタ
 	 * @param listener イベントの通知先
 	 */

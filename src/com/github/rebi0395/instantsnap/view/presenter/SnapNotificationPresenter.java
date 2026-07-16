@@ -121,7 +121,7 @@ public class SnapNotificationPresenter {
 
 			// Popupを設定
 			Popup popup = new Popup();
-			popup.setAutoFix(true); // 画面外に出にくくする
+			popup.setAutoFix(false); // 画面外に出にくくする
 			popup.setHideOnEscape(true); // Esc押下で閉じる
 
 			// 通知が持つアクションを取得する
