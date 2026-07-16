@@ -115,7 +115,7 @@ public class SnapNotificationPresenter {
 
 			// FXMLに読み込む
 			Parent root = loader.load();
-			
+
 			// cssを適用する
 			StyleSheetUtil.applyStyleSheet(root, CSS_NOTIFICATION);
 
@@ -171,14 +171,17 @@ public class SnapNotificationPresenter {
 
 		if (result.getIsClipboardCopied()) {
 			// クリップボードコピーに成功
-			noticeMessageList.add(converter.getMessage(MessageKeyConstant.NOTIFICATION_CLIPBOARD_SAVED, "Copied to clipboard."));
+			noticeMessageList
+					.add(converter.getMessage(MessageKeyConstant.NOTIFICATION_CLIPBOARD_SAVED, "Copied to clipboard."));
 		}
 
 		if (result.getIsTmpSaved()) {
 			// 一時保存に成功
-			noticeMessageList.add(converter.getMessage(MessageKeyConstant.NOTIFICATION_TMP_IMAGE_SAVED, "Image saved to the temporary folder."));
+			noticeMessageList.add(converter.getMessage(MessageKeyConstant.NOTIFICATION_TMP_IMAGE_SAVED,
+					"Image saved to the temporary folder."));
 			noticeMessageList.add(converter.getMessage(
-					MessageKeyConstant.NOTIFICATION_TMP_WARN, "Temporary images will be deleted when the app exits.\\nMove any images you want to keep to another folder."));
+					MessageKeyConstant.NOTIFICATION_TMP_WARN,
+					"Temporary images will be deleted when the app exits.\\nMove any images you want to keep to another folder."));
 		}
 
 		// 通知クリックでフォルダが開けることを伝える文言を取得
@@ -242,7 +245,7 @@ public class SnapNotificationPresenter {
 		// popupの中身を透明にし、show直後に見えないようにする
 		root.setOpacity(NOTIFICATION_HIDE_OPACITY);
 
-		// show後にpopupの幅、高さが取得できるようになるため、一度先に表示
+		// show後にpopupの幅、高さが取得できるようになるため、一度先に表示		
 		popup.show(stage); // メイン画面を親と指定
 
 		// 通知の表示座標を取得する
@@ -281,6 +284,7 @@ public class SnapNotificationPresenter {
 	 * @param root FXML の最上位ノード（Parent）
 	 */
 	private void hideWithFadeOut(Popup popup, Parent root) {
+
 		// もう閉じているなら早期リターン
 		if (!popup.isShowing()) {
 			return;
