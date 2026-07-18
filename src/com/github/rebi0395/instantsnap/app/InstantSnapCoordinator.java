@@ -1,5 +1,6 @@
 package com.github.rebi0395.instantsnap.app;
 
+import java.awt.Rectangle;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -12,7 +13,6 @@ import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.model.bean.SnapResultBean;
 import com.github.rebi0395.instantsnap.model.enums.AfterSnapActionType;
 import com.github.rebi0395.instantsnap.repository.PropertiesRepository;
-import com.github.rebi0395.instantsnap.service.KeyEventListener;
 import com.github.rebi0395.instantsnap.service.MouseCursorService;
 import com.github.rebi0395.instantsnap.service.FileOpenService;
 import com.github.rebi0395.instantsnap.service.FilePathService;
@@ -22,6 +22,9 @@ import com.github.rebi0395.instantsnap.service.SoundPlayer;
 import com.github.rebi0395.instantsnap.service.TakeSnapService;
 import com.github.rebi0395.instantsnap.service.TmpFolderService;
 import com.github.rebi0395.instantsnap.service.TriggerKeyManager;
+import com.github.rebi0395.instantsnap.service.TriggerKeyManager.KeyEventListener;
+import com.github.rebi0395.instantsnap.view.RangeSelectionWindow;
+import com.github.rebi0395.instantsnap.view.RangeSelectionWindow.RangeSelectionListener;
 import com.github.rebi0395.instantsnap.view.presenter.SnapNotificationPresenter;
 
 import javafx.application.Platform;
@@ -29,7 +32,7 @@ import javafx.application.Platform;
 /**
  * 対応するサービスクラスに処理を振り分ける、司令塔クラス
  */
-public class InstantSnapCoordinator implements KeyEventListener {
+public class InstantSnapCoordinator implements KeyEventListener, RangeSelectionListener {
 
 	/** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(InstantSnapCoordinator.class);
@@ -207,6 +210,27 @@ public class InstantSnapCoordinator implements KeyEventListener {
 	}
 
 	/**
+	 * 範囲トリガーが押されたとき、撮影範囲選択モードに以降する
+	 */
+	@Override
+	public void requestRangeSelection() {
+		RangeSelectionWindow range = new RangeSelectionWindow();
+		range.show(this);
+	}
+
+	@Override
+	public void onSelected(Rectangle selectedArea) {
+		// TODO 自動生成されたメソッド・スタブ
+
+	}
+
+	@Override
+	public void onCancelled() {
+		// TODO 自動生成されたメソッド・スタブ
+
+	}
+
+	/**
 	 * アプリの終了キーが押されたとき、アプリを終了する
 	 */
 	@Override
@@ -221,7 +245,7 @@ public class InstantSnapCoordinator implements KeyEventListener {
 	public ConfigBean getConfigBean() {
 		return config;
 	}
-	
+
 	/**
 	 * メッセージキーをメッセージに変換するコンバーターを取得する
 	 * @return converter
@@ -229,7 +253,7 @@ public class InstantSnapCoordinator implements KeyEventListener {
 	public MessageKeyConverter getMessageKeyConverter() {
 		return converter;
 	}
-	
+
 	/**
 	 * ファイル名生成、ディレクトリ解決を行うクラスを取得する
 	 * @return filePathService
