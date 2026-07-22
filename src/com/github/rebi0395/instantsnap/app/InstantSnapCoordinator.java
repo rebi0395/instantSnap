@@ -160,21 +160,18 @@ public class InstantSnapCoordinator implements KeyEventListener, RangeSelectionL
 		// 別スレッド立ち上げ
 		executor.submit(() -> {
 			SnapResultBean result;
-
-			// 撮影後、使う変数
-			boolean showNotification;
-			boolean soundNotificationEnabled;
-			AfterSnapActionType afterSnapActionType;
+			AfterSnapData afterSnapData;
 
 			synchronized (configLock) { // 排他制御
 				try {
 					// 撮影処理
 					result = takeSnapService.execute(config);
-
 					// ロック中に設定値を退避する
-					showNotification = config.getIsShowNotification();
-					soundNotificationEnabled = config.getIsNotificationSoundEnabled();
-					afterSnapActionType = config.getAfterSnapActionType();
+					afterSnapData = new AfterSnapData(
+							new SnapResultBean(result),
+							config.getIsShowNotification(),
+							config.getIsNotificationSoundEnabled(),
+							config.getAfterSnapActionType());
 
 				} catch (Exception e) {
 					log.error("スクリーンショットの撮影または保存に失敗しました", e);
@@ -182,30 +179,11 @@ public class InstantSnapCoordinator implements KeyEventListener, RangeSelectionL
 				}
 			}
 
-			// 撮影結果がない場合、早期リターン
-			if (!result.hasResult()) {
-				return;
+			// 撮影結果がある場合は、撮影後処理を行う
+			if (afterSnapData.result().hasResult()) {
+				afterSnapAction(afterSnapData);
 			}
 
-			try {
-				// 通知表示が有効な場合
-				if (showNotification) {
-					notificationPresenter.show(result, fileOpenService, converter);
-				}
-
-				// 通知音が有効な場合
-				if (soundNotificationEnabled) {
-					soundPlayer.playNotificationSound();
-				}
-
-				// 撮影後アクションを実行
-				if (result.getTargetPath() != null) {
-					fileOpenService.execute(afterSnapActionType, result.getTargetPath());
-				}
-
-			} catch (Exception e) {
-				log.error("撮影後処理に失敗しました", e);
-			}
 		});
 	}
 
@@ -239,6 +217,34 @@ public class InstantSnapCoordinator implements KeyEventListener, RangeSelectionL
 	}
 
 	/**
+	 * 撮影後処理を実施する
+	 *
+	 * @param afterSnapData 撮影後処理の判定で使うrecord
+	 */
+	private void afterSnapAction(AfterSnapData afterSnapData) {
+
+		try {
+			// 通知表示が有効な場合
+			if (afterSnapData.showNotification()) {
+				notificationPresenter.show(afterSnapData.result(), fileOpenService, converter);
+			}
+
+			// 通知音が有効な場合
+			if (afterSnapData.soundNotificationEnabled()) {
+				soundPlayer.playNotificationSound();
+			}
+
+			// 撮影後アクションを実行
+			if (afterSnapData.result().getTargetPath() != null) {
+				fileOpenService.execute(afterSnapData.afterSnapActionType(), afterSnapData.result().getTargetPath());
+			}
+
+		} catch (Exception e) {
+			log.error("撮影後処理に失敗しました", e);
+		}
+	}
+
+	/**
 	 * ユーザーの設定値を取得する
 	 * @return config
 	 */
@@ -260,5 +266,15 @@ public class InstantSnapCoordinator implements KeyEventListener, RangeSelectionL
 	 */
 	public FilePathService getFilePathService() {
 		return filePathService;
+	}
+
+	/**
+	 * 撮影後の処理で使う変数をひとまとめにしたレコードクラス
+	 */
+	private record AfterSnapData(
+			SnapResultBean result,
+			boolean showNotification,
+			boolean soundNotificationEnabled,
+			AfterSnapActionType afterSnapActionType) {
 	}
 }
