@@ -1,2 +1,6 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Keep Maven Wrapper scripts executable on their target shells
+mvnw text eol=lf
+mvnw.cmd text eol=crlf
