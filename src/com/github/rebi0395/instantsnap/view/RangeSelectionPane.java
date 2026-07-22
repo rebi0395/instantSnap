@@ -14,7 +14,7 @@ import javafx.scene.shape.Rectangle;
 public class RangeSelectionPane extends Pane {
 
 	/** 選択範囲外の暗幕色 */
-	private static final Color OVERLAY_COLOR = Color.rgb(0, 0, 0, 0.35);
+	private static final Color SHADE_COLOR = Color.rgb(0, 0, 0, 0.35);
 
 	/** 選択範囲の枠線色 */
 	private static final Color SELECTION_BORDER_COLOR = Color.WHITE;
@@ -23,16 +23,16 @@ public class RangeSelectionPane extends Pane {
 	private static final double SELECTION_BORDER_WIDTH = 2.0;
 
 	/** 上側の暗幕 */
-	private final Rectangle topOverlayBounds = new Rectangle();
+	private final Rectangle topShadeArea = new Rectangle();
 
 	/** 下側の暗幕 */
-	private final Rectangle bottomOverlayBounds = new Rectangle();
+	private final Rectangle bottomShadeArea = new Rectangle();
 
 	/** 左側の暗幕 */
-	private final Rectangle leftOverlayBounds = new Rectangle();
+	private final Rectangle leftShadeArea = new Rectangle();
 
 	/** 右側の暗幕 */
-	private final Rectangle rightOverlayBounds = new Rectangle();
+	private final Rectangle rightShadeArea = new Rectangle();
 
 	/** 選択範囲の枠線 */
 	private final Rectangle selectionBorder = new Rectangle();
@@ -73,7 +73,7 @@ public class RangeSelectionPane extends Pane {
 	 * コンストラクタ
 	 */
 	public RangeSelectionPane() {
-		setupOverlays(); // 暗幕の初期化
+		setupShadeAreas(); // 暗幕の初期化
 		setupSelectionBorder(); // 枠線の初期化
 		registerMouseEvents(); // マウスイベントの登録
 
@@ -85,10 +85,10 @@ public class RangeSelectionPane extends Pane {
 
 		// Paneの子要素に暗幕と枠線を追加
 		getChildren().addAll(
-				topOverlayBounds,
-				bottomOverlayBounds,
-				leftOverlayBounds,
-				rightOverlayBounds,
+				topShadeArea,
+				bottomShadeArea,
+				leftShadeArea,
+				rightShadeArea,
 				selectionBorder); // 後ろで指定している要素ほど、手前側に表示される。枠線が最前
 	}
 
@@ -113,18 +113,18 @@ public class RangeSelectionPane extends Pane {
 		selectionBorder.setWidth(0);
 		selectionBorder.setHeight(0);
 
-		updateOverlays(); // 暗幕の更新
+		updateShadeAreas(); // 暗幕の更新
 	}
 
 	/**
 	 * 撮影範囲外の上下左右の暗幕を初期化する
 	 */
-	private void setupOverlays() {
-		Rectangle[] overlays = { topOverlayBounds, bottomOverlayBounds, leftOverlayBounds, rightOverlayBounds };
+	private void setupShadeAreas() {
+		Rectangle[] shadeAreas = { topShadeArea, bottomShadeArea, leftShadeArea, rightShadeArea };
 
-		for (Rectangle overlay : overlays) {
-			overlay.setFill(OVERLAY_COLOR); // 背景色設定
-			overlay.setMouseTransparent(true); // 暗幕をマウスイベントの対象から除外
+		for (Rectangle shadeArea : shadeAreas) {
+			shadeArea.setFill(SHADE_COLOR); // 背景色設定
+			shadeArea.setMouseTransparent(true); // 暗幕をマウスイベントの対象から除外
 		}
 	}
 
@@ -258,25 +258,25 @@ public class RangeSelectionPane extends Pane {
 		selectionBorder.setVisible(true);
 
 		// 選択範囲外の暗幕を更新する
-		updateOverlays();
+		updateShadeAreas();
 	}
 
 	/**
 	 * 選択範囲の上下左右に位置する四つの暗幕を更新する
 	 */
-	private void updateOverlays() {
+	private void updateShadeAreas() {
 
 		double paneW = getWidth();
 		double paneH = getHeight();
 
 		if (selectionBounds == null) {
 			// 上部分の領域のみを全面に表示する
-			setOverlayBounds(topOverlayBounds, 0, 0, paneW, paneH);
+			setShadeAreaBounds(topShadeArea, 0, 0, paneW, paneH);
 
 			// 下、左、右の領域はないものとして初期化
-			setOverlayBounds(bottomOverlayBounds, 0, 0, 0, 0);
-			setOverlayBounds(leftOverlayBounds, 0, 0, 0, 0);
-			setOverlayBounds(rightOverlayBounds, 0, 0, 0, 0);
+			setShadeAreaBounds(bottomShadeArea, 0, 0, 0, 0);
+			setShadeAreaBounds(leftShadeArea, 0, 0, 0, 0);
+			setShadeAreaBounds(rightShadeArea, 0, 0, 0, 0);
 
 			return;
 		}
@@ -289,31 +289,31 @@ public class RangeSelectionPane extends Pane {
 
 		// 上下左右の暗幕を設定する
 		// 選択範囲の上側 選択範囲のYを高さとして使用する
-		setOverlayBounds(topOverlayBounds, 0, 0, paneW, selectY);
+		setShadeAreaBounds(topShadeArea, 0, 0, paneW, selectY);
 		// 選択範囲の下側 高さの算出：パネル全体の高さ - (左上のY + 選択範囲の高さ)
-		setOverlayBounds(bottomOverlayBounds, 0, selectY + selectH,
+		setShadeAreaBounds(bottomShadeArea, 0, selectY + selectH,
 				paneW, Math.max(0, paneH - (selectY + selectH)));
 		// 選択範囲の左側 選択範囲のXを幅として使用する
-		setOverlayBounds(leftOverlayBounds, 0, selectY, selectX, selectH); // 選択範囲の左側
+		setShadeAreaBounds(leftShadeArea, 0, selectY, selectX, selectH); // 選択範囲の左側
 		// 選択範囲の右側 幅の算出：パネル全体の幅 - (左側のX + 選択範囲の幅)
-		setOverlayBounds(rightOverlayBounds, selectX + selectW, selectY,
+		setShadeAreaBounds(rightShadeArea, selectX + selectW, selectY,
 				Math.max(0, paneW - (selectX + selectW)), selectH);
 	}
 
 	/**
 	 * 暗幕の表示領域を設定する
 	 * 
-	 * @param overlay 暗幕用のRectangle
+	 * @param shadeArea 暗幕用のRectangle
 	 * @param x 暗幕左上のX座標
 	 * @param y 暗幕左上のY座標
 	 * @param width 暗幕の幅
 	 * @param height 暗幕の高さ
 	 */
-	private void setOverlayBounds(Rectangle overlay, double x, double y, double width, double height) {
-		overlay.setX(x);
-		overlay.setY(y);
-		overlay.setWidth(width);
-		overlay.setHeight(height);
+	private void setShadeAreaBounds(Rectangle shadeArea, double x, double y, double width, double height) {
+		shadeArea.setX(x);
+		shadeArea.setY(y);
+		shadeArea.setWidth(width);
+		shadeArea.setHeight(height);
 	}
 
 	/**
@@ -341,6 +341,6 @@ public class RangeSelectionPane extends Pane {
 	@Override
 	protected void layoutChildren() {
 		super.layoutChildren();
-		updateOverlays();
+		updateShadeAreas();
 	}
 }
