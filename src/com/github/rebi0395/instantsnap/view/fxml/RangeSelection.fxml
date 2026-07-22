@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.StackPane?>
+<?import com.github.rebi0395.instantsnap.view.component.RangeSelectionPane?>
+
+<StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" 
+	styleClass="range-selection-root">
+	
+	<RangeSelectionPane fx:id="selectionPane"/>
+
+</StackPane>
