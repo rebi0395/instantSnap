@@ -1,5 +1,6 @@
 package com.github.rebi0395.instantsnap.app;
 
+import java.awt.GraphicsDevice;
 import java.awt.Rectangle;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -23,8 +24,7 @@ import com.github.rebi0395.instantsnap.service.TakeSnapService;
 import com.github.rebi0395.instantsnap.service.TmpFolderService;
 import com.github.rebi0395.instantsnap.service.TriggerKeyManager;
 import com.github.rebi0395.instantsnap.service.TriggerKeyManager.KeyEventListener;
-import com.github.rebi0395.instantsnap.view.RangeSelectionWindow;
-import com.github.rebi0395.instantsnap.view.RangeSelectionWindow.RangeSelectionListener;
+import com.github.rebi0395.instantsnap.view.presenter.RangeSelectionPresenter.RangeSelectionListener;
 import com.github.rebi0395.instantsnap.view.presenter.SnapNotificationPresenter;
 
 import javafx.application.Platform;
@@ -166,7 +166,7 @@ public class InstantSnapCoordinator implements KeyEventListener, RangeSelectionL
 				try {
 					// 撮影処理
 					result = takeSnapService.execute(config);
-					// ロック中に設定値を退避する
+					// ロック中に撮影後処理に使う分の設定値を退避する
 					afterSnapData = new AfterSnapData(
 							new SnapResultBean(result),
 							config.getIsShowNotification(),
@@ -192,8 +192,8 @@ public class InstantSnapCoordinator implements KeyEventListener, RangeSelectionL
 	 */
 	@Override
 	public void requestRangeSelection() {
-		RangeSelectionWindow range = new RangeSelectionWindow();
-		range.show(this);
+		GraphicsDevice device = areaResolver.getGraphicsDeviceAtPointer();
+		
 	}
 
 	@Override
@@ -270,6 +270,11 @@ public class InstantSnapCoordinator implements KeyEventListener, RangeSelectionL
 
 	/**
 	 * 撮影後の処理で使う変数をひとまとめにしたレコードクラス
+	 *
+	 * @param result 撮影結果
+	 * @param showNotification 通知表示の有無
+	 * @param soundNotificationEnabled 撮影音の有無
+	 * @param afterSnapActionType 撮影後動作
 	 */
 	private record AfterSnapData(
 			SnapResultBean result,
