@@ -163,6 +163,10 @@ public class InstantSnapCoordinator implements KeyEventListener, SelectionListen
 	 */
 	@Override
 	public void requestSnap() {
+		if (!rangeSelectionPresenter.canSnap()) {
+			// ドラッグ中などであれば早期リターン
+			return;
+		}
 		// 別スレッド立ち上げ
 		executor.submit(() -> {
 			SnapResultBean result;
@@ -194,17 +198,12 @@ public class InstantSnapCoordinator implements KeyEventListener, SelectionListen
 	}
 
 	/**
-	 * 範囲トリガーが押されたとき呼ばれる。撮影範囲選択モードに以降する
+	 * 範囲トリガーが押されたとき呼ばれる。撮影範囲選択モードの無効・有効を切り替える
 	 */
 	@Override
 	public void requestRangeSelection() {
-		if (rangeSelectionPresenter.isShowing()) {
-			// 既に表示している場合、何もしない
-			return;
-		}
-
 		Rectangle rectangle = areaResolver.getActiveScreenArea();
-		rangeSelectionPresenter.show(rectangle);
+		rangeSelectionPresenter.switchRangeSelectionMode(rectangle);
 	}
 
 	/**
@@ -241,7 +240,11 @@ public class InstantSnapCoordinator implements KeyEventListener, SelectionListen
 		try {
 			// 通知表示が有効な場合
 			if (afterSnapData.showNotification()) {
-				notificationPresenter.show(afterSnapData.result(), fileOpenService, converter);
+				notificationPresenter.show(
+						afterSnapData.result(), // 撮影結果
+						fileOpenService, // ファイルを開くインスタンス
+						converter, // メッセージ変数インスタンス
+						rangeSelectionPresenter.getWindow()); // 範囲選択ウィンドウ
 			}
 
 			// 通知音が有効な場合

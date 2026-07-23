@@ -19,6 +19,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.stage.Window;
 
 /**
  * 範囲選択画面の表示の下準備をするプレゼンタークラス
@@ -27,6 +28,9 @@ public class RangeSelectionPresenter {
 
 	/** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(RangeSelectionPresenter.class);
+
+	/** 範囲選択コントローラ */
+	private RangeSelectionController controller;
 
 	/** 範囲決定通知リスナー */
 	private SelectionListener listener;
@@ -37,6 +41,7 @@ public class RangeSelectionPresenter {
 	/** コンストラクタ */
 	public RangeSelectionPresenter(SelectionListener listener) {
 		this.listener = listener;
+		this.controller = new RangeSelectionController(listener);
 	}
 
 	/**
@@ -59,28 +64,58 @@ public class RangeSelectionPresenter {
 	}
 
 	/**
-	 * 撮影範囲選択を受け付ける画面を表示する
-	 * 
-	 * @param rectangle 表示するモニターの座標
+	 * 範囲選択モードの有効・無効を切り替える。
+	 * 画面が表示中なら閉じ、表示されていなければ開く。
+	 *
+	 * @param screenArea 範囲選択画面を表示するモニター領域
 	 */
-	public void show(Rectangle screenArea) {
-		// JavaFXの専用スレッドに処理を依頼する
+	public void switchRangeSelectionMode(Rectangle screenArea) {
 		Platform.runLater(() -> {
-			showRangeSelection(screenArea);
-		});
+			if (isShowing()) {
+				closeRangeSelectionWindow();
+				return;
+			}
 
+			showRangeSelectionWindow(screenArea);
+		});
 	}
-	
-	public boolean isShowing() {
-		return stage != null && stage.isShowing();
+
+	/** 
+	 * 範囲選択画面のウィンドウを取得する。
+	 * @return 範囲選択画面のウィンドウ
+	 */
+	public Window getWindow() {
+		return stage;
+	}
+
+	/**
+	 * 範囲選択画面との兼ね合いで、撮影可能であるかを判定する
+	 * 画面がでていない、撮影範囲を決定済なら撮影可
+	 * 画面がでていて、範囲が決まっていない場合、撮影不可
+	 * 
+	 * @return 撮影可否
+	 */
+	public boolean canSnap() {
+		if (!isShowing()) {
+			// 画面が開かれていなければ撮影可能
+			return true;
+		}
+
+		if (controller.isSelectionConfirmed()) {
+			// 範囲決定済であれば撮影可能
+			return true;
+		}
+
+		return false; // ドラッグ中などでは撮影不可
 	}
 
 	/**
 	 * 撮影範囲選択を受け付ける画面を表示する
+	 * 
+	 * @param screenArea 表示する画面の座標
 	 */
-	private void showRangeSelection(Rectangle screenArea) {
+	private void showRangeSelectionWindow(Rectangle screenArea) {
 		try {
-			RangeSelectionController controller = new RangeSelectionController(listener);
 
 			// FXMLファイルローダーを作成する
 			FXMLLoader loader = new FXMLLoader(getClass().getResource(FXML_RANGE_SELECTION));
@@ -95,9 +130,7 @@ public class RangeSelectionPresenter {
 			// ESCキーで画面を閉じる処理の登録
 			scene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
 				if (event.getCode() == KeyCode.ESCAPE) {
-					controller.resetSelection();
-					listener.onClosed();
-					stage.close();
+					closeRangeSelectionWindow();
 					event.consume();
 				}
 			});
@@ -116,5 +149,25 @@ public class RangeSelectionPresenter {
 		} catch (Exception e) {
 			log.error("範囲選択画面の表示に失敗しました", e);
 		}
+	}
+
+	/**
+	 * 撮影範囲選択を受け付ける画面を閉じる
+	 */
+	private void closeRangeSelectionWindow() {
+		if (!isShowing()) {
+			return;
+		}
+		controller.resetSelection();
+		listener.onClosed(); // リスナー側の設定値を破棄させる
+		stage.close();
+	}
+
+	/**
+	 * 画面を表示しているかを取得する。
+	 * @return 画面を表示中ならtrue
+	 */
+	private boolean isShowing() {
+		return stage != null && stage.isShowing();
 	}
 }
