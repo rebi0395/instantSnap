@@ -1,6 +1,5 @@
 package com.github.rebi0395.instantsnap.app;
 
-import java.awt.GraphicsDevice;
 import java.awt.Rectangle;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -24,7 +23,8 @@ import com.github.rebi0395.instantsnap.service.TakeSnapService;
 import com.github.rebi0395.instantsnap.service.TmpFolderService;
 import com.github.rebi0395.instantsnap.service.TriggerKeyManager;
 import com.github.rebi0395.instantsnap.service.TriggerKeyManager.KeyEventListener;
-import com.github.rebi0395.instantsnap.view.presenter.RangeSelectionPresenter.RangeSelectionListener;
+import com.github.rebi0395.instantsnap.view.presenter.RangeSelectionPresenter;
+import com.github.rebi0395.instantsnap.view.presenter.RangeSelectionPresenter.SelectionListener;
 import com.github.rebi0395.instantsnap.view.presenter.SnapNotificationPresenter;
 
 import javafx.application.Platform;
@@ -32,7 +32,7 @@ import javafx.application.Platform;
 /**
  * 対応するサービスクラスに処理を振り分ける、司令塔クラス
  */
-public class InstantSnapCoordinator implements KeyEventListener, RangeSelectionListener {
+public class InstantSnapCoordinator implements KeyEventListener, SelectionListener {
 
 	/** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(InstantSnapCoordinator.class);
@@ -67,6 +67,11 @@ public class InstantSnapCoordinator implements KeyEventListener, RangeSelectionL
 	/** マウスカーソルを書き込むクラス */
 	private MouseCursorService mouseCursorService;
 
+	/** ドラッグ範囲を指定する画面を表示するクラス */
+	private RangeSelectionPresenter rangeSelectionPresenter;
+	/** ドラッグ範囲 */
+	private Rectangle rangeSelection;
+
 	/** スレッドセーフに撮影処理を呼び出すためのクラス */
 	private final ExecutorService executor = Executors.newSingleThreadExecutor();
 	/** 設定値の保存処理と、撮影処理の同時呼び出しを防止するオブジェクト */
@@ -88,6 +93,7 @@ public class InstantSnapCoordinator implements KeyEventListener, RangeSelectionL
 		this.converter = new MessageKeyConverter(config.getLanguageType());
 		this.saveService = new SnapSaveService(filePathService);
 		this.keyManager = new TriggerKeyManager(config, this);
+		this.rangeSelectionPresenter = new RangeSelectionPresenter(this);
 		this.takeSnapService = new TakeSnapService(areaResolver, saveService, soundPlayer, mouseCursorService);
 
 		// Stage情報を持つクラス
@@ -153,7 +159,7 @@ public class InstantSnapCoordinator implements KeyEventListener, RangeSelectionL
 	}
 
 	/**
-	 * 撮影トリガーが押されたとき、撮影処理を呼び出す
+	 * 撮影トリガーが押されたとき呼ばれる。撮影処理を呼び出す
 	 */
 	@Override
 	public void requestSnap() {
@@ -165,7 +171,7 @@ public class InstantSnapCoordinator implements KeyEventListener, RangeSelectionL
 			synchronized (configLock) { // 排他制御
 				try {
 					// 撮影処理
-					result = takeSnapService.execute(config);
+					result = takeSnapService.execute(config, rangeSelection);
 					// ロック中に撮影後処理に使う分の設定値を退避する
 					afterSnapData = new AfterSnapData(
 							new SnapResultBean(result),
@@ -188,28 +194,37 @@ public class InstantSnapCoordinator implements KeyEventListener, RangeSelectionL
 	}
 
 	/**
-	 * 範囲トリガーが押されたとき、撮影範囲選択モードに以降する
+	 * 範囲トリガーが押されたとき呼ばれる。撮影範囲選択モードに以降する
 	 */
 	@Override
 	public void requestRangeSelection() {
-		GraphicsDevice device = areaResolver.getGraphicsDeviceAtPointer();
-		
-	}
+		if (rangeSelectionPresenter.isShowing()) {
+			// 既に表示している場合、何もしない
+			return;
+		}
 
-	@Override
-	public void onSelected(Rectangle selectedArea) {
-		// TODO 自動生成されたメソッド・スタブ
-
-	}
-
-	@Override
-	public void onCancelled() {
-		// TODO 自動生成されたメソッド・スタブ
-
+		Rectangle rectangle = areaResolver.getActiveScreenArea();
+		rangeSelectionPresenter.show(rectangle);
 	}
 
 	/**
-	 * アプリの終了キーが押されたとき、アプリを終了する
+	 * 範囲選択完了後に呼ばれる。選択した範囲を取得する。
+	 */
+	@Override
+	public void onSelected(Rectangle selectedArea) {
+		rangeSelection = selectedArea;
+	}
+
+	/**
+	 * 範囲選択画面が閉じられた場合に呼ばれる。選択範囲を破棄する
+	 */
+	@Override
+	public void onClosed() {
+		rangeSelection = null;
+	}
+
+	/**
+	 * アプリの終了キーが押されたとき呼ばれる。アプリを終了する
 	 */
 	@Override
 	public void requestExit() {

@@ -1,6 +1,7 @@
 /**
- * 撮影範囲選択画面
+ * 撮影範囲選択画面 
+ * 完全透明でなく、わずかに色があることで、マウスイベントの選択範囲として認識させる
  */
 .range-selection-root {
-	-fx-background-color: transparent;
+	-fx-background-color: rgba(0, 0, 0, 0.005);
 }
