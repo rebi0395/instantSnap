@@ -6,8 +6,6 @@ import javafx.fxml.FXML;
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Cursor;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
@@ -101,6 +99,14 @@ public class RangeSelectionController {
 		selectionBorder.setHeight(0);
 
 		updateShadeAreas(); // 暗幕の更新
+	}
+
+	/**
+	 * 範囲が決定しているかを取得する
+	 * @return
+	 */
+	public boolean isSelectionConfirmed() {
+		return selectionConfirmed;
 	}
 
 	/**
@@ -234,7 +240,7 @@ public class RangeSelectionController {
 		// フラグを更新する
 		dragging = false;
 		selectionConfirmed = true;
-		
+
 		// 白線の非表示
 		selectionBorder.setVisible(false);
 
