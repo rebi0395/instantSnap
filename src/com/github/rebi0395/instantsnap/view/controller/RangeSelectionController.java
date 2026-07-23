@@ -1,6 +1,5 @@
 package com.github.rebi0395.instantsnap.view.controller;
 
-import com.github.rebi0395.instantsnap.view.ScreenRectangleConverter;
 import com.github.rebi0395.instantsnap.view.presenter.RangeSelectionPresenter.SelectionListener;
 import javafx.fxml.FXML;
 import javafx.geometry.Point2D;
@@ -12,6 +11,9 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
+/**
+ * 範囲選択画面のコントローラークラス
+ */
 public class RangeSelectionController {
 
 	/** 範囲選択結果の通知先 */
@@ -38,24 +40,27 @@ public class RangeSelectionController {
 	/** ドラッグ中かどうか */
 	private boolean dragging = false;
 
-	/** 選択範囲が確定しているか */
-	private boolean selectionConfirmed = false;
-
+	/** 画面パネル */
 	@FXML
 	private Pane selectionPane;
 
+	/** 上部の暗幕 */
 	@FXML
 	private Rectangle topShadeArea;
 
+	/** 下部の暗幕 */
 	@FXML
 	private Rectangle bottomShadeArea;
 
+	/** 左の暗幕 */
 	@FXML
 	private Rectangle leftShadeArea;
 
+	/** 右の暗幕 */
 	@FXML
 	private Rectangle rightShadeArea;
 
+	/** 範囲選択の枠線 */
 	@FXML
 	private Rectangle selectionBorder;
 
@@ -90,7 +95,6 @@ public class RangeSelectionController {
 	 */
 	public void resetSelection() {
 		dragging = false; // ドラッグ中か
-		selectionConfirmed = false; // 選択範囲が確定しているか
 		selectionBounds = null; // 選択範囲
 
 		// 枠線の座標をリセットし、非表示にする。
@@ -99,14 +103,6 @@ public class RangeSelectionController {
 		selectionBorder.setHeight(0);
 
 		updateShadeAreas(); // 暗幕の更新
-	}
-
-	/**
-	 * 範囲が決定しているかを取得する
-	 * @return
-	 */
-	public boolean isSelectionConfirmed() {
-		return selectionConfirmed;
 	}
 
 	/**
@@ -180,10 +176,8 @@ public class RangeSelectionController {
 			return;
 		}
 
-		// 範囲選択済みの場合、選択済状態を解除する
-		if (selectionConfirmed) {
-			selectionConfirmed = false;
-		}
+		// 通知先の範囲選択をリセットする
+		listener.onUpdatedArea(null);
 
 		// ドラッグ開始位置を設定する
 		startX = clamp(mouseEvent.getX(), 0, selectionPane.getWidth());
@@ -227,7 +221,7 @@ public class RangeSelectionController {
 		// 実際にドラッグをしていない場合は、通常クリックと見なす
 		if (mouseEvent.isStillSincePress()) {
 			resetSelection();
-			listener.onSelected(null); // 通知先に、選択範囲が空であることを通知する
+			listener.onUpdatedArea(null); // 通知先に、選択範囲が空であることを通知する
 			return;
 		}
 
@@ -237,16 +231,11 @@ public class RangeSelectionController {
 		// 選択範囲を更新する
 		updateSelection(currentX, currentY);
 
-		// フラグを更新する
-		dragging = false;
-		selectionConfirmed = true;
+		dragging = false; // フラグを更新する
+		selectionBorder.setVisible(false); // 白線の非表示
 
-		// 白線の非表示
-		selectionBorder.setVisible(false);
-
-		// 撮影範囲の更新を通知する
-		Rectangle2D screenArea = convertScreenArea(selectionBounds);
-		listener.onSelected(ScreenRectangleConverter.toAwt(screenArea));
+		// ローカル座標を変換し、撮影範囲の更新を通知する
+		listener.onUpdatedArea(convertScreenArea(selectionBounds));
 	}
 
 	/**
@@ -335,31 +324,33 @@ public class RangeSelectionController {
 	}
 
 	/**
-	 * Pane内の座標をスクリーン座標へ変換する
+	 * Pane内の選択範囲を、スクリーン座標のAWT Rectangleへ変換する。
 	 *
 	 * @param localArea Pane内の選択範囲
-	 * @return スクリーン上の選択範囲
+	 * @return スクリーン座標へ変換した撮影範囲。変換できない場合はnull
 	 */
-	private Rectangle2D convertScreenArea(Rectangle2D localArea) {
-		// stageの座標にPaneの座標を加算して、左上のスクリーン座標(X,Y)を取得する
+	private java.awt.Rectangle convertScreenArea(Rectangle2D localArea) {
+		// 選択範囲の左上をスクリーン座標へ変換する
 		Point2D topLeft = selectionPane.localToScreen(
-				localArea.getMinX(), // Paneの左上のX
-				localArea.getMinY()); // Paneの左上のY
+				localArea.getMinX(),
+				localArea.getMinY());
 
-		// stageの座標にPaneの座標を加算して、右下のスクリーン座標(X,Y)を取得する
+		// 選択範囲の右下をスクリーン座標へ変換する
 		Point2D bottomRight = selectionPane.localToScreen(
-				localArea.getMaxX(), // Paneの右下のX
-				localArea.getMaxY()); // Paneの右下のY
+				localArea.getMaxX(),
+				localArea.getMaxY());
 
 		if (topLeft == null || bottomRight == null) {
 			return null;
 		}
 
-		return new Rectangle2D(
-				topLeft.getX(),
-				topLeft.getY(),
-				bottomRight.getX() - topLeft.getX(),
-				bottomRight.getY() - topLeft.getY());
+		// 小数座標を含む範囲全体が収まるように、左上は切り下げ、右下は切り上げる
+		int x = (int) Math.floor(topLeft.getX());
+		int y = (int) Math.floor(topLeft.getY());
+		int maxX = (int) Math.ceil(bottomRight.getX());
+		int maxY = (int) Math.ceil(bottomRight.getY());
+
+		return new java.awt.Rectangle(x, y, maxX - x, maxY - y);
 	}
 
 	/**

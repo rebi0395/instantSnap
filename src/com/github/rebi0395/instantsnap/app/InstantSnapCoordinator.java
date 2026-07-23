@@ -62,15 +62,18 @@ public class InstantSnapCoordinator implements KeyEventListener, SelectionListen
 	private final FileOpenService fileOpenService;
 	/** 効果音再生クラス */
 	private final SoundPlayer soundPlayer;
-	/** 撮影通知を表示するクラス */
-	private final SnapNotificationPresenter notificationPresenter;
 	/** マウスカーソルを書き込むクラス */
 	private MouseCursorService mouseCursorService;
 
-	/** ドラッグ範囲を指定する画面を表示するクラス */
+	/** 撮影通知を表示するクラス */
+	private final SnapNotificationPresenter notificationPresenter;
+	/** 範囲選択画面を表示するクラス */
 	private RangeSelectionPresenter rangeSelectionPresenter;
+
+	/** 範囲選択画面を表示中ならtrue */
+	private volatile boolean rangeSelectionModeActive = false;
 	/** ドラッグ範囲 */
-	private Rectangle rangeSelection;
+	private volatile Rectangle rangeSelection;
 
 	/** スレッドセーフに撮影処理を呼び出すためのクラス */
 	private final ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -163,8 +166,8 @@ public class InstantSnapCoordinator implements KeyEventListener, SelectionListen
 	 */
 	@Override
 	public void requestSnap() {
-		if (!rangeSelectionPresenter.canSnap()) {
-			// ドラッグ中などであれば早期リターン
+		if (rangeSelectionModeActive && rangeSelection == null) {
+			// 範囲選択画面は表示中だが、範囲が未確定
 			return;
 		}
 		// 別スレッド立ち上げ
@@ -206,12 +209,10 @@ public class InstantSnapCoordinator implements KeyEventListener, SelectionListen
 		rangeSelectionPresenter.switchRangeSelectionMode(rectangle);
 	}
 
-	/**
-	 * 範囲選択完了後に呼ばれる。選択した範囲を取得する。
-	 */
 	@Override
-	public void onSelected(Rectangle selectedArea) {
-		rangeSelection = selectedArea;
+	public void onShown() {
+		rangeSelection = null;
+		rangeSelectionModeActive = true;
 	}
 
 	/**
@@ -220,6 +221,19 @@ public class InstantSnapCoordinator implements KeyEventListener, SelectionListen
 	@Override
 	public void onClosed() {
 		rangeSelection = null;
+		rangeSelectionModeActive = false;
+	}
+
+	/**
+	 * 範囲選択更新後に呼ばれる。選択した範囲を取得する。
+	 */
+	@Override
+	public void onUpdatedArea(Rectangle selectedArea) {
+		if (selectedArea == null) {
+			rangeSelection = null;
+			return;
+		}
+		rangeSelection = new Rectangle(selectedArea);
 	}
 
 	/**
