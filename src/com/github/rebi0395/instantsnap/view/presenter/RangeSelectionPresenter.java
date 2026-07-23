@@ -50,17 +50,21 @@ public class RangeSelectionPresenter {
 	public interface SelectionListener {
 
 		/**
-		 * 撮影範囲選択後に呼び出されるリスナー
-		 * 
-		 * @param selectRectangle
+		 * 範囲選択画面表示時に呼ばれるリスナー
 		 */
-		void onSelected(Rectangle selectArea);
+		void onShown();
 
 		/**
 		 * 範囲選択解除後に呼ばれるリスナー
 		 */
 		void onClosed();
 
+		/**
+		 * 撮影範囲更新後に呼び出されるリスナー
+		 *
+		 * @param selectArea 更新後の撮影範囲
+		 */
+		void onUpdatedArea(Rectangle selectArea);
 	}
 
 	/**
@@ -89,29 +93,8 @@ public class RangeSelectionPresenter {
 	}
 
 	/**
-	 * 範囲選択画面との兼ね合いで、撮影可能であるかを判定する
-	 * 画面がでていない、撮影範囲を決定済なら撮影可
-	 * 画面がでていて、範囲が決まっていない場合、撮影不可
-	 * 
-	 * @return 撮影可否
-	 */
-	public boolean canSnap() {
-		if (!isShowing()) {
-			// 画面が開かれていなければ撮影可能
-			return true;
-		}
-
-		if (controller.isSelectionConfirmed()) {
-			// 範囲決定済であれば撮影可能
-			return true;
-		}
-
-		return false; // ドラッグ中などでは撮影不可
-	}
-
-	/**
 	 * 撮影範囲選択を受け付ける画面を表示する
-	 * 
+	 *
 	 * @param screenArea 表示する画面の座標
 	 */
 	private void showRangeSelectionWindow(Rectangle screenArea) {
@@ -145,6 +128,7 @@ public class RangeSelectionPresenter {
 			stage.setResizable(false);
 
 			stage.show();
+			listener.onShown(); // 画面表示を通知
 
 		} catch (Exception e) {
 			log.error("範囲選択画面の表示に失敗しました", e);
@@ -159,8 +143,8 @@ public class RangeSelectionPresenter {
 			return;
 		}
 		controller.resetSelection();
-		listener.onClosed(); // リスナー側の設定値を破棄させる
 		stage.close();
+		listener.onClosed(); // リスナー側の設定値を破棄させる
 	}
 
 	/**
