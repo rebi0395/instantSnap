@@ -40,8 +40,11 @@ public class TriggerKeyManager implements NativeKeyListener {
 	private boolean isCtrlPressed = false;
 	/** Shiftキーの押下フラグ */
 	private boolean isShiftPressed = false;
+
 	/** 撮影後、連写防止用のフラグ trueで撮影可能 */
 	private boolean canSnap = true;
+	/** 範囲選択画面表示フラグ trueで範囲選択画面が表示可能 */
+	private boolean canOpenSelection = true;
 
 	/**
 	 * キー押下を通知するインタフェースです
@@ -50,14 +53,14 @@ public class TriggerKeyManager implements NativeKeyListener {
 
 		/** 撮影キーが押された事を通知する */
 		void requestSnap();
-		
+
 		/** 範囲キーが押された事を通知する */
 		void requestRangeSelection();
-		
+
 		/** アプリの終了を通知する */
 		void requestExit();
 	}
-	
+
 	/**
 	 * コンストラクタ
 	 * @param listener イベントの通知先
@@ -125,17 +128,28 @@ public class TriggerKeyManager implements NativeKeyListener {
 		}
 
 		// 撮影キーのショートカットキーを取得
-		KeyCombinationBean keys = config.getSnapKeyBean();
+		KeyCombinationBean snapKeys = config.getSnapKeyBean();
+		// 範囲選択キーのショートカットキーを取得
+		KeyCombinationBean selectionKeys = config.getSelectionKeyBean();
 
 		// 押下状態を更新する
-		updateKeyStates(nativeKeyCode, true, keys);
+		updateKeyStates(nativeKeyCode, true, snapKeys);
 
 		// 条件キーが完全一致で押されているかを判定し、かつ撮影可能であれば、撮影を行う
-		if (canSnap && isShortcutPressed(keys)) {
+		if (canSnap && isShortcutPressed(snapKeys)) {
 			// 連写を防ぐため、撮影可能フラグをオフにする
 			canSnap = false;
 			clearKeyStates();
 			listener.requestSnap();
+			return;
+		}
+
+		updateKeyStates(nativeKeyCode, true, selectionKeys);
+		// 範囲選択キーが完全一致で押されているかを判定し、かつ画面表示が可能であれば、範囲選択画面を表示する。
+		if (canOpenSelection && isShortcutPressed(selectionKeys)) {
+			canOpenSelection = false; // 二重起動防止のため、フラグをオフにする
+			clearKeyStates();
+			listener.requestRangeSelection();
 		}
 	}
 
@@ -149,13 +163,21 @@ public class TriggerKeyManager implements NativeKeyListener {
 
 		// 撮影キーのショートカットキーを取得
 		KeyCombinationBean keys = config.getSnapKeyBean();
+		// 範囲選択キーのショートカットキーを取得
+		KeyCombinationBean selectionKeys = config.getSelectionKeyBean();
 
 		// 押下状態を更新し、条件キーが完全一致で押されているかを判定する
 		updateKeyStates(nativeKeyCode, false, keys);
+		updateKeyStates(nativeKeyCode, false, selectionKeys);
 
 		if (!isShortcutPressed(keys)) {
 			// キーの押下状況が一致していないとき、フラグをオンにし、撮影を可能にする
 			canSnap = true;
+		}
+
+		if (!isShortcutPressed(selectionKeys)) {
+			// キーの押下状況が一致していないとき、フラグをオンにし、撮影を可能にする
+			canOpenSelection = true;
 		}
 	}
 

@@ -1,17 +1,23 @@
-package com.github.rebi0395.instantsnap.view;
+package com.github.rebi0395.instantsnap.view.controller;
 
+import com.github.rebi0395.instantsnap.view.ScreenRectangleConverter;
+import com.github.rebi0395.instantsnap.view.presenter.RangeSelectionPresenter.SelectionListener;
+import javafx.fxml.FXML;
+import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Cursor;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
-/**
- * 範囲選択用のパネルを定義するクラス
- */
-public class RangeSelectionPane extends Pane {
+public class RangeSelectionController {
+
+	/** 範囲選択結果の通知先 */
+	private final SelectionListener listener;
 
 	/** 選択範囲外の暗幕色 */
 	private static final Color SHADE_COLOR = Color.rgb(0, 0, 0, 0.35);
@@ -22,28 +28,13 @@ public class RangeSelectionPane extends Pane {
 	/** 選択範囲の枠線幅 */
 	private static final double SELECTION_BORDER_WIDTH = 2.0;
 
-	/** 上側の暗幕 */
-	private final Rectangle topShadeArea = new Rectangle();
-
-	/** 下側の暗幕 */
-	private final Rectangle bottomShadeArea = new Rectangle();
-
-	/** 左側の暗幕 */
-	private final Rectangle leftShadeArea = new Rectangle();
-
-	/** 右側の暗幕 */
-	private final Rectangle rightShadeArea = new Rectangle();
-
-	/** 選択範囲の枠線 */
-	private final Rectangle selectionBorder = new Rectangle();
-
 	/** ドラッグ開始位置のX座標 */
 	private double startX;
 
 	/** ドラッグ開始位置のY座標 */
 	private double startY;
 
-	/** 現在の選択範囲 */
+	/** 現在の選択範囲(パネルのローカル座標) */
 	private Rectangle2D selectionBounds;
 
 	/** ドラッグ中かどうか */
@@ -52,52 +43,48 @@ public class RangeSelectionPane extends Pane {
 	/** 選択範囲が確定しているか */
 	private boolean selectionConfirmed = false;
 
-	/** 選択完了時の通知先 */
-	private SelectionListener selectionListener;
+	@FXML
+	private Pane selectionPane;
 
-	/**
-	 * 撮影選択完了時の通知インターフェース
-	 */
-	public interface SelectionListener {
+	@FXML
+	private Rectangle topShadeArea;
 
-		/**
-		 * 撮影範囲選択後に呼び出されるリスナー
-		 * 
-		 * @param selectRectangle
-		 */
-		void onSelected(Rectangle2D selectRectangle);
+	@FXML
+	private Rectangle bottomShadeArea;
 
-	}
+	@FXML
+	private Rectangle leftShadeArea;
+
+	@FXML
+	private Rectangle rightShadeArea;
+
+	@FXML
+	private Rectangle selectionBorder;
 
 	/**
 	 * コンストラクタ
+	 *
+	 * @param listener イベントリスナー
 	 */
-	public RangeSelectionPane() {
-		setupShadeAreas(); // 暗幕の初期化
-		setupSelectionBorder(); // 枠線の初期化
-		registerMouseEvents(); // マウスイベントの登録
-
-		// 範囲選択用のカーソルに変更する
-		setCursor(Cursor.CROSSHAIR);
-
-		// Pane自体が透明でも、Paneの範囲全体でマウスイベントを受け取れるようにする。
-		setPickOnBounds(true);
-
-		// Paneの子要素に暗幕と枠線を追加
-		getChildren().addAll(
-				topShadeArea,
-				bottomShadeArea,
-				leftShadeArea,
-				rightShadeArea,
-				selectionBorder); // 後ろで指定している要素ほど、手前側に表示される。枠線が最前
+	public RangeSelectionController(SelectionListener listener) {
+		this.listener = listener;
 	}
 
 	/**
-	 * 選択完了時の通知先を設定する
-	 * @param listener 選択完了時の通知先
+	 * 初期化処理
 	 */
-	public void setSelectionListener(SelectionListener listener) {
-		this.selectionListener = listener;
+	@FXML
+	public void initialize() {
+		setupShadeAreas(); // 暗幕の初期化
+		setupSelectionBorder(); // 枠線の初期化
+		registerMouseEvents(); // マウスイベントの登録
+		registerPaneResizeEvents(); // 暗幕の自動更新処理
+
+		// 範囲選択用のカーソルに変更する
+		selectionPane.setCursor(Cursor.CROSSHAIR);
+
+		// Pane自体が透明でも、Paneの範囲全体でマウスイベントを受け取れるようにする。
+		selectionPane.setPickOnBounds(true);
 	}
 
 	/**
@@ -146,18 +133,33 @@ public class RangeSelectionPane extends Pane {
 	private void registerMouseEvents() {
 
 		// マウスボタン押下時
-		setOnMousePressed(mouseEvent -> {
+		selectionPane.setOnMousePressed(mouseEvent -> {
 			startSelection(mouseEvent);
 		});
 
 		// マウスをドラッグしたとき
-		setOnMouseDragged(mouseEvent -> {
+		selectionPane.setOnMouseDragged(mouseEvent -> {
 			dragSelection(mouseEvent);
 		});
 
 		// マウスボタンを離したとき
-		setOnMouseReleased(mouseEvent -> {
+		selectionPane.setOnMouseReleased(mouseEvent -> {
 			confirmSelection(mouseEvent);
+		});
+	}
+
+	/**
+	 * パネルのサイズが変更された場合の、暗幕の自動更新処理を登録する
+	 */
+	private void registerPaneResizeEvents() {
+		// Paneのサイズ変更時、暗幕も更新する
+		selectionPane.widthProperty().addListener((observable, oldValue, newValue) -> {
+			updateShadeAreas();
+		});
+
+		// Paneのサイズ変更時、暗幕も更新する
+		selectionPane.heightProperty().addListener((observable, oldValue, newValue) -> {
+			updateShadeAreas();
 		});
 	}
 
@@ -178,10 +180,11 @@ public class RangeSelectionPane extends Pane {
 		}
 
 		// ドラッグ開始位置を設定する
-		startX = clamp(mouseEvent.getX(), 0, getWidth());
-		startY = clamp(mouseEvent.getY(), 0, getHeight());
+		startX = clamp(mouseEvent.getX(), 0, selectionPane.getWidth());
+		startY = clamp(mouseEvent.getY(), 0, selectionPane.getHeight());
 
 		dragging = true; // ドラッグ中フラグを設定
+		selectionBorder.setVisible(true);
 
 		// 押下位置から新しい選択範囲を開始する
 		updateSelection(startX, startY);
@@ -197,10 +200,9 @@ public class RangeSelectionPane extends Pane {
 			// ドラッグ中フラグがfalse、マウスボタンが押されていない場合は早期リターン
 			return;
 		}
-
 		// ドラッグした最新位置を変数で設定する
-		double currentX = clamp(mouseEvent.getX(), 0, getWidth());
-		double currentY = clamp(mouseEvent.getY(), 0, getHeight());
+		double currentX = clamp(mouseEvent.getX(), 0, selectionPane.getWidth());
+		double currentY = clamp(mouseEvent.getY(), 0, selectionPane.getHeight());
 		// 選択範囲を更新する
 		updateSelection(currentX, currentY);
 	}
@@ -215,20 +217,30 @@ public class RangeSelectionPane extends Pane {
 			// ドラッグ中フラグがfalse、マウスボタンでない場合は早期リターン
 			return;
 		}
+
+		// 実際にドラッグをしていない場合は、通常クリックと見なす
+		if (mouseEvent.isStillSincePress()) {
+			resetSelection();
+			listener.onSelected(null); // 通知先に、選択範囲が空であることを通知する
+			return;
+		}
+
 		// ドラッグした最新位置を変数で設定する
-		double currentX = clamp(mouseEvent.getX(), 0, getWidth());
-		double currentY = clamp(mouseEvent.getY(), 0, getHeight());
+		double currentX = clamp(mouseEvent.getX(), 0, selectionPane.getWidth());
+		double currentY = clamp(mouseEvent.getY(), 0, selectionPane.getHeight());
 		// 選択範囲を更新する
 		updateSelection(currentX, currentY);
 
 		// フラグを更新する
 		dragging = false;
 		selectionConfirmed = true;
+		
+		// 白線の非表示
+		selectionBorder.setVisible(false);
 
-		// 決まった撮影範囲を通知する
-		if (selectionListener != null) {
-			selectionListener.onSelected(selectionBounds);
-		}
+		// 撮影範囲の更新を通知する
+		Rectangle2D screenArea = convertScreenArea(selectionBounds);
+		listener.onSelected(ScreenRectangleConverter.toAwt(screenArea));
 	}
 
 	/**
@@ -266,8 +278,8 @@ public class RangeSelectionPane extends Pane {
 	 */
 	private void updateShadeAreas() {
 
-		double paneW = getWidth();
-		double paneH = getHeight();
+		double paneW = selectionPane.getWidth();
+		double paneH = selectionPane.getHeight();
 
 		if (selectionBounds == null) {
 			// 上部分の領域のみを全面に表示する
@@ -317,6 +329,34 @@ public class RangeSelectionPane extends Pane {
 	}
 
 	/**
+	 * Pane内の座標をスクリーン座標へ変換する
+	 *
+	 * @param localArea Pane内の選択範囲
+	 * @return スクリーン上の選択範囲
+	 */
+	private Rectangle2D convertScreenArea(Rectangle2D localArea) {
+		// stageの座標にPaneの座標を加算して、左上のスクリーン座標(X,Y)を取得する
+		Point2D topLeft = selectionPane.localToScreen(
+				localArea.getMinX(), // Paneの左上のX
+				localArea.getMinY()); // Paneの左上のY
+
+		// stageの座標にPaneの座標を加算して、右下のスクリーン座標(X,Y)を取得する
+		Point2D bottomRight = selectionPane.localToScreen(
+				localArea.getMaxX(), // Paneの右下のX
+				localArea.getMaxY()); // Paneの右下のY
+
+		if (topLeft == null || bottomRight == null) {
+			return null;
+		}
+
+		return new Rectangle2D(
+				topLeft.getX(),
+				topLeft.getY(),
+				bottomRight.getX() - topLeft.getX(),
+				bottomRight.getY() - topLeft.getY());
+	}
+
+	/**
 	 * 指定された値を、最小値から最大値の範囲内に収める
 	 * @param value 補正する値
 	 * @param min 最小値
@@ -333,14 +373,5 @@ public class RangeSelectionPane extends Pane {
 		}
 
 		return value;
-	}
-
-	/**
-	 * Paneのレイアウト時に暗幕を再配置する。
-	 */
-	@Override
-	protected void layoutChildren() {
-		super.layoutChildren();
-		updateShadeAreas();
 	}
 }
