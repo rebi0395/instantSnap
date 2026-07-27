@@ -98,8 +98,6 @@ public final class AppConstant {
 	// -- 外部ファイル --
 	/** メインウィンドウのFXMLファイル */
 	public static final String FXML_MAIN_WINDOW = "/com/github/rebi0395/instantsnap/view/fxml/MainWindow.fxml";
-	/** 範囲選択画面のFXMLファイル */
-	public static final String FXML_RANGE_SELECTION = "/com/github/rebi0395/instantsnap/view/fxml/RangeSelection.fxml";
 	/** 終了ダイアログのFXMLファイル */
 	public static final String FXML_EXIT_DIALOG = "/com/github/rebi0395/instantsnap/view/fxml/ExitDialog.fxml";
 	/** 通知画面のFXMLファイル */
@@ -111,8 +109,6 @@ public final class AppConstant {
 	public static final String CSS_MAIN_THEME_STORYBOOK = "/com/github/rebi0395/instantsnap/view/css/theme-storybook.css";
 	/** テーマCSSファイル名とテーマstyleClassの接頭辞 */
 	public static final String THEME_CSS_PREFIX = "theme-";
-	/** 範囲選択画面のCSSファイル */
-	public static final String CSS_RANGE_SELECTION = "/com/github/rebi0395/instantsnap/view/css/range-selection.css";
 	/** 通知画面のCSSファイル */
 	public static final String CSS_NOTIFICATION = "/com/github/rebi0395/instantsnap/view/css/notification.css";
 

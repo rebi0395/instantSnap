@@ -77,6 +77,18 @@ public class SnapNotificationPresenter {
 	}
 
 	/**
+	 * メイン画面を親として通知を表示する。
+	 *
+	 * @param result 撮影結果インスタンス
+	 * @param fileOpen ファイルを開くインスタンス
+	 * @param converter メッセージキーをメッセージに変換するクラス
+	 */
+	public void show(SnapResultBean result, FileOpenService fileOpen,
+			MessageKeyConverter converter) {
+		show(result, fileOpen, converter, null);
+	}
+
+	/**
 	 * 通知を表示する。
 	 * 
 	 * @param result 撮影結果インスタンス

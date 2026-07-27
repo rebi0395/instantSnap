@@ -1,5 +1,6 @@
 package com.github.rebi0395.instantsnap.app;
 
+import java.awt.GraphicsDevice;
 import java.awt.Rectangle;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -154,6 +155,7 @@ public class InstantSnapCoordinator implements KeyEventListener, SelectionListen
 		} catch (ServiceException e) {
 			log.error("Instant Snapの終了処理に失敗しました", e);
 		} finally {
+			rangeSelectionPresenter.close(); // Swingで表示している範囲選択画面を破棄
 			executor.shutdown(); // 撮影処理の終了
 			soundPlayer.close(); // 音声リソースの開放
 			tmpFolder.cleanTmpDirectory(); // 一時保存ファイルの削除
@@ -205,8 +207,8 @@ public class InstantSnapCoordinator implements KeyEventListener, SelectionListen
 	 */
 	@Override
 	public void requestRangeSelection() {
-		Rectangle rectangle = areaResolver.getActiveScreenArea();
-		rangeSelectionPresenter.switchRangeSelectionMode(rectangle);
+		GraphicsDevice screenDevice = areaResolver.getGraphicsDeviceAtPointer();
+		rangeSelectionPresenter.switchRangeSelectionMode(screenDevice);
 	}
 
 	@Override
@@ -257,8 +259,7 @@ public class InstantSnapCoordinator implements KeyEventListener, SelectionListen
 				notificationPresenter.show(
 						afterSnapData.result(), // 撮影結果
 						fileOpenService, // ファイルを開くインスタンス
-						converter, // メッセージ変数インスタンス
-						rangeSelectionPresenter.getWindow()); // 範囲選択ウィンドウ
+						converter); // メッセージ変換インスタンス
 			}
 
 			// 通知音が有効な場合
