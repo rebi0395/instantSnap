@@ -18,6 +18,14 @@ import javax.swing.KeyStroke;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.rebi0395.instantsnap.common.OsUtil;
+import com.sun.jna.Native;
+import com.sun.jna.Pointer;
+import com.sun.jna.platform.win32.WinDef.BOOL;
+import com.sun.jna.platform.win32.WinDef.HWND;
+import com.sun.jna.win32.StdCallLibrary;
+import com.sun.jna.win32.W32APIOptions;
+
 /**
  * Swingを使用して範囲選択画面の表示を制御するウィンドウクラス
  */
@@ -28,6 +36,9 @@ public class RangeSelectionWindow {
 
 	/** ESCキーに割り当てる終了アクション名 */
 	private static final String ACTION_CLOSE = "closeRangeSelection";
+
+	/** 画面キャプチャからウィンドウを除外する設定値 */
+	private static final int WDA_EXCLUDEFROMCAPTURE = 0x00000011;
 
 	/** 範囲決定通知リスナー */
 	private final SelectionListener listener;
@@ -148,6 +159,11 @@ public class RangeSelectionWindow {
 			createdWindow.toFront(); // ウィンドウを最前面へ移動する
 			createdPanel.requestFocusInWindow(); // ESCキーを受け取れるようフォーカスを設定する
 
+			if (OsUtil.isWindows()) {
+				// user32を用いて、Windowをキャプチャ対象から除外する
+				excludeFromScreenCapture(createdWindow);
+			}
+
 			listener.onShown(); // 画面表示を通知
 
 		} catch (Exception e) {
@@ -166,18 +182,21 @@ public class RangeSelectionWindow {
 	 * @param rootPane キー操作を登録するルートパネル
 	 */
 	private void registerEscapeAction(JRootPane rootPane) {
-		KeyStroke escapeKey = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+		KeyStroke escapeKey = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0); // ESCキー
+		AbstractAction closeAction = new AbstractAction() { // アクション作成
 
-		rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(escapeKey, ACTION_CLOSE);
-		rootPane.getActionMap().put(ACTION_CLOSE, new AbstractAction() {
-
+			// AbstractActionがSerializableを実装しているため、警告防止用に定義する
 			private static final long serialVersionUID = 1L;
 
 			@Override
 			public void actionPerformed(ActionEvent event) {
 				closeRangeSelectionWindow();
 			}
-		});
+		};
+		// ESCキーとアクション名を紐付ける
+		rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(escapeKey, ACTION_CLOSE);
+		// アクション名と実際の処理を紐付ける
+		rootPane.getActionMap().put(ACTION_CLOSE, closeAction);
 	}
 
 	/**
@@ -202,11 +221,51 @@ public class RangeSelectionWindow {
 	}
 
 	/**
+	 * 指定したSwingウィンドウを画面キャプチャ対象から除外する。
+	 *
+	 * @param targetWindow 除外対象のウィンドウ
+	 */
+	private void excludeFromScreenCapture(JWindow targetWindow) {
+		try {
+			// SwingウィンドウからWindowsのウィンドウハンドルを取得する
+			Pointer windowPointer = Native.getComponentPointer(targetWindow);
+			HWND windowHandle = new HWND(windowPointer);
+
+			// 範囲選択ウィンドウを画面キャプチャ対象から除外する
+			BOOL result = User32Ex.INSTANCE.SetWindowDisplayAffinity(
+					windowHandle,
+					WDA_EXCLUDEFROMCAPTURE);
+
+			if (!result.booleanValue()) {
+				// 設定に失敗しても範囲選択自体は継続する
+				log.warn(
+						"範囲選択画面を撮影対象から除外できませんでした。errorCode={}",
+						Native.getLastError());
+			}
+		} catch (RuntimeException | LinkageError e) {
+			log.warn("範囲選択画面を撮影対象から除外できませんでした。", e);
+		}
+	}
+
+	/**
 	 * 範囲選択画面を表示しているかを取得する。
 	 *
 	 * @return 画面を表示中ならtrue
 	 */
 	private boolean isShowing() {
 		return window != null && window.isShowing();
+	}
+
+	/**
+	 * WindowsのUser32 API
+	 */
+	private interface User32Ex extends StdCallLibrary {
+
+		User32Ex INSTANCE = Native.load(
+				"user32",
+				User32Ex.class,
+				W32APIOptions.DEFAULT_OPTIONS);
+
+		BOOL SetWindowDisplayAffinity(HWND window, int affinity);
 	}
 }
