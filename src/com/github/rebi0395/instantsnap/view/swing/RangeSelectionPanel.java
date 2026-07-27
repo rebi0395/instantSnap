@@ -1,4 +1,4 @@
-package com.github.rebi0395.instantsnap.view.component;
+package com.github.rebi0395.instantsnap.view.swing;
 
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
@@ -16,12 +16,12 @@ import java.awt.event.MouseEvent;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-import com.github.rebi0395.instantsnap.view.presenter.RangeSelectionPresenter.SelectionListener;
+import com.github.rebi0395.instantsnap.view.swing.RangeSelectionWindow.SelectionListener;
 
 /**
  * 範囲選択画面の暗幕描画とマウス操作を行うSwingパネル
  */
-public class RangeSelectionPanel extends JPanel {
+class RangeSelectionPanel extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 
