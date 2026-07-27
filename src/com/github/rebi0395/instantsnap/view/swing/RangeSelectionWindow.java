@@ -1,4 +1,4 @@
-package com.github.rebi0395.instantsnap.view.presenter;
+package com.github.rebi0395.instantsnap.view.swing;
 
 import java.awt.Color;
 import java.awt.EventQueue;
@@ -18,15 +18,13 @@ import javax.swing.KeyStroke;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.rebi0395.instantsnap.view.component.RangeSelectionPanel;
-
 /**
- * Swingを使用して範囲選択画面の表示を制御するプレゼンタークラス
+ * Swingを使用して範囲選択画面の表示を制御するウィンドウクラス
  */
-public class RangeSelectionPresenter {
+public class RangeSelectionWindow {
 
 	/** ロガー */
-	private static final Logger log = LoggerFactory.getLogger(RangeSelectionPresenter.class);
+	private static final Logger log = LoggerFactory.getLogger(RangeSelectionWindow.class);
 
 	/** ESCキーに割り当てる終了アクション名 */
 	private static final String ACTION_CLOSE = "closeRangeSelection";
@@ -45,7 +43,7 @@ public class RangeSelectionPresenter {
 	 *
 	 * @param listener 範囲選択結果の通知先
 	 */
-	public RangeSelectionPresenter(SelectionListener listener) {
+	public RangeSelectionWindow(SelectionListener listener) {
 		this.listener = listener;
 	}
 
