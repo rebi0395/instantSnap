@@ -25,8 +25,8 @@ import com.github.rebi0395.instantsnap.service.TmpFolderService;
 import com.github.rebi0395.instantsnap.service.TriggerKeyManager;
 import com.github.rebi0395.instantsnap.service.TriggerKeyManager.KeyEventListener;
 import com.github.rebi0395.instantsnap.view.presenter.SnapNotificationPresenter;
-import com.github.rebi0395.instantsnap.view.swing.RangeSelectionWindow;
-import com.github.rebi0395.instantsnap.view.swing.RangeSelectionWindow.SelectionListener;
+import com.github.rebi0395.instantsnap.view.swing.RangeSelectionDialog;
+import com.github.rebi0395.instantsnap.view.swing.RangeSelectionDialog.SelectionListener;
 
 import javafx.application.Platform;
 
@@ -69,7 +69,7 @@ public class InstantSnapCoordinator implements KeyEventListener, SelectionListen
 	/** 撮影通知を表示するクラス */
 	private final SnapNotificationPresenter notificationPresenter;
 	/** 範囲選択画面を表示するクラス */
-	private RangeSelectionWindow rangeSelectionWindow;
+	private RangeSelectionDialog rangeSelectionDialog;
 
 	/** 範囲選択画面を表示中ならtrue */
 	private volatile boolean rangeSelectionModeActive = false;
@@ -97,7 +97,7 @@ public class InstantSnapCoordinator implements KeyEventListener, SelectionListen
 		this.converter = new MessageKeyConverter(config.getLanguageType());
 		this.saveService = new SnapSaveService(filePathService);
 		this.keyManager = new TriggerKeyManager(config, this);
-		this.rangeSelectionWindow = new RangeSelectionWindow(this);
+		this.rangeSelectionDialog = new RangeSelectionDialog(this);
 		this.takeSnapService = new TakeSnapService(areaResolver, saveService, soundPlayer, mouseCursorService);
 
 		// Stage情報を持つクラス
@@ -155,7 +155,7 @@ public class InstantSnapCoordinator implements KeyEventListener, SelectionListen
 		} catch (ServiceException e) {
 			log.error("Instant Snapの終了処理に失敗しました", e);
 		} finally {
-			rangeSelectionWindow.close(); // Swingで表示している範囲選択画面を破棄
+			rangeSelectionDialog.close(); // Swingで表示している範囲選択画面を破棄
 			executor.shutdown(); // 撮影処理の終了
 			soundPlayer.close(); // 音声リソースの開放
 			tmpFolder.cleanTmpDirectory(); // 一時保存ファイルの削除
@@ -213,7 +213,7 @@ public class InstantSnapCoordinator implements KeyEventListener, SelectionListen
 	@Override
 	public void requestRangeSelection() {
 		GraphicsDevice screenDevice = areaResolver.getGraphicsDeviceAtPointer();
-		rangeSelectionWindow.switchRangeSelectionMode(screenDevice);
+		rangeSelectionDialog.switchRangeSelectionMode(screenDevice);
 	}
 
 	@Override

@@ -16,14 +16,12 @@ import java.awt.event.MouseEvent;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-import com.github.rebi0395.instantsnap.view.swing.RangeSelectionWindow.SelectionListener;
+import com.github.rebi0395.instantsnap.view.swing.RangeSelectionDialog.SelectionListener;
 
 /**
  * 範囲選択画面の暗幕描画とマウス操作を行うSwingパネル
  */
 class RangeSelectionPanel extends JPanel {
-
-	private static final long serialVersionUID = 1L;
 
 	/** 選択範囲外の暗幕色 */
 	private static final Color SHADE_COLOR = new Color(0, 0, 0, 89);
@@ -108,9 +106,20 @@ class RangeSelectionPanel extends JPanel {
 
 		case CONFIRMED:
 			resetSelection();
-			state = SelectionState.WAITING; // 状態を更新する
 			break;
 		}
+	}
+
+	/**
+	 * クリック、Enterなどで選択範囲状態に応じた処理を実施し、選択範囲状態を進める。
+	 * マウスイベントがない場合に呼び出す。
+	 */
+	protected void advanceStateWithAction() {
+		Point point = getMousePosition(); // 現在位置から取得する
+		if (point == null) {
+			return;
+		}
+		advanceStateWithAction(point);
 	}
 
 	/**
@@ -163,7 +172,7 @@ class RangeSelectionPanel extends JPanel {
 
 			@Override
 			public void mouseMoved(MouseEvent event) {
-				Point point = event.getPoint();
+				Point point = RangeSelectionPanel.this.getMousePosition();
 				if (point == null || state != SelectionState.SELECTING || dragging) {
 					// マウス座標がとれないとき、選択中でないとき、ドラッグ中の場合、早期リターン
 					return;
@@ -254,6 +263,8 @@ class RangeSelectionPanel extends JPanel {
 			return;
 		}
 
+		// ドラッグフラグをoffにする。
+		dragging = false;
 		// 選択範囲を更新する
 		updateSelection(point);
 
