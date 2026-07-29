@@ -142,5 +142,19 @@ public final class MessageKeyConstant {
 	public static final String DIALOG_SINGLE_INSTANCE_MESSAGE = "dialog.singleInstance.message";
 	/** 起動時エラーメッセージ */
 	public static final String DIALOG_STARTUP_ERROR = "dialog.startupError.message";
+	
+	// -- 範囲選択画面 --
+	/** 操作説明：範囲選択状態の切り替え */
+	public static final String RANGE_SELECTION_GUIDE_ADVANCE = "rangeSelection.guide.advance";
+	/** 操作説明：撮影 */
+	public static final String RANGE_SELECTION_GUIDE_SNAP = "rangeSelection.guide.snap";
+	/** 操作説明：マウスポインター移動 */
+	public static final String RANGE_SELECTION_GUIDE_MOVE_POINTER = "rangeSelection.guide.movePointer";
+	/** 操作説明：選択範囲移動 */
+	public static final String RANGE_SELECTION_GUIDE_MOVE_AREA = "rangeSelection.guide.moveArea";
+	/** 操作説明：移動量変更 */
+	public static final String RANGE_SELECTION_GUIDE_FAST_MOVE = "rangeSelection.guide.fastMove";
+	/** 操作説明：範囲選択画面を閉じる */
+	public static final String RANGE_SELECTION_GUIDE_CLOSE = "rangeSelection.guide.close";
 
 }

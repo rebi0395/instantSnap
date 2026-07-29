@@ -16,12 +16,21 @@ import java.awt.event.MouseEvent;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
+import com.github.rebi0395.instantsnap.common.MessageKeyConstant;
+import com.github.rebi0395.instantsnap.common.MessageKeyConverter;
+import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.view.swing.RangeSelectionDialog.SelectionListener;
 
 /**
  * 範囲選択画面の暗幕描画とマウス操作を行うSwingパネル
  */
 class RangeSelectionPanel extends JPanel {
+
+	/** ユーザー設定値クラス */
+	private final ConfigBean config;
+
+	/** メッセージ変換クラス */
+	private final MessageKeyConverter converter;
 
 	/** 選択範囲外の暗幕色 */
 	private static final Color SHADE_COLOR = new Color(0, 0, 0, 89);
@@ -63,10 +72,15 @@ class RangeSelectionPanel extends JPanel {
 	 * コンストラクタ
 	 *
 	 * @param screenArea パネルを表示するモニターのAWT座標
+	 * @param config ユーザー設定値
+	 * @param converter 多言語メッセージ変換インスタンス
 	 * @param listener 範囲選択結果の通知先
 	 */
-	public RangeSelectionPanel(Rectangle screenArea, SelectionListener listener) {
+	public RangeSelectionPanel(Rectangle screenArea, ConfigBean config,
+			MessageKeyConverter converter, SelectionListener listener) {
 		this.screenArea = new Rectangle(screenArea);
+		this.config = config;
+		this.converter = converter;
 		this.listener = listener;
 
 		// 背景を透過し、範囲選択用のカーソルに変更する
@@ -143,8 +157,10 @@ class RangeSelectionPanel extends JPanel {
 
 			// 暗幕の描画
 			drawShadeAreas(graphics2D);
+			// 操作説明を描画
+			drawOperationGuide(graphics2D);
 
-			if (state == SelectionState.SELECTING && selectionArea != null) {
+			if (state != SelectionState.WAITING && selectionArea != null) {
 				drawSelectionBorder(graphics2D);
 			}
 
@@ -371,6 +387,56 @@ class RangeSelectionPanel extends JPanel {
 		int width = Math.max(0, selectionArea.width - 1);
 		int height = Math.max(0, selectionArea.height - 1);
 		graphics2D.drawRect(selectionArea.x, selectionArea.y, width, height);
+	}
+
+	/**
+	 * 画面左上へ操作説明を描画する
+	 *
+	 * @param graphics2D 描画オブジェクト
+	 */
+	private void drawOperationGuide(Graphics2D graphics2D) {
+		int x = 20;
+		int y = 20;
+		int width = 360;
+		int height = 160;
+
+		int textX = x + 15;
+		int textY = y + 30;
+
+		// 半透明の背景
+		graphics2D.setColor(new Color(20, 20, 20, 190));
+		graphics2D.fillRoundRect(x, y, width, height, 8, 8);
+
+		// 操作説明
+		graphics2D.setColor(Color.WHITE);
+		// クリック説明
+		graphics2D.drawString(
+				converter.getMessage(MessageKeyConstant.RANGE_SELECTION_GUIDE_ADVANCE),
+				textX, textY);
+		// 撮影説明
+		graphics2D.drawString(
+				config.getSnapKeyBean().resolveKeyCombinationName() + // 撮影キー取得
+				" : " + 
+				converter.getMessage(MessageKeyConstant.RANGE_SELECTION_GUIDE_SNAP),
+				textX, textY + 20);
+		// 矢印キーで範囲動かせる説明
+		graphics2D.drawString(
+				converter.getMessage(MessageKeyConstant.RANGE_SELECTION_GUIDE_MOVE_POINTER),
+				textX, textY + 40);
+		// Ctrl + 矢印キーで枠全体を動かせる説明
+		graphics2D.drawString(
+				converter.getMessage(MessageKeyConstant.RANGE_SELECTION_GUIDE_MOVE_AREA),
+				textX, textY + 60);
+		// Shiftで高速移動できる説明
+		graphics2D.drawString(
+				converter.getMessage(MessageKeyConstant.RANGE_SELECTION_GUIDE_FAST_MOVE),
+				textX, textY + 80);
+		// 画面を閉じる説明
+		graphics2D.drawString(
+				config.getSelectionKeyBean().resolveKeyCombinationName() +
+				" / Esc : " +
+				converter.getMessage(MessageKeyConstant.RANGE_SELECTION_GUIDE_CLOSE),
+				textX, textY + 100);
 	}
 
 	/**

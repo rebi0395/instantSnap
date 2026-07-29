@@ -21,7 +21,9 @@ import javax.swing.KeyStroke;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.rebi0395.instantsnap.common.MessageKeyConverter;
 import com.github.rebi0395.instantsnap.common.OsUtil;
+import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.WinDef.BOOL;
@@ -36,6 +38,12 @@ public class RangeSelectionDialog {
 
 	/** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(RangeSelectionDialog.class);
+	
+	/** ユーザー設定値 */
+	private ConfigBean config;
+	
+	/** 言語変換コンバーター */
+	private MessageKeyConverter converter;
 
 	/** 画面キャプチャからダイアログを除外する設定値 */
 	private static final int WDA_EXCLUDEFROMCAPTURE = 0x00000011;
@@ -53,7 +61,9 @@ public class RangeSelectionDialog {
 	 * コンストラクタ
 	 * @param listener 範囲選択結果の通知先
 	 */
-	public RangeSelectionDialog(SelectionListener listener) {
+	public RangeSelectionDialog(ConfigBean config, MessageKeyConverter converter, SelectionListener listener) {
+		this.config = config;
+		this.converter = converter;
 		this.listener = listener;
 	}
 
@@ -137,7 +147,7 @@ public class RangeSelectionDialog {
 			Rectangle screenArea = configuration.getBounds();
 
 			// モニターと同じAWT座標系を使用する範囲選択パネルを作成する
-			RangeSelectionPanel createdPanel = new RangeSelectionPanel(screenArea, listener);
+			RangeSelectionPanel createdPanel = new RangeSelectionPanel(screenArea, config, converter, listener);
 
 			// ダイアログの生成
 			createdDialog = new JDialog(
