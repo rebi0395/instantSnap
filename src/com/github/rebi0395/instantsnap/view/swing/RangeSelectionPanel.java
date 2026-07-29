@@ -28,10 +28,7 @@ class RangeSelectionPanel extends JPanel {
 	/** 選択範囲外の暗幕色 */
 	private static final Color SHADE_COLOR = new Color(0, 0, 0, 89);
 
-	/**
-	 * 完全透明によるマウスイベントのすり抜けを防止する背景色。
-	 * 透明度は目視できない最小値にする。
-	 */
+	/** 完全透明によるマウスイベントのすり抜けを防止する背景色。*/
 	private static final Color INTERACTION_COLOR = new Color(0, 0, 0, 1);
 
 	/** 選択範囲の枠線色 */
@@ -39,6 +36,9 @@ class RangeSelectionPanel extends JPanel {
 
 	/** 選択範囲の枠線幅 */
 	private static final float SELECTION_BORDER_WIDTH = 2.0f;
+
+	/** ドラッグ開始と判定する移動量 */
+	private static final int DRAG_START_MOVING = 3;
 
 	/** 範囲選択結果の通知先 */
 	private final SelectionListener listener;
@@ -54,6 +54,9 @@ class RangeSelectionPanel extends JPanel {
 
 	/** 現在の選択範囲。パネル左上を原点とする */
 	private Rectangle selectionArea;
+
+	/** ドラッグで範囲選択をしている場合 true */
+	private boolean dragging;
 
 	/** 範囲選択画面の状態 */
 	private SelectionState state = SelectionState.WAITING;
@@ -83,6 +86,7 @@ class RangeSelectionPanel extends JPanel {
 		startPoint = null; // 選択開始位置
 		currentPoint = null; // 選択位置
 		selectionArea = null; // 選択範囲
+		dragging = false;
 		listener.onUpdatedArea(null); // 通知先の範囲選択をリセットする
 		repaint(); // 選択範囲と枠線を消し、全面を暗幕で覆う
 		state = SelectionState.WAITING; // 状態を更新
@@ -147,12 +151,10 @@ class RangeSelectionPanel extends JPanel {
 		MouseAdapter mouseHandler = new MouseAdapter() {
 
 			@Override
-			public void mouseClicked(MouseEvent event) {
-				// マウス座標取得
+			public void mousePressed(MouseEvent event) {
 				Point point = event.getPoint();
-
-				if (point == null || !SwingUtilities.isLeftMouseButton(event)) {
-					// マウスイベントのメインボタンでないとき、早期リターン
+				if (point == null || !SwingUtilities.isLeftMouseButton(event) || dragging) {
+					// 座標がとれないとき、左ボタンでないとき、ドラッグ選択した場合、早期リターン
 					return;
 				}
 
@@ -161,32 +163,43 @@ class RangeSelectionPanel extends JPanel {
 
 			@Override
 			public void mouseMoved(MouseEvent event) {
-				// マウス座標取得
 				Point point = event.getPoint();
-				if (point == null) {
-					// マウス座標がとれないとき、早期リターン
+				if (point == null || state != SelectionState.SELECTING || dragging) {
+					// マウス座標がとれないとき、選択中でないとき、ドラッグ中の場合、早期リターン
 					return;
 				}
-				handleMouseMoved(point);
+
+				updateSelection(point); // 選択範囲を更新する
 			}
 
-			//			@Override
-			//			public void mousePressed(MouseEvent event) {
-			//				// マウスボタン押下時
-			//				startSelection(event);
-			//			}
-			//
-			//			@Override
-			//			public void mouseDragged(MouseEvent event) {
-			//				// マウスをドラッグしたとき
-			//				dragSelection(event);
-			//			}
-			//
-			//			@Override
-			//			public void mouseReleased(MouseEvent event) {
-			//				// マウスボタンを離したとき
-			//				confirmSelection(event);
-			//			}
+			@Override
+			public void mouseDragged(MouseEvent event) {
+				Point point = event.getPoint();
+				// 押しっぱなしの状態はマスクで判定する
+				boolean leftButtonDown = (event.getModifiersEx() & InputEvent.BUTTON1_DOWN_MASK) != 0;
+
+				if (point == null || !leftButtonDown || state != SelectionState.SELECTING || !isDragStarted(point)) {
+					// マウス座標がとれないとき、左ボタンでないとき、
+					// 選択中でないとき、移動量が極小の場合、早期リターン
+					return;
+				}
+
+				dragging = true; // ドラッグ中フラグをオンにする
+				updateSelection(point); // 選択範囲を更新する
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent event) {
+				Point point = event.getPoint();
+				if (point == null || !SwingUtilities.isLeftMouseButton(event) ||
+						state != SelectionState.SELECTING || !dragging) {
+					// マウス座標がとれないとき、マウスの左ボタンでないとき、
+					// 選択中でないとき、ドラッグ中でない場合、早期リターン
+					return;
+				}
+				dragging = false; // ドラッグ中フラグを解除
+				advanceStateWithAction(point);
+			}
 		};
 
 		addMouseListener(mouseHandler);
@@ -194,9 +207,26 @@ class RangeSelectionPanel extends JPanel {
 	}
 
 	/**
+	 * 選択開始位置から一定距離以上マウスが移動したか判定する。
+	 *
+	 * @param point 現在のマウス位置
+	 * @return ドラッグ開始と判定する場合true
+	 */
+	private boolean isDragStarted(Point point) {
+		if (startPoint == null || point == null) {
+			return false;
+		}
+
+		int movedX = Math.abs(point.x - startPoint.x);
+		int movedY = Math.abs(point.y - startPoint.y);
+
+		return movedX >= DRAG_START_MOVING || movedY >= DRAG_START_MOVING;
+	}
+
+	/**
 	 * ドラッグによる範囲選択を開始する。
 	 *
-	 * @param event マウスイベント
+	 * @param point 選択開始位置
 	 */
 	private void startSelection(Point point) {
 
@@ -216,7 +246,7 @@ class RangeSelectionPanel extends JPanel {
 	/**
 	 * 選択範囲を確定する。
 	 *
-	 * @param point マウスポインター
+	 * @param point 選択範囲確定位置
 	 */
 	private void confirmSelection(Point point) {
 		if (state != SelectionState.SELECTING) {
@@ -247,40 +277,7 @@ class RangeSelectionPanel extends JPanel {
 		state = SelectionState.CONFIRMED;
 	}
 
-	/**
-	 * 選択範囲を更新する。
-	 *
-	 * @param point マウスポイント
-	 */
-	private void handleMouseMoved(Point point) {
-		if (state != SelectionState.SELECTING) {
-			// 選択中でなければ早期リターン
-			return;
-		}
-		// 選択範囲を更新する
-		updateSelection(point);
-		// 再描画
-		repaint();
-	}
-
 	//TODO 十字キーはRobot.mouseMove()で動かす
-
-	/**
-	 * ドラッグ中の選択範囲を更新する。
-	 *
-	 * @param event マウスイベント
-	 */
-	private void mouseDrag(MouseEvent event) {
-		boolean leftButtonDown = (event.getModifiersEx() & InputEvent.BUTTON1_DOWN_MASK) != 0;
-		if (state != SelectionState.SELECTING || !leftButtonDown) {
-			// ドラッグ中フラグがfalse、マウスボタンが押されていない場合は早期リターン
-			return;
-		}
-		// 選択範囲を更新する
-		updateSelection(event.getPoint());
-		// 再描画
-		repaint();
-	}
 
 	/**
 	 * ドラッグ開始位置と現在位置から選択範囲を更新する。
