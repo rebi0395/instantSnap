@@ -1,9 +1,12 @@
 package com.github.rebi0395.instantsnap.view.swing;
 
 import java.awt.Color;
+import java.awt.Dialog;
 import java.awt.EventQueue;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
+import java.awt.MouseInfo;
+import java.awt.PointerInfo;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -11,8 +14,8 @@ import java.lang.reflect.InvocationTargetException;
 
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JRootPane;
-import javax.swing.JWindow;
 import javax.swing.KeyStroke;
 
 import org.slf4j.Logger;
@@ -27,34 +30,30 @@ import com.sun.jna.win32.StdCallLibrary;
 import com.sun.jna.win32.W32APIOptions;
 
 /**
- * Swingを使用して範囲選択画面の表示を制御するウィンドウクラス
+ * Swingを使用して範囲選択画面の表示を制御するダイアログクラス
  */
-public class RangeSelectionWindow {
+public class RangeSelectionDialog {
 
 	/** ロガー */
-	private static final Logger log = LoggerFactory.getLogger(RangeSelectionWindow.class);
+	private static final Logger log = LoggerFactory.getLogger(RangeSelectionDialog.class);
 
-	/** ESCキーに割り当てる終了アクション名 */
-	private static final String ACTION_CLOSE = "closeRangeSelection";
-
-	/** 画面キャプチャからウィンドウを除外する設定値 */
+	/** 画面キャプチャからダイアログを除外する設定値 */
 	private static final int WDA_EXCLUDEFROMCAPTURE = 0x00000011;
 
 	/** 範囲決定通知リスナー */
 	private final SelectionListener listener;
 
-	/** 表示中の範囲選択ウィンドウ */
-	private JWindow window;
+	/** 表示中の範囲選択ダイアログ */
+	private JDialog dialog;
 
 	/** 範囲選択の描画とマウス操作を行うパネル */
 	private RangeSelectionPanel selectionPanel;
 
 	/**
 	 * コンストラクタ
-	 *
 	 * @param listener 範囲選択結果の通知先
 	 */
-	public RangeSelectionWindow(SelectionListener listener) {
+	public RangeSelectionDialog(SelectionListener listener) {
 		this.listener = listener;
 	}
 
@@ -91,28 +90,28 @@ public class RangeSelectionWindow {
 		// Swingコンポーネントの操作をイベントディスパッチスレッドへ依頼する
 		EventQueue.invokeLater(() -> {
 			if (isShowing()) {
-				closeRangeSelectionWindow();
+				closeRangeSelectionDialog();
 				return;
 			}
 
-			showRangeSelectionWindow(screenDevice);
+			showRangeSelectionDialog(screenDevice);
 		});
 	}
 
 	/**
 	 * アプリ終了時に範囲選択画面を破棄する。
-	 * 呼び出し元の終了処理より先にウィンドウ破棄を完了させる。
+	 * 呼び出し元の終了処理より先にダイアログ破棄を完了させる。
 	 */
 	public void close() {
 		if (EventQueue.isDispatchThread()) {
-			closeRangeSelectionWindow();
+			closeRangeSelectionDialog();
 			return;
 		}
 
 		try {
-			// Swingのウィンドウ破棄が終わるまで呼び出し元スレッドを待機させる
+			// Swingのダイアログ破棄が終わるまで呼び出し元スレッドを待機させる
 			EventQueue.invokeAndWait(() -> {
-				closeRangeSelectionWindow();
+				closeRangeSelectionDialog();
 			});
 
 		} catch (InterruptedException e) {
@@ -129,8 +128,8 @@ public class RangeSelectionWindow {
 	 *
 	 * @param screenDevice 表示対象のモニター
 	 */
-	private void showRangeSelectionWindow(GraphicsDevice screenDevice) {
-		JWindow createdWindow = null;
+	private void showRangeSelectionDialog(GraphicsDevice screenDevice) {
+		JDialog createdDialog = null;
 
 		try {
 			// 表示対象モニターの設定と画面領域を取得する
@@ -140,37 +139,43 @@ public class RangeSelectionWindow {
 			// モニターと同じAWT座標系を使用する範囲選択パネルを作成する
 			RangeSelectionPanel createdPanel = new RangeSelectionPanel(screenArea, listener);
 
-			// ウィンドウの設定
-			createdWindow = new JWindow(configuration);
-			createdWindow.setBackground(new Color(0, 0, 0, 0)); // ウィンドウ自体の背景を透明にする
-			createdWindow.setAlwaysOnTop(true); // 操作中のゲーム画面より手前に表示する
-			createdWindow.setFocusableWindowState(true); // ESCキーを受け取れるようにする
-			createdWindow.setContentPane(createdPanel); // 範囲選択パネルを設定する
-			createdWindow.setBounds(screenArea); // 対象モニターと同じ位置、大きさにする
+			// ダイアログの生成
+			createdDialog = new JDialog(
+					(Dialog) null, // ownerなし
+					null, // タイトルなし
+					false, // モーダルにしない
+					configuration); // モニターの描画範囲
 
-			// ESCキーによる範囲選択解除処理を登録する
-			registerEscapeAction(createdWindow.getRootPane());
+			// ダイアログの設定
+			createdDialog.setUndecorated(true); // ダイアログ枠を消す
+			createdDialog.setBackground(new Color(0, 0, 0, 0)); // ダイアログ自体の背景を透明にする
+			createdDialog.setAlwaysOnTop(true); // ダイアログを最前面に表示し続ける設定
+			createdDialog.setContentPane(createdPanel); // 範囲選択パネルをダイアログに設定する
+			createdDialog.setBounds(screenArea); // ダイアログの描画範囲を対象モニターと同じ位置、大きさにする
+			createdDialog.setVisible(true); // 範囲選択画面を表示する
+			createdDialog.toFront(); // ダイアログを最前面へ移動する
+			createdDialog.requestFocus(); // フォーカスを要求する
 
-			// close処理から現在のウィンドウとパネルを参照できるように保持する
-			this.window = createdWindow;
+			// キーボードによる範囲選択処理を登録する
+			registerEscapeAction(createdDialog.getRootPane()); // ESCキー
+			registerEnterAction(createdDialog.getRootPane()); // エンターキー
+
+			// close処理から現在のダイアログとパネルを参照できるように保持する
+			this.dialog = createdDialog;
 			this.selectionPanel = createdPanel;
 
-			createdWindow.setVisible(true); // 範囲選択画面を表示する
-			createdWindow.toFront(); // ウィンドウを最前面へ移動する
-			createdPanel.requestFocusInWindow(); // ESCキーを受け取れるようフォーカスを設定する
-
 			if (OsUtil.isWindows()) {
-				// user32を用いて、Windowをキャプチャ対象から除外する
-				excludeFromScreenCapture(createdWindow);
+				// user32を用いて、範囲選択ダイアログをキャプチャ対象から除外する
+				excludeFromScreenCapture(createdDialog);
 			}
 
 			listener.onShown(); // 画面表示を通知
 
 		} catch (Exception e) {
-			if (createdWindow != null) {
-				createdWindow.dispose();
+			if (createdDialog != null) {
+				createdDialog.dispose();
 			}
-			this.window = null;
+			this.dialog = null;
 			this.selectionPanel = null;
 			log.error("範囲選択画面の表示に失敗しました", e);
 		}
@@ -185,24 +190,43 @@ public class RangeSelectionWindow {
 		KeyStroke escapeKey = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0); // ESCキー
 		AbstractAction closeAction = new AbstractAction() { // アクション作成
 
-			// AbstractActionがSerializableを実装しているため、警告防止用に定義する
-			private static final long serialVersionUID = 1L;
-
 			@Override
 			public void actionPerformed(ActionEvent event) {
-				closeRangeSelectionWindow();
+				closeRangeSelectionDialog();
 			}
 		};
 		// ESCキーとアクション名を紐付ける
-		rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(escapeKey, ACTION_CLOSE);
+		rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(escapeKey, "closeRangeSelection");
 		// アクション名と実際の処理を紐付ける
-		rootPane.getActionMap().put(ACTION_CLOSE, closeAction);
+		rootPane.getActionMap().put("closeRangeSelection", closeAction);
+	}
+
+	/**
+	 * エンターキーで選択範囲状態の操作を進めるアクションを登録する。
+	 *
+	 * @param rootPane キー操作を登録するルートパネル
+	 */
+	private void registerEnterAction(JRootPane rootPane) {
+		KeyStroke enterKey = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
+		AbstractAction advanceStateWithAction = new AbstractAction() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				PointerInfo point = MouseInfo.getPointerInfo();
+				if (point == null) {
+					return;
+				}
+				selectionPanel.advanceStateWithAction();
+			}
+		};
+		rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(enterKey, "advanceStateWithAction");
+		rootPane.getActionMap().put("advanceStateWithAction", advanceStateWithAction);
 	}
 
 	/**
 	 * 撮影範囲選択を受け付ける画面を閉じる。
 	 */
-	private void closeRangeSelectionWindow() {
+	private void closeRangeSelectionDialog() {
 		if (!isShowing()) {
 			return;
 		}
@@ -210,28 +234,28 @@ public class RangeSelectionWindow {
 		// 破棄前に選択状態を初期化する
 		selectionPanel.resetSelection();
 
-		// 破棄するウィンドウを退避した後、保持している参照を初期化する
-		JWindow closingWindow = window;
-		this.window = null;
+		// 破棄するダイアログを退避した後、保持している参照を初期化する
+		JDialog closingDialog = dialog;
+		this.dialog = null;
 		this.selectionPanel = null;
 
-		closingWindow.setVisible(false); // 画面を非表示にする
-		closingWindow.dispose(); // Swingのウィンドウリソースを破棄する
+		closingDialog.setVisible(false); // 画面を非表示にする
+		closingDialog.dispose(); // Swingのダイアログリソースを破棄する
 		listener.onClosed(); // リスナー側の設定値を破棄させる
 	}
 
 	/**
-	 * 指定したSwingウィンドウを画面キャプチャ対象から除外する。
+	 * 指定したダイアログをキャプチャ対象から除外する。
 	 *
-	 * @param targetWindow 除外対象のウィンドウ
+	 * @param targetDialog 除外対象のダイアログ
 	 */
-	private void excludeFromScreenCapture(JWindow targetWindow) {
+	private void excludeFromScreenCapture(JDialog targetDialog) {
 		try {
-			// SwingウィンドウからWindowsのウィンドウハンドルを取得する
-			Pointer windowPointer = Native.getComponentPointer(targetWindow);
+			// SwingダイアログからWindowsのウィンドウハンドルを取得する
+			Pointer windowPointer = Native.getComponentPointer(targetDialog);
 			HWND windowHandle = new HWND(windowPointer);
 
-			// 範囲選択ウィンドウを画面キャプチャ対象から除外する
+			// 範囲選択ダイアログをキャプチャ対象から除外する
 			BOOL result = User32Ex.INSTANCE.SetWindowDisplayAffinity(
 					windowHandle,
 					WDA_EXCLUDEFROMCAPTURE);
@@ -253,19 +277,27 @@ public class RangeSelectionWindow {
 	 * @return 画面を表示中ならtrue
 	 */
 	private boolean isShowing() {
-		return window != null && window.isShowing();
+		return dialog != null && dialog.isShowing();
 	}
 
 	/**
-	 * WindowsのUser32 API
+	 * JNAを介して呼び出すWindowsのUser32 API
 	 */
 	private interface User32Ex extends StdCallLibrary {
 
+		/** User32 APIを呼び出すためのインスタンス */
 		User32Ex INSTANCE = Native.load(
 				"user32",
 				User32Ex.class,
 				W32APIOptions.DEFAULT_OPTIONS);
 
+		/**
+		 * 指定したウィンドウの画面キャプチャに関する表示方法を設定する。
+		 *
+		 * @param window 設定対象のウィンドウハンドル
+		 * @param affinity 画面キャプチャ時の表示方法
+		 * @return 設定に成功した場合はTRUE、失敗した場合はFALSE
+		 */
 		BOOL SetWindowDisplayAffinity(HWND window, int affinity);
 	}
 }
