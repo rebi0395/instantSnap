@@ -97,7 +97,7 @@ public class InstantSnapCoordinator implements KeyEventListener, SelectionListen
 		this.converter = new MessageKeyConverter(config.getLanguageType());
 		this.saveService = new SnapSaveService(filePathService);
 		this.keyManager = new TriggerKeyManager(config, this);
-		this.rangeSelectionDialog = new RangeSelectionDialog(this);
+		this.rangeSelectionDialog = new RangeSelectionDialog(config, converter, this);
 		this.takeSnapService = new TakeSnapService(areaResolver, saveService, soundPlayer, mouseCursorService);
 
 		// Stage情報を持つクラス
@@ -178,10 +178,9 @@ public class InstantSnapCoordinator implements KeyEventListener, SelectionListen
 			AfterSnapData afterSnapData;
 			Rectangle snapRange = this.rangeSelection;
 			if (snapRange != null) {
-				// 撮影処理の開始時点で範囲をコピーし、参照から外す
-				snapRange = new Rectangle(snapRange);
+				snapRange = new Rectangle(snapRange); // 範囲をコピーし、参照から外す
+				this.rangeSelectionDialog.close();
 			}
-
 			synchronized (configLock) { // 排他制御
 				try {
 					// 撮影処理
