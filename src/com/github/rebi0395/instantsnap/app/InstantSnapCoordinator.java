@@ -169,18 +169,23 @@ public class InstantSnapCoordinator implements KeyEventListener, SelectionListen
 	@Override
 	public void requestSnap() {
 		if (rangeSelectionModeActive && rangeSelection == null) {
-			// 範囲選択画面は表示中だが、範囲が未確定
+			// 範囲選択画面が表示中、かつ範囲が未確定
 			return;
 		}
 		// 別スレッド立ち上げ
 		executor.submit(() -> {
 			SnapResultBean result;
 			AfterSnapData afterSnapData;
+			Rectangle snapRange = this.rangeSelection;
+			if (snapRange != null) {
+				// 撮影処理の開始時点で範囲をコピーし、参照から外す
+				snapRange = new Rectangle(snapRange);
+			}
 
 			synchronized (configLock) { // 排他制御
 				try {
 					// 撮影処理
-					result = takeSnapService.execute(config, rangeSelection);
+					result = takeSnapService.execute(config, snapRange);
 					// ロック中に撮影後処理に使う分の設定値を退避する
 					afterSnapData = new AfterSnapData(
 							new SnapResultBean(result),
