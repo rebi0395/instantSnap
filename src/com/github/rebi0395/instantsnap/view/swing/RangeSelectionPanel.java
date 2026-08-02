@@ -45,7 +45,7 @@ class RangeSelectionPanel extends JPanel {
 	private static final Color SELECTION_BORDER_OUTER_COLOR = new Color(0, 0, 0, 180);
 
 	/** 選択範囲の枠線 内側の色 */
-	private static final Color SELECTION_BORDER_INNER_COLOR = Color.WHITE;
+	private static final Color SELECTION_BORDER_INNER_COLOR = new Color(0, 220, 255);
 
 	/** 選択範囲の外側の枠線幅 */
 	private static final float SELECTION_BORDER_OUTER_WIDTH = 3f;
@@ -54,10 +54,10 @@ class RangeSelectionPanel extends JPanel {
 	private static final float SELECTION_BORDER_INNER_WIDTH = 1f;
 
 	/** ガイド線外側の色 */
-	private static final Color GUIDE_LINE_OUTER_COLOR = new Color(0, 0, 0, 100);
+	private static final Color GUIDE_LINE_OUTER_COLOR = new Color(0, 0, 0, 180);
 
 	/** ガイド線内側の色 */
-	private static final Color GUIDE_LINE_INNER_COLOR = new Color(255, 255, 255, 170);
+	private static final Color GUIDE_LINE_INNER_COLOR = new Color(0, 220, 255);
 
 	/** ドラッグ開始と判定する移動量 */
 	private static final int DRAG_START_MOVING = 3;
@@ -398,6 +398,7 @@ class RangeSelectionPanel extends JPanel {
 	/**
 	 * 十字カーソルのガイド線を描画する
 	 * 範囲確定時、マウス座標がない場合、描画しない
+	 *
 	 * @param graphics2D 描画オブジェクト
 	 */
 	private void drawCrosshairGuide(Graphics2D graphics2D) {
@@ -405,41 +406,61 @@ class RangeSelectionPanel extends JPanel {
 			return; // 範囲確定時、マウス座標がない場合、早期リターン
 		}
 
-		int centerGap = 20; // 中央カーソルからガイド線を出さない範囲
-
-		// 外側の黒線を描画する
+		// 外側の線を描画する
 		graphics2D.setColor(GUIDE_LINE_OUTER_COLOR);
-		graphics2D.setStroke(new BasicStroke(3f)); // 線の太さを3pxに設定
+		graphics2D.setStroke(new BasicStroke(SELECTION_BORDER_OUTER_WIDTH)); // 線の太さを選択範囲の外線と合わせる
+		drawCrosshairLines(graphics2D);
 
-		// 左端～中央の横線を描画
-		graphics2D.drawLine(0, currentPoint.y,
-				Math.max(0, currentPoint.x - centerGap), currentPoint.y);
-		// 中央～右端の横線を描画
-		graphics2D.drawLine(Math.min(getWidth(), currentPoint.x + centerGap),
-				currentPoint.y, getWidth(), currentPoint.y);
-		// 上端～中央の縦線を描画
-		graphics2D.drawLine(currentPoint.x, 0,
-				currentPoint.x, Math.max(0, currentPoint.y - centerGap));
-		// 中央～下端の縦線を描画
-		graphics2D.drawLine(currentPoint.x, Math.min(getHeight(), currentPoint.y + centerGap),
-				currentPoint.x, getHeight());
-
-		// 内側の白線を描画し、白黒の二重線にする
+		// 内側の線を描画し、二重線にする
 		graphics2D.setColor(GUIDE_LINE_INNER_COLOR);
-		graphics2D.setStroke(new BasicStroke(1f)); // 線の太さを1pxに設定
+		graphics2D.setStroke(new BasicStroke(SELECTION_BORDER_INNER_WIDTH)); // 線の太さを選択範囲の内線と合わせる
+		drawCrosshairLines(graphics2D);
+	}
 
-		// 左端～中央の横線を描画
-		graphics2D.drawLine(0, currentPoint.y,
-				Math.max(0, currentPoint.x - centerGap), currentPoint.y);
-		// 中央～右端の横線を描画
-		graphics2D.drawLine(Math.min(getWidth(), currentPoint.x + centerGap),
-				currentPoint.y, getWidth(), currentPoint.y);
-		// 上端～中央の縦線を描画
-		graphics2D.drawLine(currentPoint.x, 0,
-				currentPoint.x, Math.max(0, currentPoint.y - centerGap));
-		// 中央～下端の縦線を描画
-		graphics2D.drawLine(currentPoint.x, Math.min(getHeight(), currentPoint.y + centerGap),
-				currentPoint.x, getHeight());
+	/**
+	 * 現在の色と線幅で十字ガイド線を描画する
+	 *
+	 * @param graphics2D 描画オブジェクト
+	 */
+	private void drawCrosshairLines(Graphics2D graphics2D) {
+		int maxX = Math.max(0, getWidth() - 1); // 座標は0始まりのため、-1する
+		int maxY = Math.max(0, getHeight() - 1); // 座標は0始まりのため、-1する
+		int spacing = 20; // 表示をしない範囲
+
+		// 描画座標をパネル内へ収める
+		int guideX = Math.min(maxX, currentPoint.x);
+		int guideY = Math.min(maxY, currentPoint.y);
+
+		// カーソルから離れた座標を取得する
+		int leftLineEnd = Math.max(0, guideX - spacing); // 左側から引くラインの終点
+		int rightLineStart = Math.min(maxX, guideX + spacing); // 右側に引くラインの始点
+		int topLineEnd = Math.max(0, guideY - spacing); // 上側から引くラインの終点
+		int bottomLineStart = Math.min(maxY, guideY + spacing); // 下側から引くラインの終点
+
+		// 選択範囲の描画中
+		if (state == SelectionState.SELECTING && selectionArea != null) {
+			// 選択範囲から少し離れた位置に上書きする
+			leftLineEnd = Math.max(0, selectionArea.x - spacing);
+			rightLineStart = Math.min(maxX, selectionArea.x + selectionArea.width + spacing);
+			topLineEnd = Math.max(0, selectionArea.y - spacing);
+			bottomLineStart = Math.min(maxY, selectionArea.y + selectionArea.height + spacing);
+
+			// 右・下方向へ選択している場合、撮影範囲内の最終ピクセルへ合わせる
+			if (currentPoint.x > startPoint.x) {
+				guideX--;
+			}
+			if (currentPoint.y > startPoint.y) {
+				guideY--;
+			}
+		}
+
+		// カーソル、または選択範囲の左右へ横線を描画する
+		graphics2D.drawLine(0, guideY, leftLineEnd, guideY);
+		graphics2D.drawLine(rightLineStart, guideY, maxX, guideY);
+		// カーソル、または選択範囲の上下へ縦線を描画する
+		graphics2D.drawLine(guideX, 0, guideX, topLineEnd);
+		graphics2D.drawLine(guideX, bottomLineStart, guideX, maxY);
+
 	}
 
 	/**
@@ -452,19 +473,24 @@ class RangeSelectionPanel extends JPanel {
 			return; // 待機中のとき、選択範囲がない場合、早期リターン
 		}
 
+		int x = selectionArea.x;
+		int y = selectionArea.y;
 		// 線が選択範囲外へはみ出さないよう、右端と下端を1px内側に収める
 		int width = Math.max(0, selectionArea.width - 1);
 		int height = Math.max(0, selectionArea.height - 1);
 
+		// レンダリングのアンチエイジングをoff
 		graphics2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
 
+		// 外側線を描画
 		graphics2D.setColor(SELECTION_BORDER_OUTER_COLOR);
 		graphics2D.setStroke(new BasicStroke(SELECTION_BORDER_OUTER_WIDTH));
-		graphics2D.drawRect(selectionArea.x, selectionArea.y, width, height);
+		graphics2D.drawRect(x, y, width, height);
 
+		// 内側線を描画
 		graphics2D.setColor(SELECTION_BORDER_INNER_COLOR);
 		graphics2D.setStroke(new BasicStroke(SELECTION_BORDER_INNER_WIDTH));
-		graphics2D.drawRect(selectionArea.x, selectionArea.y, width, height);
+		graphics2D.drawRect(x, y, width, height);
 	}
 
 	/**
