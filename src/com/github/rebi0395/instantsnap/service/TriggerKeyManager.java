@@ -32,8 +32,10 @@ public class TriggerKeyManager implements NativeKeyListener {
 	/** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(TriggerKeyManager.class);
 
-	/** トリガーキーの押下フラグ */
-	private boolean isTriggerPressed = false;
+	/** 撮影トリガーキーの押下フラグ */
+	private boolean isSnapTriggerPressed = false;
+	/** 範囲選択トリガーキーの押下フラグ */
+	private boolean isRangeSelectionTriggerPressed = false;
 	/** ALTキーの押下フラグ */
 	private boolean isAltPressed = false;
 	/** Ctrlキーの押下フラグ */
@@ -44,7 +46,7 @@ public class TriggerKeyManager implements NativeKeyListener {
 	/** 撮影後、連写防止用のフラグ trueで撮影可能 */
 	private boolean canSnap = true;
 	/** 範囲選択画面表示フラグ trueで範囲選択画面が表示可能 */
-	private boolean canOpenSelection = true;
+	private boolean canRangeSelection = true;
 
 	/**
 	 * キー押下を通知するインタフェースです
@@ -133,10 +135,10 @@ public class TriggerKeyManager implements NativeKeyListener {
 		KeyCombinationBean selectionKeys = config.getSelectionKeyBean();
 
 		// 押下状態を更新する
-		updateKeyStates(nativeKeyCode, true, snapKeys);
-
+		isSnapTriggerPressed = updateKeyStates(nativeKeyCode, true,
+				snapKeys.getTriggerKey(), isSnapTriggerPressed);
 		// 条件キーが完全一致で押されているかを判定し、かつ撮影可能であれば、撮影を行う
-		if (canSnap && isShortcutPressed(snapKeys)) {
+		if (canSnap && isShortcutPressed(isSnapTriggerPressed, snapKeys)) {
 			// 連写を防ぐため、撮影可能フラグをオフにする
 			canSnap = false;
 			clearKeyStates();
@@ -144,10 +146,12 @@ public class TriggerKeyManager implements NativeKeyListener {
 			return;
 		}
 
-		updateKeyStates(nativeKeyCode, true, selectionKeys);
+		// 押下状態を更新する
+		isRangeSelectionTriggerPressed = updateKeyStates(nativeKeyCode, true,
+				selectionKeys.getTriggerKey(), isRangeSelectionTriggerPressed);
 		// 範囲選択キーが完全一致で押されているかを判定し、かつ画面表示が可能であれば、範囲選択画面を表示する。
-		if (canOpenSelection && isShortcutPressed(selectionKeys)) {
-			canOpenSelection = false; // 二重起動防止のため、フラグをオフにする
+		if (canRangeSelection && isShortcutPressed(isRangeSelectionTriggerPressed, selectionKeys)) {
+			canRangeSelection = false; // 二重起動防止のため、フラグをオフにする
 			clearKeyStates();
 			listener.requestRangeSelection();
 		}
@@ -166,18 +170,20 @@ public class TriggerKeyManager implements NativeKeyListener {
 		// 範囲選択キーのショートカットキーを取得
 		KeyCombinationBean selectionKeys = config.getSelectionKeyBean();
 
-		// 押下状態を更新し、条件キーが完全一致で押されているかを判定する
-		updateKeyStates(nativeKeyCode, false, keys);
-		updateKeyStates(nativeKeyCode, false, selectionKeys);
-
-		if (!isShortcutPressed(keys)) {
+		// 押下状態を更新し、撮影条件キーが完全一致で押されているかを判定する
+		isSnapTriggerPressed = updateKeyStates(nativeKeyCode, false,
+				keys.getTriggerKey(), isSnapTriggerPressed);
+		if (!isShortcutPressed(isSnapTriggerPressed, keys)) {
 			// キーの押下状況が一致していないとき、フラグをオンにし、撮影を可能にする
 			canSnap = true;
 		}
 
-		if (!isShortcutPressed(selectionKeys)) {
-			// キーの押下状況が一致していないとき、フラグをオンにし、撮影を可能にする
-			canOpenSelection = true;
+		// 押下状態を更新し、範囲選択条件キーが完全一致で押されているかを判定する
+		isRangeSelectionTriggerPressed = updateKeyStates(nativeKeyCode, false,
+				selectionKeys.getTriggerKey(), isRangeSelectionTriggerPressed);
+		if (!isShortcutPressed(isRangeSelectionTriggerPressed, selectionKeys)) {
+			// キーの押下状況が一致していないとき、フラグをオンにし、範囲選択を可能にする
+			canRangeSelection = true;
 		}
 	}
 
@@ -185,47 +191,54 @@ public class TriggerKeyManager implements NativeKeyListener {
 	 * キーの押下状態を更新する
 	 *
 	 * @param nativeKeyCode キーコード
-	 * @param pressed 押下イベント呼び出しならtrue、離した場合はfalseを指定
-	 * @param keys 設定されているショートカットキー
+	 * @param setPressed 押下イベント呼び出しならtrue、離した場合はfalseを指定
+	 * @param triggerKeys 設定されているショートカットキー
+	 * @param triggerPressed トリガーキーの押下状態
+	 * @return トリガーキーの押下状態
 	 */
-	private void updateKeyStates(int nativeKeyCode, boolean pressed, KeyCombinationBean keys) {
+	private boolean updateKeyStates(int nativeKeyCode, boolean setPressed, int triggerKeys, boolean triggerPressed) {
+		boolean isTriggerKeyPressed = triggerPressed;
+
 		// トリガーキー押下フラグ
-		if (nativeKeyCode == keys.getTriggerKey()) {
-			isTriggerPressed = pressed;
+		if (nativeKeyCode == triggerKeys) {
+			isTriggerKeyPressed = setPressed;
 		}
 		// ALT押下フラグ
 		if (nativeKeyCode == VC_ALT) {
-			isAltPressed = pressed;
+			isAltPressed = setPressed;
 		}
 		// Ctrl押下フラグ
 		if (nativeKeyCode == VC_CONTROL) {
-			isCtrlPressed = pressed;
+			isCtrlPressed = setPressed;
 		}
 		// Shift押下フラグ
 		if (nativeKeyCode == VC_SHIFT) {
-			isShiftPressed = pressed;
+			isShiftPressed = setPressed;
 		}
+		return isTriggerKeyPressed;
 	}
 
 	/**
 	 * ショートカットキーが完全一致で押されているか判定する
 	 *
+	 * @param isTriggerKeyPressed トリガーキーの押下状態フィールド
 	 * @param keys 設定されているショートカットキー
 	 * @return 完全一致で押されている場合true
 	 * 押されていないキーがある場合、余計な修飾キーが押されている場合はfalseを返す
 	 */
-	private boolean isShortcutPressed(KeyCombinationBean keys) {
+	private boolean isShortcutPressed(boolean isTriggerKeyPressed, KeyCombinationBean keys) {
 		return (keys.isUseAlt() == isAltPressed)
 				&& (keys.isUseCtrl() == isCtrlPressed)
 				&& (keys.isUseShift() == isShiftPressed)
-				&& isTriggerPressed;
+				&& isTriggerKeyPressed;
 	}
 
 	/**
 	 * キーの押下状態をリセットする
 	 */
 	private void clearKeyStates() {
-		isTriggerPressed = false;
+		isSnapTriggerPressed = false;
+		isRangeSelectionTriggerPressed = false;
 		isAltPressed = false;
 		isCtrlPressed = false;
 		isShiftPressed = false;
