@@ -41,11 +41,23 @@ class RangeSelectionPanel extends JPanel {
 	/** 完全透明によるマウスイベントのすり抜けを防止する背景色。*/
 	private static final Color INTERACTION_COLOR = new Color(0, 0, 0, 1);
 
-	/** 選択範囲の枠線色 */
-	private static final Color SELECTION_BORDER_COLOR = Color.WHITE;
+	/** 選択範囲の枠線 外側の色 */
+	private static final Color SELECTION_BORDER_OUTER_COLOR = new Color(0, 0, 0, 180);
 
-	/** 選択範囲の枠線幅 */
-	private static final float SELECTION_BORDER_WIDTH = 2.0f;
+	/** 選択範囲の枠線 内側の色 */
+	private static final Color SELECTION_BORDER_INNER_COLOR = Color.WHITE;
+
+	/** 選択範囲の外側の枠線幅 */
+	private static final float SELECTION_BORDER_OUTER_WIDTH = 3f;
+
+	/** 選択範囲の内側の枠線幅 */
+	private static final float SELECTION_BORDER_INNER_WIDTH = 1f;
+
+	/** ガイド線外側の色 */
+	private static final Color GUIDE_LINE_OUTER_COLOR = new Color(0, 0, 0, 100);
+
+	/** ガイド線内側の色 */
+	private static final Color GUIDE_LINE_INNER_COLOR = new Color(255, 255, 255, 170);
 
 	/** ドラッグ開始と判定する移動量 */
 	private static final int DRAG_START_MOVING = 3;
@@ -82,6 +94,7 @@ class RangeSelectionPanel extends JPanel {
 	 * @param converter 多言語メッセージ変換インスタンス
 	 * @param listener 範囲選択結果の通知先
 	 */
+
 	public RangeSelectionPanel(Rectangle screenArea, ConfigBean config,
 			MessageKeyConverter converter, SelectionListener listener) {
 		this.screenArea = new Rectangle(screenArea);
@@ -105,7 +118,6 @@ class RangeSelectionPanel extends JPanel {
 	 */
 	public void resetSelection() {
 		startPoint = null; // 選択開始位置
-		currentPoint = null; // 選択位置
 		selectionArea = null; // 選択範囲
 		dragging = false;
 		listener.onUpdatedArea(null); // 通知先の範囲選択をリセットする
@@ -114,17 +126,33 @@ class RangeSelectionPanel extends JPanel {
 	}
 
 	/**
-	 * クリック、Enterなどで選択範囲状態に応じた処理を実施し、選択範囲状態を進める。
-	 * @param point マウスポインター
+	 * パネル表示直後のマウス位置を初期値として設定する
 	 */
-	private void advanceStateWithAction(Point point) {
+	protected void initializeCurrentPoint() {
+		Point point = getMousePosition();
+
+		if (point == null) {
+			return;
+		}
+		currentPoint = clampPoint(point);
+	}
+
+	/**
+	 * クリック、Enterなどで選択範囲状態に応じた処理を実施し、選択範囲状態を進める。
+	 */
+	protected void advanceStateWithAction() {
+		if (currentPoint == null) {
+			// 座標がない場合、早期リターン
+			return;
+		}
+
 		switch (state) {
 		case WAITING:
-			startSelection(point);
+			startSelection();
 			break;
 
 		case SELECTING:
-			confirmSelection(point);
+			confirmSelection();
 			break;
 
 		case CONFIRMED:
@@ -141,18 +169,6 @@ class RangeSelectionPanel extends JPanel {
 	private void changeSelectionState(SelectionState newState) {
 		state = newState;
 		guideTexts = createGuideTexts();
-	}
-
-	/**
-	 * クリック、Enterなどで選択範囲状態に応じた処理を実施し、選択範囲状態を進める。
-	 * マウスイベントがない場合に呼び出す。
-	 */
-	protected void advanceStateWithAction() {
-		Point point = getMousePosition(); // 現在位置から取得する
-		if (point == null) {
-			return;
-		}
-		advanceStateWithAction(point);
 	}
 
 	/**
@@ -176,12 +192,12 @@ class RangeSelectionPanel extends JPanel {
 
 			// 暗幕の描画
 			drawShadeAreas(graphics2D);
+			// 十字カーソルのガイド線を描画
+			drawCrosshairGuide(graphics2D);
 			// 操作説明を描画
 			drawOperationGuide(graphics2D);
-
-			if (state != SelectionState.WAITING && selectionArea != null) {
-				drawSelectionBorder(graphics2D);
-			}
+			// 選択範囲の枠線を描画
+			drawSelectionBorder(graphics2D);
 
 		} finally {
 			graphics2D.dispose();
@@ -196,53 +212,53 @@ class RangeSelectionPanel extends JPanel {
 
 			@Override
 			public void mousePressed(MouseEvent event) {
-				Point point = event.getPoint();
-				if (point == null || !SwingUtilities.isLeftMouseButton(event) || dragging) {
+				currentPoint = clampPoint(event.getPoint()); // フィールドのマウス位置を更新
+				if (currentPoint == null || !SwingUtilities.isLeftMouseButton(event) || dragging) {
 					// 座標がとれないとき、左ボタンでないとき、ドラッグ選択した場合、早期リターン
 					return;
 				}
-
-				advanceStateWithAction(point);
+				advanceStateWithAction();
 			}
 
 			@Override
 			public void mouseMoved(MouseEvent event) {
-				Point point = RangeSelectionPanel.this.getMousePosition();
-				if (point == null || state != SelectionState.SELECTING || dragging) {
-					// マウス座標がとれないとき、選択中でないとき、ドラッグ中の場合、早期リターン
-					return;
+				currentPoint = clampPoint(event.getPoint()); // フィールドのマウス位置を更新
+				if (currentPoint == null || state != SelectionState.SELECTING || dragging) {
+					// マウス座標がとれないとき、選択中でないとき、ドラッグ中の場合
+					repaint(); // ガイド線描画の更新
+					return; // 早期リターン
 				}
-
-				updateSelection(point); // 選択範囲を更新する
+				updateSelection(); // 選択範囲を更新する
 			}
 
 			@Override
 			public void mouseDragged(MouseEvent event) {
-				Point point = event.getPoint();
+				currentPoint = clampPoint(event.getPoint()); // フィールドのマウス位置を更新
 				// 押しっぱなしの状態はマスクで判定する
 				boolean leftButtonDown = (event.getModifiersEx() & InputEvent.BUTTON1_DOWN_MASK) != 0;
 
-				if (point == null || !leftButtonDown || state != SelectionState.SELECTING || !isDragStarted(point)) {
-					// マウス座標がとれないとき、左ボタンでないとき、
-					// 選択中でないとき、移動量が極小の場合、早期リターン
-					return;
+				if (currentPoint == null || !leftButtonDown
+						|| state != SelectionState.SELECTING || !isDragStarted()) {
+					// マウス座標がとれないとき、左ボタンでないとき、選択中でないとき、移動量が極小の場合
+					repaint(); // ガイド線描画の更新
+					return; // 早期リターン
 				}
 
 				dragging = true; // ドラッグ中フラグをオンにする
-				updateSelection(point); // 選択範囲を更新する
+				updateSelection(); // 選択範囲を更新する
 			}
 
 			@Override
 			public void mouseReleased(MouseEvent event) {
-				Point point = event.getPoint();
-				if (point == null || !SwingUtilities.isLeftMouseButton(event) ||
+				currentPoint = clampPoint(event.getPoint()); // フィールドのマウス位置を更新
+				if (currentPoint == null || !SwingUtilities.isLeftMouseButton(event) ||
 						state != SelectionState.SELECTING || !dragging) {
 					// マウス座標がとれないとき、マウスの左ボタンでないとき、
 					// 選択中でないとき、ドラッグ中でない場合、早期リターン
 					return;
 				}
 				dragging = false; // ドラッグ中フラグを解除
-				advanceStateWithAction(point);
+				advanceStateWithAction();
 			}
 		};
 
@@ -251,32 +267,28 @@ class RangeSelectionPanel extends JPanel {
 	}
 
 	/**
-	 * 選択開始位置から一定距離以上マウスが移動したか判定する。
-	 *
-	 * @param point 現在のマウス位置
+	 * 選択開始位置から一定距離以上マウスが移動したか判定する
 	 * @return ドラッグ開始と判定する場合true
 	 */
-	private boolean isDragStarted(Point point) {
-		if (startPoint == null || point == null) {
+	private boolean isDragStarted() {
+		if (startPoint == null || currentPoint == null) {
 			return false;
 		}
 
-		int movedX = Math.abs(point.x - startPoint.x);
-		int movedY = Math.abs(point.y - startPoint.y);
+		int movedX = Math.abs(currentPoint.x - startPoint.x);
+		int movedY = Math.abs(currentPoint.y - startPoint.y);
 
 		return movedX >= DRAG_START_MOVING || movedY >= DRAG_START_MOVING;
 	}
 
 	/**
 	 * ドラッグによる範囲選択を開始する。
-	 *
-	 * @param point 選択開始位置
 	 */
-	private void startSelection(Point point) {
+	private void startSelection() {
 		// 通知先の範囲選択をリセットする
 		listener.onUpdatedArea(null);
 		// ドラッグ開始位置を設定する
-		startPoint = clampPoint(point);
+		startPoint = clampPoint(currentPoint);
 		// 押下位置から新しい選択範囲を開始する
 		selectionArea = new Rectangle(startPoint.x, startPoint.y, 0, 0);
 		// 状態ステートマシンの更新
@@ -286,10 +298,8 @@ class RangeSelectionPanel extends JPanel {
 
 	/**
 	 * 選択範囲を確定する。
-	 *
-	 * @param point 選択範囲確定位置
 	 */
-	private void confirmSelection(Point point) {
+	private void confirmSelection() {
 		if (state != SelectionState.SELECTING) {
 			// 選択中状態でない場合、早期リターン
 			return;
@@ -298,7 +308,7 @@ class RangeSelectionPanel extends JPanel {
 		// ドラッグフラグをoffにする。
 		dragging = false;
 		// 選択範囲を更新する
-		updateSelection(point);
+		updateSelection();
 
 		if (selectionArea.width <= 0 || selectionArea.height <= 0) {
 			// 範囲を選択していなければ、選択状態を解除し、状態を待機中に戻す
@@ -324,17 +334,13 @@ class RangeSelectionPanel extends JPanel {
 	//TODO 十字キーはRobot.mouseMove()で動かす
 
 	/**
-	 * ドラッグ開始位置と現在位置から選択範囲を更新する。
-	 *
-	 * @param point 現在のマウス位置
+	 * ドラッグ開始位置と現在位置から選択範囲を更新する
 	 */
-	private void updateSelection(Point point) {
-		if (point == null) {
-			// ポインターが取得出来なかったとき、早期リターン
+	private void updateSelection() {
+		if (startPoint == null || currentPoint == null) {
+			// 座標がない場合、早期リターン
 			return;
 		}
-		// 最新位置をフィールドに設定する
-		currentPoint = clampPoint(point);
 
 		// 撮影範囲の左上の(X,Y)座標を算出する
 		int x = Math.min(startPoint.x, currentPoint.x);
@@ -352,8 +358,7 @@ class RangeSelectionPanel extends JPanel {
 	}
 
 	/**
-	 * 選択範囲の上下左右へ暗幕を描画する。
-	 *
+	 * 選択範囲の上下左右へ暗幕を描画する
 	 * @param graphics2D 描画オブジェクト
 	 */
 	private void drawShadeAreas(Graphics2D graphics2D) {
@@ -391,24 +396,79 @@ class RangeSelectionPanel extends JPanel {
 	}
 
 	/**
-	 * ドラッグ中の選択範囲へ白い枠線を描画する。
-	 *
+	 * 十字カーソルのガイド線を描画する
+	 * 範囲確定時、マウス座標がない場合、描画しない
+	 * @param graphics2D 描画オブジェクト
+	 */
+	private void drawCrosshairGuide(Graphics2D graphics2D) {
+		if (state == SelectionState.CONFIRMED || currentPoint == null) {
+			return; // 範囲確定時、マウス座標がない場合、早期リターン
+		}
+
+		int centerGap = 20; // 中央カーソルからガイド線を出さない範囲
+
+		// 外側の黒線を描画する
+		graphics2D.setColor(GUIDE_LINE_OUTER_COLOR);
+		graphics2D.setStroke(new BasicStroke(3f)); // 線の太さを3pxに設定
+
+		// 左端～中央の横線を描画
+		graphics2D.drawLine(0, currentPoint.y,
+				Math.max(0, currentPoint.x - centerGap), currentPoint.y);
+		// 中央～右端の横線を描画
+		graphics2D.drawLine(Math.min(getWidth(), currentPoint.x + centerGap),
+				currentPoint.y, getWidth(), currentPoint.y);
+		// 上端～中央の縦線を描画
+		graphics2D.drawLine(currentPoint.x, 0,
+				currentPoint.x, Math.max(0, currentPoint.y - centerGap));
+		// 中央～下端の縦線を描画
+		graphics2D.drawLine(currentPoint.x, Math.min(getHeight(), currentPoint.y + centerGap),
+				currentPoint.x, getHeight());
+
+		// 内側の白線を描画し、白黒の二重線にする
+		graphics2D.setColor(GUIDE_LINE_INNER_COLOR);
+		graphics2D.setStroke(new BasicStroke(1f)); // 線の太さを1pxに設定
+
+		// 左端～中央の横線を描画
+		graphics2D.drawLine(0, currentPoint.y,
+				Math.max(0, currentPoint.x - centerGap), currentPoint.y);
+		// 中央～右端の横線を描画
+		graphics2D.drawLine(Math.min(getWidth(), currentPoint.x + centerGap),
+				currentPoint.y, getWidth(), currentPoint.y);
+		// 上端～中央の縦線を描画
+		graphics2D.drawLine(currentPoint.x, 0,
+				currentPoint.x, Math.max(0, currentPoint.y - centerGap));
+		// 中央～下端の縦線を描画
+		graphics2D.drawLine(currentPoint.x, Math.min(getHeight(), currentPoint.y + centerGap),
+				currentPoint.x, getHeight());
+	}
+
+	/**
+	 * ドラッグ中の選択範囲へ白い枠線を描画する
+	 * 待機中の場合、選択範囲がない場合、描画しない
 	 * @param graphics2D 描画オブジェクト
 	 */
 	private void drawSelectionBorder(Graphics2D graphics2D) {
-		graphics2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		graphics2D.setColor(SELECTION_BORDER_COLOR);
-		graphics2D.setStroke(new BasicStroke(SELECTION_BORDER_WIDTH));
+		if (state == SelectionState.WAITING || selectionArea == null) {
+			return; // 待機中のとき、選択範囲がない場合、早期リターン
+		}
 
 		// 線が選択範囲外へはみ出さないよう、右端と下端を1px内側に収める
 		int width = Math.max(0, selectionArea.width - 1);
 		int height = Math.max(0, selectionArea.height - 1);
+
+		graphics2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+
+		graphics2D.setColor(SELECTION_BORDER_OUTER_COLOR);
+		graphics2D.setStroke(new BasicStroke(SELECTION_BORDER_OUTER_WIDTH));
+		graphics2D.drawRect(selectionArea.x, selectionArea.y, width, height);
+
+		graphics2D.setColor(SELECTION_BORDER_INNER_COLOR);
+		graphics2D.setStroke(new BasicStroke(SELECTION_BORDER_INNER_WIDTH));
 		graphics2D.drawRect(selectionArea.x, selectionArea.y, width, height);
 	}
 
 	/**
 	 * 画面左上へ操作説明を描画する
-	 *
 	 * @param graphics2D 描画オブジェクト
 	 */
 	private void drawOperationGuide(Graphics2D graphics2D) {
