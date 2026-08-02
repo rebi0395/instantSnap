@@ -144,8 +144,12 @@ public final class MessageKeyConstant {
 	public static final String DIALOG_STARTUP_ERROR = "dialog.startupError.message";
 	
 	// -- 範囲選択画面 --
-	/** 操作説明：範囲選択状態の切り替え */
-	public static final String RANGE_SELECTION_GUIDE_ADVANCE = "rangeSelection.guide.advance";
+	/** 操作説明：範囲選択状態の切り替え 待機中*/
+	public static final String RANGE_SELECTION_GUIDE_WAITING = "rangeSelection.guide.waiting";
+	/** 操作説明：範囲選択状態の切り替え 範囲選択中*/
+	public static final String RANGE_SELECTION_GUIDE_SELECTING = "rangeSelection.guide.selecting";
+	/** 操作説明：範囲選択状態の切り替え 範囲確定済*/
+	public static final String RANGE_SELECTION_GUIDE_CONFIRMED = "rangeSelection.guide.confirmed";
 	/** 操作説明：撮影 */
 	public static final String RANGE_SELECTION_GUIDE_SNAP = "rangeSelection.guide.snap";
 	/** 操作説明：マウスポインター移動 */

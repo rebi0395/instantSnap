@@ -4,6 +4,7 @@ import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -12,6 +13,8 @@ import java.awt.RenderingHints;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -65,6 +68,9 @@ class RangeSelectionPanel extends JPanel {
 	/** ドラッグで範囲選択をしている場合 true */
 	private boolean dragging;
 
+	/** 操作説明パネルに表示する文章 */
+	private List<String> guideTexts = new ArrayList<String>();
+
 	/** 範囲選択画面の状態 */
 	private SelectionState state = SelectionState.WAITING;
 
@@ -83,6 +89,9 @@ class RangeSelectionPanel extends JPanel {
 		this.converter = converter;
 		this.listener = listener;
 
+		// 初期状態と操作説明を設定する
+		changeSelectionState(SelectionState.WAITING);
+
 		// 背景を透過し、範囲選択用のカーソルに変更する
 		setOpaque(false);
 		setFocusable(true);
@@ -100,8 +109,8 @@ class RangeSelectionPanel extends JPanel {
 		selectionArea = null; // 選択範囲
 		dragging = false;
 		listener.onUpdatedArea(null); // 通知先の範囲選択をリセットする
+		changeSelectionState(SelectionState.WAITING); // 状態を更新
 		repaint(); // 選択範囲と枠線を消し、全面を暗幕で覆う
-		state = SelectionState.WAITING; // 状態を更新
 	}
 
 	/**
@@ -122,6 +131,16 @@ class RangeSelectionPanel extends JPanel {
 			resetSelection();
 			break;
 		}
+	}
+
+	/**
+	 * 範囲選択画面の状態を変更し、表示する操作説明を更新する
+	 *
+	 * @param newState 変更後の状態
+	 */
+	private void changeSelectionState(SelectionState newState) {
+		state = newState;
+		guideTexts = createGuideTexts();
 	}
 
 	/**
@@ -254,18 +273,15 @@ class RangeSelectionPanel extends JPanel {
 	 * @param point 選択開始位置
 	 */
 	private void startSelection(Point point) {
-
 		// 通知先の範囲選択をリセットする
 		listener.onUpdatedArea(null);
-
 		// ドラッグ開始位置を設定する
 		startPoint = clampPoint(point);
-
 		// 押下位置から新しい選択範囲を開始する
 		selectionArea = new Rectangle(startPoint.x, startPoint.y, 0, 0);
-		repaint();
-
-		state = SelectionState.SELECTING; // 状態を更新する
+		// 状態ステートマシンの更新
+		changeSelectionState(SelectionState.SELECTING);
+		repaint(); // 再描画
 	}
 
 	/**
@@ -301,7 +317,8 @@ class RangeSelectionPanel extends JPanel {
 		paintImmediately(0, 0, getWidth(), getHeight());
 		listener.onUpdatedArea(selectedScreenArea);
 		// 状態を更新する
-		state = SelectionState.CONFIRMED;
+		changeSelectionState(SelectionState.CONFIRMED);
+		repaint();
 	}
 
 	//TODO 十字キーはRobot.mouseMove()で動かす
@@ -395,48 +412,75 @@ class RangeSelectionPanel extends JPanel {
 	 * @param graphics2D 描画オブジェクト
 	 */
 	private void drawOperationGuide(Graphics2D graphics2D) {
-		int x = 20;
-		int y = 20;
-		int width = 360;
-		int height = 160;
+		FontMetrics metrics = graphics2D.getFontMetrics(); // フォントの描画情報を取得する
+		int lineHeight = metrics.getHeight(); // 文字フォントから行間を含む、一行の高さを取得する
 
-		int textX = x + 15;
-		int textY = y + 30;
+		int panelX = 20; // パネルの左上X座標 
+		int panelY = 20; // パネルの左上Y座標
+		int paddingX = 15; // 文字横の余白
+		int paddingY = 25; // 文字列先頭行の上余白、最終行の下余白
 
-		// 半透明の背景
-		graphics2D.setColor(new Color(20, 20, 20, 190));
-		graphics2D.fillRoundRect(x, y, width, height, 8, 8);
+		int panelWidth = 360; // パネルの横幅
+		int panelHeight = paddingY + (guideTexts.size() * lineHeight); // 行数に応じたパネルの高さ
 
-		// 操作説明
-		graphics2D.setColor(Color.WHITE);
-		// クリック説明
-		graphics2D.drawString(
-				converter.getMessage(MessageKeyConstant.RANGE_SELECTION_GUIDE_ADVANCE),
-				textX, textY);
-		// 撮影説明
-		graphics2D.drawString(
-				config.getSnapKeyBean().resolveKeyCombinationName() + // 撮影キー取得
-				" : " + 
-				converter.getMessage(MessageKeyConstant.RANGE_SELECTION_GUIDE_SNAP),
-				textX, textY + 20);
-		// 矢印キーで範囲動かせる説明
-		graphics2D.drawString(
-				converter.getMessage(MessageKeyConstant.RANGE_SELECTION_GUIDE_MOVE_POINTER),
-				textX, textY + 40);
-		// Ctrl + 矢印キーで枠全体を動かせる説明
-		graphics2D.drawString(
-				converter.getMessage(MessageKeyConstant.RANGE_SELECTION_GUIDE_MOVE_AREA),
-				textX, textY + 60);
-		// Shiftで高速移動できる説明
-		graphics2D.drawString(
-				converter.getMessage(MessageKeyConstant.RANGE_SELECTION_GUIDE_FAST_MOVE),
-				textX, textY + 80);
-		// 画面を閉じる説明
-		graphics2D.drawString(
-				config.getSelectionKeyBean().resolveKeyCombinationName() +
-				" / Esc : " +
-				converter.getMessage(MessageKeyConstant.RANGE_SELECTION_GUIDE_CLOSE),
-				textX, textY + 100);
+		int textX = panelX + paddingX; // 文字列のX座標
+		int textY = panelY + paddingY; // 文字列のY座標
+
+		graphics2D.setColor(new Color(20, 20, 20, 190)); // 半透明の背景
+		graphics2D.fillRoundRect(panelX, panelY, panelWidth, panelHeight, 10, 10); // 枠の表示
+		graphics2D.setColor(Color.WHITE); // 文字色の設定
+
+		for (String text : guideTexts) {
+			graphics2D.drawString(text, textX, textY);
+			textY += lineHeight; // 文字列の表示するY座標を一行分、下にずらす
+		}
+	}
+
+	/**
+	 * 範囲選択状態から、操作説明パネルに表示する文章リストを生成する
+	 * @return 操作説明パネルに表示する文章リスト
+	 */
+	private List<String> createGuideTexts() {
+		List<String> texts = new ArrayList<String>();
+		switch (state) {
+		case WAITING: {
+			// クリック説明
+			texts.add(converter.getMessage(MessageKeyConstant.RANGE_SELECTION_GUIDE_WAITING));
+			break;
+		}
+
+		case SELECTING: {
+			// クリック説明			
+			texts.add(converter.getMessage(MessageKeyConstant.RANGE_SELECTION_GUIDE_SELECTING));
+			// マウス操作で範囲選択ができる説明
+
+			// 矢印キーで範囲動かせる説明
+			texts.add(converter.getMessage(MessageKeyConstant.RANGE_SELECTION_GUIDE_MOVE_POINTER));
+			// Ctrl + 矢印キーで枠全体を動かせる説明
+			texts.add(converter.getMessage(MessageKeyConstant.RANGE_SELECTION_GUIDE_MOVE_AREA));
+			// Shiftで高速移動できる説明
+			texts.add(converter.getMessage(MessageKeyConstant.RANGE_SELECTION_GUIDE_FAST_MOVE));
+
+			break;
+		}
+
+		case CONFIRMED: {
+			// クリック説明
+			texts.add(converter.getMessage(MessageKeyConstant.RANGE_SELECTION_GUIDE_CONFIRMED));
+			// 撮影キーの説明
+			texts.add(config.getSnapKeyBean().resolveKeyCombinationName() +
+					converter.getMessage(MessageKeyConstant.RANGE_SELECTION_GUIDE_SNAP));
+			break;
+		}
+
+		default:
+			// 何もしない
+		}
+
+		// 閉じる説明は共通
+		texts.add("ESC / " + config.getSelectionKeyBean().resolveKeyCombinationName() +
+				converter.getMessage(MessageKeyConstant.RANGE_SELECTION_GUIDE_CLOSE));
+		return texts;
 	}
 
 	/**
