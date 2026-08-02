@@ -25,7 +25,7 @@ import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.view.swing.RangeSelectionDialog.SelectionListener;
 
 /**
- * 範囲選択画面の暗幕描画とマウス操作を行うSwingパネル
+ * 範囲選択画面を表示するパネルを作成するクラス
  */
 class RangeSelectionPanel extends JPanel {
 
@@ -406,6 +406,8 @@ class RangeSelectionPanel extends JPanel {
 			return; // 範囲確定時、マウス座標がない場合、早期リターン
 		}
 
+		// アンチエイリアスをoff
+		graphics2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
 		// 外側の線を描画する
 		graphics2D.setColor(GUIDE_LINE_OUTER_COLOR);
 		graphics2D.setStroke(new BasicStroke(SELECTION_BORDER_OUTER_WIDTH)); // 線の太さを選択範囲の外線と合わせる
@@ -464,7 +466,7 @@ class RangeSelectionPanel extends JPanel {
 	}
 
 	/**
-	 * ドラッグ中の選択範囲へ白い枠線を描画する
+	 * ドラッグ中の選択範囲へ枠線を描画する
 	 * 待機中の場合、選択範囲がない場合、描画しない
 	 * @param graphics2D 描画オブジェクト
 	 */
@@ -534,13 +536,10 @@ class RangeSelectionPanel extends JPanel {
 			texts.add(converter.getMessage(MessageKeyConstant.RANGE_SELECTION_GUIDE_WAITING));
 			break;
 		}
-
 		case SELECTING: {
 			// クリック説明			
 			texts.add(converter.getMessage(MessageKeyConstant.RANGE_SELECTION_GUIDE_SELECTING));
-			// マウス操作で範囲選択ができる説明
-
-			// 矢印キーで範囲動かせる説明
+			// マウス操作、矢印キーで範囲動かせる説明
 			texts.add(converter.getMessage(MessageKeyConstant.RANGE_SELECTION_GUIDE_MOVE_POINTER));
 			// Ctrl + 矢印キーで枠全体を動かせる説明
 			texts.add(converter.getMessage(MessageKeyConstant.RANGE_SELECTION_GUIDE_MOVE_AREA));
@@ -549,7 +548,6 @@ class RangeSelectionPanel extends JPanel {
 
 			break;
 		}
-
 		case CONFIRMED: {
 			// クリック説明
 			texts.add(converter.getMessage(MessageKeyConstant.RANGE_SELECTION_GUIDE_CONFIRMED));
@@ -558,11 +556,9 @@ class RangeSelectionPanel extends JPanel {
 					converter.getMessage(MessageKeyConstant.RANGE_SELECTION_GUIDE_SNAP));
 			break;
 		}
-
 		default:
 			// 何もしない
 		}
-
 		// 閉じる説明は共通
 		texts.add("ESC / " + config.getSelectionKeyBean().resolveKeyCombinationName() +
 				converter.getMessage(MessageKeyConstant.RANGE_SELECTION_GUIDE_CLOSE));
