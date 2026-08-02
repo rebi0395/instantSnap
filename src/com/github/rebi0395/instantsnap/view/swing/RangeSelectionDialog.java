@@ -165,6 +165,9 @@ public class RangeSelectionDialog {
 			createdDialog.setVisible(true); // 範囲選択画面を表示する
 			createdDialog.toFront(); // ダイアログを最前面へ移動する
 			createdDialog.requestFocus(); // フォーカスを要求する
+			
+			// 範囲選択パネルのマウス位置を初期化する
+			createdPanel.initializeCurrentPoint();
 
 			// キーボードによる範囲選択処理を登録する
 			registerEscapeAction(createdDialog.getRootPane()); // ESCキー
