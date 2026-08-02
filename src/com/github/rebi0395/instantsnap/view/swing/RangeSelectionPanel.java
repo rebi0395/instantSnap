@@ -1,5 +1,6 @@
 package com.github.rebi0395.instantsnap.view.swing;
 
+import java.awt.AWTException;
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -10,6 +11,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.Robot;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -19,6 +21,7 @@ import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
+import com.github.rebi0395.instantsnap.common.AppLogger;
 import com.github.rebi0395.instantsnap.common.MessageKeyConstant;
 import com.github.rebi0395.instantsnap.common.MessageKeyConverter;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
@@ -34,6 +37,9 @@ class RangeSelectionPanel extends JPanel {
 
 	/** メッセージ変換クラス */
 	private final MessageKeyConverter converter;
+
+	/** マウスポインター移動用に使用するRobot */
+	private Robot robot;
 
 	/** 選択範囲外の暗幕色 */
 	private static final Color SHADE_COLOR = new Color(0, 0, 0, 89);
@@ -68,10 +74,10 @@ class RangeSelectionPanel extends JPanel {
 	/** パネルを表示しているモニターのAWT座標 */
 	private final Rectangle screenArea;
 
-	/** 選択開始位置 */
+	/** パネル内の選択開始位置 */
 	private Point startPoint;
 
-	/** 選択位置 */
+	/** パネル内の選択位置 */
 	private Point currentPoint;
 
 	/** 現在の選択範囲。パネル左上を原点とする */
@@ -94,7 +100,6 @@ class RangeSelectionPanel extends JPanel {
 	 * @param converter 多言語メッセージ変換インスタンス
 	 * @param listener 範囲選択結果の通知先
 	 */
-
 	public RangeSelectionPanel(Rectangle screenArea, ConfigBean config,
 			MessageKeyConverter converter, SelectionListener listener) {
 		this.screenArea = new Rectangle(screenArea);
@@ -111,6 +116,12 @@ class RangeSelectionPanel extends JPanel {
 		setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
 
 		registerMouseEvents(); // マウスイベントの登録
+
+		try {
+			robot = new Robot();
+		} catch (AWTException e) {
+			AppLogger.warn("{}：Robotインスタンスの生成に失敗しました", this.getClass().getName(), e);
+		}
 	}
 
 	/**
@@ -159,6 +170,71 @@ class RangeSelectionPanel extends JPanel {
 			resetSelection();
 			break;
 		}
+	}
+
+	/**
+	 * 矢印キーの入力で、マウス座標を移動させる
+	 *
+	 * @param movement 移動量
+	 */
+	protected void moveMouse(Point movement) {
+		if (currentPoint == null) {
+			return;
+		}
+		if (robot == null) {
+			try {
+				robot = new Robot(); // 一回生成を試みる
+			} catch (AWTException e) {
+				AppLogger.warn("{}：Robotインスタンスの生成に失敗しました", this.getClass().getName(), e);
+			}
+
+			if (robot == null) {
+				return; // robotがないとき、早期リターン
+			}
+		}
+		int nextX = currentPoint.x + movement.x; // モニター座標からX座標を動かす
+		int nextY = currentPoint.y + movement.y; // モニター座標からX座標を動かす
+		Point nextPoint = clampPoint(new Point(nextX, nextY)); // マイナス座標にならない用に丸める
+
+		// モニター全体を含めたスクリーン座標に変換する
+		int screenX = screenArea.x + nextPoint.x;
+		int screenY = screenArea.y + nextPoint.y;
+		robot.mouseMove(screenX, screenY);
+	}
+
+	/**
+	 * Ctrlキー + 矢印キーの入力で、選択範囲の枠を移動させる
+	 *
+	 * @param movement 移動量
+	 */
+	protected void moveSelectionArea(Point movement) {
+		if (state != SelectionState.SELECTING || selectionArea == null ||
+				startPoint == null || currentPoint == null) {
+			return; // 待機中の場合、早期リターン
+		}
+		if (robot == null) {
+			try {
+				robot = new Robot(); // 一回生成を試みる
+			} catch (AWTException e) {
+				AppLogger.warn("{}：Robotインスタンスの生成に失敗しました", this.getClass().getName(), e);
+			}
+
+			if (robot == null) {
+				return; // robotがないとき、早期リターン
+			}
+		}
+		// 移動量を補正する
+		Point clampMovement = clampMoveDirection(movement);
+
+		// 各点を移動させる
+		startPoint.translate(clampMovement.x, clampMovement.y);
+		currentPoint.translate(clampMovement.x, clampMovement.y);
+		selectionArea.translate(clampMovement.x, clampMovement.y);
+
+		// モニター全体を含めたスクリーン座標に変換する
+		int screenX = screenArea.x + currentPoint.x;
+		int screenY = screenArea.y + currentPoint.y;
+		robot.mouseMove(screenX, screenY);
 	}
 
 	/**
@@ -330,8 +406,6 @@ class RangeSelectionPanel extends JPanel {
 		changeSelectionState(SelectionState.CONFIRMED);
 		repaint();
 	}
-
-	//TODO 十字キーはRobot.mouseMove()で動かす
 
 	/**
 	 * ドラッグ開始位置と現在位置から選択範囲を更新する
@@ -534,6 +608,10 @@ class RangeSelectionPanel extends JPanel {
 		case WAITING: {
 			// クリック説明
 			texts.add(converter.getMessage(MessageKeyConstant.RANGE_SELECTION_GUIDE_WAITING));
+			// マウス操作、矢印キーで範囲動かせる説明
+			texts.add(converter.getMessage(MessageKeyConstant.RANGE_SELECTION_GUIDE_MOVE_POINTER));
+			// Shiftで高速移動できる説明
+			texts.add(converter.getMessage(MessageKeyConstant.RANGE_SELECTION_GUIDE_FAST_MOVE));
 			break;
 		}
 		case SELECTING: {
@@ -545,7 +623,6 @@ class RangeSelectionPanel extends JPanel {
 			texts.add(converter.getMessage(MessageKeyConstant.RANGE_SELECTION_GUIDE_MOVE_AREA));
 			// Shiftで高速移動できる説明
 			texts.add(converter.getMessage(MessageKeyConstant.RANGE_SELECTION_GUIDE_FAST_MOVE));
-
 			break;
 		}
 		case CONFIRMED: {
@@ -573,9 +650,32 @@ class RangeSelectionPanel extends JPanel {
 	 */
 	private Point clampPoint(Point point) {
 		// 指定された座標を、パネルの最小値から最大値の範囲内に収める
-		int x = Math.max(0, Math.min(point.x, getWidth()));
-		int y = Math.max(0, Math.min(point.y, getHeight()));
+		int x = Math.max(0, Math.min(point.x, getWidth() - 1));
+		int y = Math.max(0, Math.min(point.y, getHeight() - 1));
 		return new Point(x, y);
+	}
+
+	/**
+	 * 枠全体がパネル内に収まるよう、移動量を補正する。
+	 *
+	 * @param movement 移動量
+	 * @return 枠の適切な移動量
+	 */
+	private Point clampMoveDirection(Point movement) {
+		// 選択範囲の座標取得
+		int left = Math.min(startPoint.x, currentPoint.x);
+		int right = Math.max(startPoint.x, currentPoint.x);
+		int top = Math.min(startPoint.y, currentPoint.y);
+		int bottom = Math.max(startPoint.y, currentPoint.y);
+
+		// パネルの最大座標
+		int panelMaxX = Math.max(0, getWidth() - 1);
+		int panelMaxY = Math.max(0, getHeight() - 1);
+
+		int moveX = Math.max(-left, Math.min(movement.x, panelMaxX - right));
+		int moveY = Math.max(-top, Math.min(movement.y, panelMaxY - bottom));
+
+		return new Point(moveX, moveY);
 	}
 
 	/**

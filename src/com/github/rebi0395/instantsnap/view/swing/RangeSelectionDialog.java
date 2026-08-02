@@ -6,9 +6,11 @@ import java.awt.EventQueue;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.MouseInfo;
+import java.awt.Point;
 import java.awt.PointerInfo;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.lang.reflect.InvocationTargetException;
 
@@ -38,10 +40,10 @@ public class RangeSelectionDialog {
 
 	/** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(RangeSelectionDialog.class);
-	
+
 	/** ユーザー設定値 */
 	private ConfigBean config;
-	
+
 	/** 言語変換コンバーター */
 	private MessageKeyConverter converter;
 
@@ -57,8 +59,16 @@ public class RangeSelectionDialog {
 	/** 範囲選択の描画とマウス操作を行うパネル */
 	private RangeSelectionPanel selectionPanel;
 
+	/** マウスの通常移動量 */
+	private static final int NORMAL_MOVE = 1;
+
+	/** マウスの高速移動量 */
+	private static final int FAST_MOVE = 20;
+
 	/**
 	 * コンストラクタ
+	 * @param config ユーザー設定値
+	 * @param converter メッセージ変換クラス
 	 * @param listener 範囲選択結果の通知先
 	 */
 	public RangeSelectionDialog(ConfigBean config, MessageKeyConverter converter, SelectionListener listener) {
@@ -165,13 +175,25 @@ public class RangeSelectionDialog {
 			createdDialog.setVisible(true); // 範囲選択画面を表示する
 			createdDialog.toFront(); // ダイアログを最前面へ移動する
 			createdDialog.requestFocus(); // フォーカスを要求する
-			
+
 			// 範囲選択パネルのマウス位置を初期化する
 			createdPanel.initializeCurrentPoint();
 
 			// キーボードによる範囲選択処理を登録する
-			registerEscapeAction(createdDialog.getRootPane()); // ESCキー
-			registerEnterAction(createdDialog.getRootPane()); // エンターキー
+			JRootPane root = createdDialog.getRootPane();
+			registerEscapeAction(root); // ESCキー
+			registerEnterKeyAction(root); // エンターキー
+
+			// 方向キーの登録
+			registerArrowKeyAction(root, KeyEvent.VK_LEFT, false, new Point(-NORMAL_MOVE, 0));
+			registerArrowKeyAction(root, KeyEvent.VK_RIGHT, false, new Point(NORMAL_MOVE, 0));
+			registerArrowKeyAction(root, KeyEvent.VK_UP, false, new Point(0, -NORMAL_MOVE));
+			registerArrowKeyAction(root, KeyEvent.VK_DOWN, false, new Point(0, NORMAL_MOVE));
+			// 方向キー + シフトキー
+			registerArrowKeyAction(root, KeyEvent.VK_LEFT, true, new Point(-FAST_MOVE, 0));
+			registerArrowKeyAction(root, KeyEvent.VK_RIGHT, true, new Point(FAST_MOVE, 0));
+			registerArrowKeyAction(root, KeyEvent.VK_UP, true, new Point(0, -FAST_MOVE));
+			registerArrowKeyAction(root, KeyEvent.VK_DOWN, true, new Point(0, FAST_MOVE));
 
 			// close処理から現在のダイアログとパネルを参照できるように保持する
 			this.dialog = createdDialog;
@@ -219,7 +241,7 @@ public class RangeSelectionDialog {
 	 *
 	 * @param rootPane キー操作を登録するルートパネル
 	 */
-	private void registerEnterAction(JRootPane rootPane) {
+	private void registerEnterKeyAction(JRootPane rootPane) {
 		KeyStroke enterKey = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
 		AbstractAction advanceStateWithAction = new AbstractAction() {
 
@@ -234,6 +256,47 @@ public class RangeSelectionDialog {
 		};
 		rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(enterKey, "advanceStateWithAction");
 		rootPane.getActionMap().put("advanceStateWithAction", advanceStateWithAction);
+	}
+
+	/**
+	 * 矢印キーでマウス座標を変更するアクションを登録する。
+	 *
+	 * @param rootPane キー操作を登録するルートパネル
+	 * @param keyCode 矢印キーのキーコード
+	 * @param useShiftModifier shift修飾キーを使用するか
+	 * @param movement 移動量
+	 */
+	private void registerArrowKeyAction(JRootPane rootPane, int KeyCode, boolean useShiftModifier, Point movement) {
+		int shiftModifiers = 0; // 未定義
+		if (useShiftModifier) {
+			shiftModifiers = InputEvent.SHIFT_DOWN_MASK;
+		}
+
+		// -- マウス操作アクションの登録
+		KeyStroke mouseKeyStroke = KeyStroke.getKeyStroke(KeyCode, shiftModifiers);
+		String mouseActionMapKey = "mouse" + KeyCode + shiftModifiers; // アクションマップのキー
+		AbstractAction arrowKeysMouseAction = new AbstractAction() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				selectionPanel.moveMouse(movement);
+			}
+		};
+		rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(mouseKeyStroke, mouseActionMapKey);
+		rootPane.getActionMap().put(mouseActionMapKey, arrowKeysMouseAction);
+
+		// -- 選択範囲枠操作アクションの登録
+		KeyStroke areaKeyStroke = KeyStroke.getKeyStroke(KeyCode, InputEvent.CTRL_DOWN_MASK | shiftModifiers);
+		String areaActionMapKey = "area" + KeyCode + shiftModifiers; // アクションマップのキー
+		AbstractAction arrowKeysAreaAction = new AbstractAction() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				selectionPanel.moveSelectionArea(movement);
+			}
+		};
+		rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(areaKeyStroke, areaActionMapKey);
+		rootPane.getActionMap().put(areaActionMapKey, arrowKeysAreaAction);
 	}
 
 	/**
