@@ -21,10 +21,10 @@ public final class MessageKeyConstant {
 	/** キャプション：出力 */
 	public static final String CAPTION_OUTPUT = "caption.output";
 
-	/** セクション：ショートカットキー選択 */
-	public static final String SECTION_SHORTCUT_KEY = "section.shortcutKey";
-	/** セクション：カスタムキー設定 */
-	public static final String SECTION_CUSTOM_KEY = "section.customKey";
+	/** セクション：撮影ショートカットキー選択 */
+	public static final String SECTION_SNAP_SHORTCUT_KEY = "section.snapShortcutKey";
+	/** セクション：範囲選択ショートカットキー */
+	public static final String SECTION_SELECTION_SHORTCUT_KEY = "section.selectionShortcutKey";
 	/** セクション：撮影範囲 */
 	public static final String SECTION_SNAP_AREA = "section.snapArea";
 	/** セクション：撮影オプション */
@@ -67,8 +67,8 @@ public final class MessageKeyConstant {
 	/** ボタン：ファイル選択ボタン */
 	public static final String BUTTON_SELECT_FILE = "button.selectFile";
 
-	/** 入力欄：カスタムキー */
-	public static final String PROMPT_CUSTOM_KEY = "prompt.customKey";
+	/** 入力欄：ショートカットキー */
+	public static final String PROMPT_SHORTCUT_KEY = "prompt.shortcutKey";
 
 	/** ラベルの有効を表示するメッセージキー */
 	public static final String LABEL_ENABLED = "label.enabled";
@@ -142,5 +142,23 @@ public final class MessageKeyConstant {
 	public static final String DIALOG_SINGLE_INSTANCE_MESSAGE = "dialog.singleInstance.message";
 	/** 起動時エラーメッセージ */
 	public static final String DIALOG_STARTUP_ERROR = "dialog.startupError.message";
+	
+	// -- 範囲選択画面 --
+	/** 操作説明：範囲選択状態の切り替え 待機中*/
+	public static final String RANGE_SELECTION_GUIDE_WAITING = "rangeSelection.guide.waiting";
+	/** 操作説明：範囲選択状態の切り替え 範囲選択中*/
+	public static final String RANGE_SELECTION_GUIDE_SELECTING = "rangeSelection.guide.selecting";
+	/** 操作説明：範囲選択状態の切り替え 範囲確定済*/
+	public static final String RANGE_SELECTION_GUIDE_CONFIRMED = "rangeSelection.guide.confirmed";
+	/** 操作説明：撮影 */
+	public static final String RANGE_SELECTION_GUIDE_SNAP = "rangeSelection.guide.snap";
+	/** 操作説明：マウスポインター移動 */
+	public static final String RANGE_SELECTION_GUIDE_MOVE_POINTER = "rangeSelection.guide.movePointer";
+	/** 操作説明：選択範囲移動 */
+	public static final String RANGE_SELECTION_GUIDE_MOVE_AREA = "rangeSelection.guide.moveArea";
+	/** 操作説明：移動量変更 */
+	public static final String RANGE_SELECTION_GUIDE_FAST_MOVE = "rangeSelection.guide.fastMove";
+	/** 操作説明：範囲選択画面を閉じる */
+	public static final String RANGE_SELECTION_GUIDE_CLOSE = "rangeSelection.guide.close";
 
 }

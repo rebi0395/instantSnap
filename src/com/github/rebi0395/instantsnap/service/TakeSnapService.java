@@ -42,11 +42,13 @@ public class TakeSnapService {
 
 	/**
 	 * 撮影処理を実行する
+	 *
 	 * @param config ユーザーの設定値
+	 * @param rangeSelection ドラッグ指定の撮影範囲
 	 * @return 撮影処理結果
 	 * @throws ServiceException
 	 */
-	public SnapResultBean execute(ConfigBean config) throws ServiceException {
+	public SnapResultBean execute(ConfigBean config, Rectangle rangeSelection) throws ServiceException {
 
 		// 行うべきアクションが設定されていない場合、早期リターン
 		if (!hasResultAction(config)) {
@@ -59,7 +61,10 @@ public class TakeSnapService {
 		try {
 			// 画面サイズを取得
 			Rectangle snapSize = areaResolver.resolveArea(config.getSnapAreaType());
-
+			if (rangeSelection != null) {
+				// ドラッグ指定している場合は、撮影範囲をドラッグ範囲で上書きする
+				snapSize = rangeSelection;
+			}
 			// 撮影
 			Robot robot = new Robot();
 			BufferedImage snap = robot.createScreenCapture(snapSize);

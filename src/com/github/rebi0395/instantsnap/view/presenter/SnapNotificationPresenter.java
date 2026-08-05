@@ -27,7 +27,7 @@ import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.stage.Popup;
 import javafx.stage.Screen;
-import javafx.stage.Stage;
+import javafx.stage.Window;
 import javafx.util.Duration;
 
 /**
@@ -38,8 +38,8 @@ public class SnapNotificationPresenter {
 	/** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(SnapNotificationPresenter.class);
 
-	/** メインウィンドウのステージ */
-	private final Stage stage;
+	/** メインウィンドウ */
+	private final Window mainWindow;
 
 	/** 通知表示秒数 */
 	private static final double NOTIFICATION_DISPLAY_SECONDS = 5.0;
@@ -68,9 +68,24 @@ public class SnapNotificationPresenter {
 	/** 通知表示時の透明度 */
 	private static final double NOTIFICATION_SHOW_OPACITY = 1.0;
 
-	/** コンストラクタ */
-	public SnapNotificationPresenter(Stage stage) {
-		this.stage = stage;
+	/**
+	 * コンストラクタ
+	 * @param mainWindow メインウィンドウ
+	 */
+	public SnapNotificationPresenter(Window mainWindow) {
+		this.mainWindow = mainWindow;
+	}
+
+	/**
+	 * メイン画面を親として通知を表示する。
+	 *
+	 * @param result 撮影結果インスタンス
+	 * @param fileOpen ファイルを開くインスタンス
+	 * @param converter メッセージキーをメッセージに変換するクラス
+	 */
+	public void show(SnapResultBean result, FileOpenService fileOpen,
+			MessageKeyConverter converter) {
+		show(result, fileOpen, converter, null);
 	}
 
 	/**
@@ -79,20 +94,22 @@ public class SnapNotificationPresenter {
 	 * @param result 撮影結果インスタンス
 	 * @param fileOpen ファイルを開くインスタンス
 	 * @param converter メッセージキーをメッセージに変換するクラス
+	 * @param popupOwner 通知の親となるウィンドウ候補
 	 */
-	public void show(SnapResultBean result, FileOpenService fileOpen, MessageKeyConverter converter) {
+	public void show(SnapResultBean result, FileOpenService fileOpen,
+			MessageKeyConverter converter, Window popupOwner) {
 
 		if (!result.hasResult()) {
 			// 通知の表示が不要な場合、早期リターン
 			return;
 		}
 
-		// 通知で使用するデータをレコードにまとめる
-		final NotificationData notificationData = createNotificationData(result, converter);
-
 		// JavaFXの専用スレッドに処理を依頼する
 		Platform.runLater(() -> {
-			showNotification(notificationData, fileOpen);
+			// 通知で使用するデータをレコードにまとめる
+			NotificationRequest notificationRequest = createNotificationData(result, converter, popupOwner);
+			// 表示
+			showNotification(notificationRequest, fileOpen);
 		});
 
 	}
@@ -100,10 +117,10 @@ public class SnapNotificationPresenter {
 	/**
 	 * 通知画面の作成を行い、通知を表示する
 	 * 
-	 * @param notificationData 通知表示に必要な情報
+	 * @param notificationRequest 通知表示に必要な情報
 	 * @param fileOpen ファイルを開く処理を使用する
 	 */
-	private void showNotification(NotificationData notificationData, FileOpenService fileOpen) {
+	private void showNotification(NotificationRequest notificationRequest, FileOpenService fileOpen) {
 
 		try {
 			// FXMLローダーを作成
@@ -115,7 +132,7 @@ public class SnapNotificationPresenter {
 
 			// FXMLに読み込む
 			Parent root = loader.load();
-			
+
 			// cssを適用する
 			StyleSheetUtil.applyStyleSheet(root, CSS_NOTIFICATION);
 
@@ -125,18 +142,19 @@ public class SnapNotificationPresenter {
 			popup.setHideOnEscape(true); // Esc押下で閉じる
 
 			// 通知が持つアクションを取得する
-			NotificationAction notificationAction = createNotificationAction(notificationData, popup, root, fileOpen);
+			NotificationAction notificationAction = createNotificationAction(notificationRequest, popup, root,
+					fileOpen);
 
 			// コントローラに通知の文言、通知アクションをまとめてセットする
-			controller.setup(notificationData.messageList(), notificationData.openMessage(),
+			controller.setup(notificationRequest.messageList(), notificationRequest.openMessage(),
 					notificationAction.openAction(), notificationAction.closeAction());
 
 			popup.getContent().add(root); // Popupにrootを注入
-			showWithFadeIn(popup, root); // 通知を画面右下に配置し、下からフェードイン表示する
+			showWithFadeIn(popup, root, notificationRequest.owner()); // 通知を画面右下に配置し、下からフェードイン表示する
 
 			// 通知の表示時間を設定する
 			double displaySecond = NOTIFICATION_DISPLAY_SECONDS;
-			if (notificationData.isTmpSaved()) {
+			if (notificationRequest.isTmpSaved()) {
 				// 一時保存のときは文言が長いため、表示時間を長くする
 				displaySecond = NOTIFICATION_DISPLAY_LONG_SECONDS;
 			}
@@ -158,9 +176,11 @@ public class SnapNotificationPresenter {
 	 * 撮影結果を元に、通知に必要な情報を通知情報レコードにまとめ、返却する
 	 * @param result 撮影結果クラス
 	 * @param converter メッセージ取得クラス
+	 * @param popupOwner 通知の親ウィンドウ
 	 * @return 通知情報
 	 */
-	private NotificationData createNotificationData(SnapResultBean result, MessageKeyConverter converter) {
+	private NotificationRequest createNotificationData(SnapResultBean result,
+				MessageKeyConverter converter, Window popupOwner) {
 		// メッセージリスト
 		List<String> noticeMessageList = new ArrayList<String>();
 
@@ -171,47 +191,53 @@ public class SnapNotificationPresenter {
 
 		if (result.getIsClipboardCopied()) {
 			// クリップボードコピーに成功
-			noticeMessageList.add(converter.getMessage(MessageKeyConstant.NOTIFICATION_CLIPBOARD_SAVED, "Copied to clipboard."));
+			noticeMessageList
+					.add(converter.getMessage(MessageKeyConstant.NOTIFICATION_CLIPBOARD_SAVED, "Copied to clipboard."));
 		}
 
 		if (result.getIsTmpSaved()) {
 			// 一時保存に成功
-			noticeMessageList.add(converter.getMessage(MessageKeyConstant.NOTIFICATION_TMP_IMAGE_SAVED, "Image saved to the temporary folder."));
+			noticeMessageList.add(converter.getMessage(MessageKeyConstant.NOTIFICATION_TMP_IMAGE_SAVED,
+					"Image saved to the temporary folder."));
 			noticeMessageList.add(converter.getMessage(
-					MessageKeyConstant.NOTIFICATION_TMP_WARN, "Temporary images will be deleted when the app exits.\\nMove any images you want to keep to another folder."));
+					MessageKeyConstant.NOTIFICATION_TMP_WARN,
+					"Temporary images will be deleted when the app exits.\\nMove any images you want to keep to another folder."));
 		}
 
 		// 通知クリックでフォルダが開けることを伝える文言を取得
 		String openMessage = converter.getMessage(MessageKeyConstant.NOTIFICATION_OPEN_SAVE_DIR, "Open save folder");
+		// 表示するウィンドウを判定する
+		Window actualOwner = resolvePopupOwner(popupOwner);
 
-		return new NotificationData(
+		return new NotificationRequest(
 				List.copyOf(noticeMessageList),
 				openMessage,
 				result.getTargetPath(),
 				result.isOpenActionAvailable(),
-				result.getIsTmpSaved());
+				result.getIsTmpSaved(),
+				actualOwner);
 	}
 
 	/**
 	 * 通知が持つアクションを作成し、通知アクションレコードにまとめ、返却する
 	 * 
-	 * @param notificationData 通知情報
+	 * @param notificationRequest 通知情報
 	 * @param popup 通知ポップアップ
 	 * @param root ポップアップの中身
 	 * @param fileOpen ファイルを開く処理を持つインスタンス
 	 * @return 通知アクションを持つレコード
 	 */
-	private NotificationAction createNotificationAction(NotificationData notificationData, Popup popup,
+	private NotificationAction createNotificationAction(NotificationRequest notificationRequest, Popup popup,
 			Parent root, FileOpenService fileOpen) {
 
 		// 画像保存がある場合、通知クリック時の処理を設定
 		Runnable openAction = null;
-		if (notificationData.openActionAvailable) {
+		if (notificationRequest.openActionAvailable) {
 			openAction = new Runnable() {
 				@Override
 				public void run() {
 					hideWithFadeOut(popup, root);
-					fileOpen.openDirectory(notificationData.targetPath());
+					fileOpen.openDirectory(notificationRequest.targetPath());
 				}
 			};
 		}
@@ -236,14 +262,15 @@ public class SnapNotificationPresenter {
 	 * 
 	 * @param popup 通知ウィンドウ
 	 * @param root FXML の最上位ノード（Parent）
+	 * @param owner 通知の親となるウィンドウ
 	 */
-	private void showWithFadeIn(Popup popup, Parent root) {
+	private void showWithFadeIn(Popup popup, Parent root, Window owner) {
 
 		// popupの中身を透明にし、show直後に見えないようにする
 		root.setOpacity(NOTIFICATION_HIDE_OPACITY);
 
 		// show後にpopupの幅、高さが取得できるようになるため、一度先に表示
-		popup.show(stage); // メイン画面を親と指定
+		popup.show(owner);
 
 		// 通知の表示座標を取得する
 		Point2D endPosition = calculatePopupPosition(popup);
@@ -323,6 +350,21 @@ public class SnapNotificationPresenter {
 	}
 
 	/**
+	 * 通知の親ウィンドウを決定する。
+	 * 引数のウィンドウが開いていなければ、メイン画面を親ウィンドウとする
+	 *
+	 * @param popupOwner 通知の親ウィンドウ候補
+	 * @return 通知の親ウィンドウ
+	 */
+	private Window resolvePopupOwner(Window popupOwner) {
+		if (popupOwner == null || !popupOwner.isShowing()) {
+			// 引数のウィンドウが表示されていなければ、メイン画面にフォールバックする
+			return mainWindow;
+		}
+		return popupOwner;
+	}
+
+	/**
 	 * 通知表示に必要な情報をまとめたレコード
 	 *
 	 * @param messageList 通知メッセージリスト
@@ -330,13 +372,15 @@ public class SnapNotificationPresenter {
 	 * @param targetPath 保存先パス
 	 * @param openActionAvailable 通知クリックで保存先を開けるならtrue
 	 * @param isTmpSaved 一時保存ならtrue
+	 * @param owner 通知の親となるウィンドウ
 	 */
-	private record NotificationData(
+	private record NotificationRequest(
 			List<String> messageList,
 			String openMessage,
 			Path targetPath,
 			boolean openActionAvailable,
-			boolean isTmpSaved) {
+			boolean isTmpSaved,
+			Window owner) {
 	}
 
 	/**

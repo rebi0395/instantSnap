@@ -26,7 +26,6 @@ import com.sun.jna.win32.W32APIOptions;
 
 /**
  * スクリーンショット画像に、Windowsで現在表示されている本物のマウスカーソルを描画するクラス
- * このクラスのみ全部AI任せ。なにもわからん
  */
 public class MouseCursorService {
 

@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.Region?>
 <?import java.lang.String?>
 
-<BorderPane fx:id="rootPane" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
+<BorderPane fx:id="rootPane" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" StyleClass="main-window-root">
 	<top>
 		<HBox styleClass="top-bar">
 			<StackPane fx:id="statusArea" HBox.hgrow="ALWAYS" styleClass="status-area">
@@ -41,24 +41,40 @@
 												<String fx:value="icon-shortcut"/>
 											</styleClass>
 										</Region>
-										<Label fx:id="sectionShortcutKey" styleClass="section-title"
-											prefWidth="150" maxWidth="150"/><!-- ショートカットキー選択 -->
-										<Label fx:id="labelKeyCombination" styleClass="current-value"/>
+										<Label fx:id="sectionSnapShortcutKey" styleClass="section-title"
+											prefWidth="170" maxWidth="170"/><!-- ショートカットキー選択 -->
+										<Label fx:id="labelSnapKeyCombination" styleClass="current-value"/>
 									</HBox>
 									<HBox styleClass="setting-header">
-										<ComboBox fx:id="comboTriggerType"/>
+										<TextField fx:id="textSnapInputKey"/>
+										<Label text="+"/>
+										<CheckBox fx:id="checkSnapCtrl" text="Ctrl"/>
+										<Label text="+"/>
+										<CheckBox fx:id="checkSnapAlt" text="Alt"/>
+										<Label text="+"/>
+										<CheckBox fx:id="checkSnapShift" text="Shift"/>
 									</HBox>
-									<HBox>
-										<Label fx:id="sectionCustomKey"/><!-- カスタムキー設定 -->
+								</VBox>
+								<VBox spacing="10" styleClass="section-border">
+									<HBox styleClass="setting-header">
+										<Region>
+											<styleClass>
+												<String fx:value="section-icon"/>
+												<String fx:value="icon-shortcut"/>
+											</styleClass>
+										</Region>
+										<Label fx:id="sectionSelectionShortcutKey" styleClass="section-title"
+											prefWidth="170" maxWidth="170"/><!-- 範囲選択ショートカットキー選択 -->
+										<Label fx:id="labelSelectionKeyCombination" styleClass="current-value"/>
 									</HBox>
 									<HBox styleClass="setting-header">
-										<TextField fx:id="textInputKey" disable="true"/>
+										<TextField fx:id="textSelectionInputKey"/>
 										<Label text="+"/>
-										<CheckBox fx:id="checkCtrl" text="Ctrl"/>
+										<CheckBox fx:id="checkSelectionCtrl" text="Ctrl"/>
 										<Label text="+"/>
-										<CheckBox fx:id="checkAlt" text="Alt"/>
+										<CheckBox fx:id="checkSelectionAlt" text="Alt"/>
 										<Label text="+"/>
-										<CheckBox fx:id="checkShift" text="Shift"/>
+										<CheckBox fx:id="checkSelectionShift" text="Shift"/>
 									</HBox>
 								</VBox>
 								<VBox spacing="10" styleClass="section-border">

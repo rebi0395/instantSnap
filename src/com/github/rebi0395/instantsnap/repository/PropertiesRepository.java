@@ -23,7 +23,6 @@ import com.github.rebi0395.instantsnap.model.enums.AfterSnapActionType;
 import com.github.rebi0395.instantsnap.model.enums.FileNameDateFormatType;
 import com.github.rebi0395.instantsnap.model.enums.SnapAreaType;
 import com.github.rebi0395.instantsnap.model.enums.ThemeType;
-import com.github.rebi0395.instantsnap.model.enums.TriggerType;
 
 import static com.github.rebi0395.instantsnap.common.NativeKeyCodeConverter.*;
 import static com.github.rebi0395.instantsnap.common.AppConstant.*;
@@ -70,8 +69,6 @@ public class PropertiesRepository {
 					properties.getProperty(PROPERTY_THEME)));
 
 			// 撮影設定
-			config.setTriggerType(TriggerType.parseOrDefault(
-					properties.getProperty(PROPERTY_TRIGGER)));
 			config.setSnapAreaType(SnapAreaType.parseOrDefault(
 					properties.getProperty(PROPERTY_SNAP_AREA)));
 			config.setIsIncludeCursor(readBooleanOrDefault(
@@ -103,16 +100,32 @@ public class PropertiesRepository {
 			config.setIsNotificationSoundEnabled(readBooleanOrDefault(
 					properties.getProperty(PROPERTY_SOUND_NOTIFICATION_ENABLED), DEFAULT_SOUND_NOTIFICATION_ENABLED));
 
-			// カスタムキー
-			KeyCombinationBean customKeys = config.getCustomKeyBean();
-			customKeys.setTriggerKey(toNativeKeyCode(
-					properties.getProperty(PROPERTY_CUSTOM_KEY)));
-			customKeys.setUseAlt(readBooleanOrDefault(
-					properties.getProperty(PROPERTY_USE_ALT), DEFAULT_USE_ALT));
-			customKeys.setUseCtrl(readBooleanOrDefault(
-					properties.getProperty(PROPERTY_USE_CTRL), DEFAULT_USE_CTRL));
-			customKeys.setUseShift(readBooleanOrDefault(
-					properties.getProperty(PROPERTY_USE_SHIFT), DEFAULT_USE_SHIFT));
+			// 撮影キー
+			KeyCombinationBean snapKeys = new KeyCombinationBean();
+			snapKeys.setTriggerKey(toNativeKeyCode(
+					properties.getProperty(PROPERTY_SNAP_KEY)));
+			snapKeys.setUseAlt(readBooleanOrDefault(
+					properties.getProperty(PROPERTY_SNAP_USE_ALT), DEFAULT_SNAP_USE_ALT));
+			snapKeys.setUseCtrl(readBooleanOrDefault(
+					properties.getProperty(PROPERTY_SNAP_USE_CTRL), DEFAULT_SNAP_USE_CTRL));
+			snapKeys.setUseShift(readBooleanOrDefault(
+					properties.getProperty(PROPERTY_SNAP_USE_SHIFT), DEFAULT_SNAP_USE_SHIFT));
+			config.setSnapKeyBean(snapKeys);
+
+			// 範囲選択キー
+			KeyCombinationBean selectionKeys = new KeyCombinationBean();
+			selectionKeys.setTriggerKey(toNativeKeyCode(
+					properties.getProperty(PROPERTY_SELECTION_KEY)));
+			selectionKeys.setUseAlt(readBooleanOrDefault(
+					properties.getProperty(PROPERTY_SELECTION_USE_ALT),
+					DEFAULT_SELECTION_USE_ALT));
+			selectionKeys.setUseCtrl(readBooleanOrDefault(
+					properties.getProperty(PROPERTY_SELECTION_USE_CTRL),
+					DEFAULT_SELECTION_USE_CTRL));
+			selectionKeys.setUseShift(readBooleanOrDefault(
+					properties.getProperty(PROPERTY_SELECTION_USE_SHIFT),
+					DEFAULT_SELECTION_USE_SHIFT));
+			config.setSelectionKeyBean(selectionKeys);
 
 		} catch (IOException ie) {
 			throw new ServiceException("プロパティファイルの読み込みに失敗しました", ie);
@@ -235,7 +248,6 @@ public class PropertiesRepository {
 		updateMap.put(PROPERTY_THEME, config.getThemeType().getValue());
 
 		// 撮影設定
-		updateMap.put(PROPERTY_TRIGGER, config.getTriggerType().getValue());
 		updateMap.put(PROPERTY_SNAP_AREA, config.getSnapAreaType().getValue());
 		updateMap.put(PROPERTY_INCLUDE_CURSOR_ENABLED, String.valueOf(config.getIsIncludeCursor()));
 
@@ -253,12 +265,18 @@ public class PropertiesRepository {
 		updateMap.put(PROPERTY_SOUND_SNAP_ENABLED, String.valueOf(config.getIsSnapSoundEnabled()));
 		updateMap.put(PROPERTY_SOUND_NOTIFICATION_ENABLED, String.valueOf(config.getIsNotificationSoundEnabled()));
 
-		// -- カスタムキーの設定 --
-		KeyCombinationBean customKeys = config.getCustomKeyBean();
-		updateMap.put(PROPERTY_CUSTOM_KEY, String.valueOf(customKeys.getTriggerKey()));
-		updateMap.put(PROPERTY_USE_ALT, String.valueOf(customKeys.isUseAlt()));
-		updateMap.put(PROPERTY_USE_CTRL, String.valueOf(customKeys.isUseCtrl()));
-		updateMap.put(PROPERTY_USE_SHIFT, String.valueOf(customKeys.isUseShift()));
+		// -- ショートカットキーの設定 --
+		KeyCombinationBean snapKeys = config.getSnapKeyBean();
+		updateMap.put(PROPERTY_SNAP_KEY, String.valueOf(snapKeys.getTriggerKey()));
+		updateMap.put(PROPERTY_SNAP_USE_ALT, String.valueOf(snapKeys.isUseAlt()));
+		updateMap.put(PROPERTY_SNAP_USE_CTRL, String.valueOf(snapKeys.isUseCtrl()));
+		updateMap.put(PROPERTY_SNAP_USE_SHIFT, String.valueOf(snapKeys.isUseShift()));
+
+		KeyCombinationBean selectionKeys = config.getSelectionKeyBean();
+		updateMap.put(PROPERTY_SELECTION_KEY, String.valueOf(selectionKeys.getTriggerKey()));
+		updateMap.put(PROPERTY_SELECTION_USE_ALT, String.valueOf(selectionKeys.isUseAlt()));
+		updateMap.put(PROPERTY_SELECTION_USE_CTRL, String.valueOf(selectionKeys.isUseCtrl()));
+		updateMap.put(PROPERTY_SELECTION_USE_SHIFT, String.valueOf(selectionKeys.isUseShift()));
 
 		return updateMap;
 	}
@@ -291,19 +309,17 @@ public class PropertiesRepository {
 			theme=1
 
 			# ～～ 撮影設定 ～～
-			# スクショ発動キーの選択
-			# 1 -> shift + printscreen(デフォルト), 2 -> Ctrl + Shift + S
-			# 3 -> F9, 4 -> カスタムキー
-			trigger=1
+			# 撮影ショートカットキー
+			snapKey=3639
+			snapIsUseAlt=false
+			snapIsUseCtrl=false
+			snapIsUseShift=true
 
-			# カスタムメインキー設定 -- triggerを4にした上でキーコードを記載してください
-			# 未使用な場合は、0
-			customKey=0
-
-			# カスタムキーのコンビネーションキー設定 -- 使用する場合はtrue メインキー必須
-			useAlt=false
-			useCtrl=false
-			useShift=false
+			# 範囲選択ショートカットキー
+			selectionKey=68
+			selectionIsUseAlt=false
+			selectionIsUseCtrl=false
+			selectionIsUseShift=false
 
 			# 撮影範囲の選択 デフォルトは 1
 			# 1 -> 使用しているウィンドウを撮影, 2 -> カーソルのあるモニターを撮影
@@ -364,19 +380,17 @@ public class PropertiesRepository {
 			theme=1
 
 			# ~~ Capture Settings ~~
-			# Select the screenshot trigger key
-			# 1 -> Shift + PrintScreen (default), 2 -> Ctrl + Shift + S
-			# 3 -> F9, 4 -> Custom key
-			trigger=1
+			# Capture shortcut key
+			snapKey=3639
+			snapIsUseAlt=false
+			snapIsUseCtrl=false
+			snapIsUseShift=true
 
-			# Custom main key setting -- Set trigger to 4 and specify the key code
-			# If not used, set to 0
-			customKey=0
-
-			# Custom key modifier settings -- Set to true if used. A main key is required.
-			useAlt=false
-			useCtrl=false
-			useShift=false
+			# Range selection shortcut key
+			selectionKey=68
+			selectionIsUseAlt=false
+			selectionIsUseCtrl=false
+			selectionIsUseShift=false
 
 			# Select the capture area
 			# 1 -> Active window (default), 2 -> Active monitor
