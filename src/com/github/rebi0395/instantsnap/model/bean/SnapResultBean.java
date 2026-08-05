@@ -14,15 +14,32 @@ public class SnapResultBean {
 
 	/** 画像保存に成功したかの結果を保持 trueで成功 / 一時保存時はfalse */
 	private boolean isImageSaved = false;
-	
+
 	/** 一時保存ファイルに画像保存に成功したかの結果を保持 trueで成功 */
 	private boolean isTmpSaved = false;
 
 	/** クリップボード保存に成功したかの結果を保持 trueで成功 */
 	private boolean isClipboardCopied = false;
-	
+
 	/** メイン画面に表示するメッセージキーを確認するリスト */
-	List <String> messageKeyList = new ArrayList<>();
+	List<String> messageKeyList = new ArrayList<>();
+
+	/** 引数なしコンストラクタ */
+	public SnapResultBean() {
+	}
+
+	/**
+	 * コピーコンストラクタ
+	 *
+	 * @param source コピー元の撮影結果
+	 */
+	public SnapResultBean(SnapResultBean source) {
+		this.targetPath = source.targetPath;
+		this.isImageSaved = source.isImageSaved;
+		this.isTmpSaved = source.isTmpSaved;
+		this.isClipboardCopied = source.isClipboardCopied;
+		this.messageKeyList = new ArrayList<>(source.messageKeyList);
+	}
 
 	/**
 	 * 通知できる結果があるかを返す
@@ -31,7 +48,7 @@ public class SnapResultBean {
 	public boolean hasResult() {
 		return isImageSaved || isTmpSaved || isClipboardCopied;
 	}
-	
+
 	/**
 	 * 通知にボタンを表示するかを返す
 	 * @return 画像保存、一時保存に成功している場合 true

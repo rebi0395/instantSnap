@@ -1,5 +1,7 @@
 package com.github.rebi0395.instantsnap.app;
 
+import java.awt.GraphicsDevice;
+import java.awt.Rectangle;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -12,7 +14,6 @@ import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.model.bean.SnapResultBean;
 import com.github.rebi0395.instantsnap.model.enums.AfterSnapActionType;
 import com.github.rebi0395.instantsnap.repository.PropertiesRepository;
-import com.github.rebi0395.instantsnap.service.KeyEventListener;
 import com.github.rebi0395.instantsnap.service.MouseCursorService;
 import com.github.rebi0395.instantsnap.service.FileOpenService;
 import com.github.rebi0395.instantsnap.service.FilePathService;
@@ -22,14 +23,17 @@ import com.github.rebi0395.instantsnap.service.SoundPlayer;
 import com.github.rebi0395.instantsnap.service.TakeSnapService;
 import com.github.rebi0395.instantsnap.service.TmpFolderService;
 import com.github.rebi0395.instantsnap.service.TriggerKeyManager;
+import com.github.rebi0395.instantsnap.service.TriggerKeyManager.KeyEventListener;
 import com.github.rebi0395.instantsnap.view.presenter.SnapNotificationPresenter;
+import com.github.rebi0395.instantsnap.view.swing.RangeSelectionDialog;
+import com.github.rebi0395.instantsnap.view.swing.RangeSelectionDialog.SelectionListener;
 
 import javafx.application.Platform;
 
 /**
  * 対応するサービスクラスに処理を振り分ける、司令塔クラス
  */
-public class InstantSnapCoordinator implements KeyEventListener {
+public class InstantSnapCoordinator implements KeyEventListener, SelectionListener {
 
 	/** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(InstantSnapCoordinator.class);
@@ -59,10 +63,18 @@ public class InstantSnapCoordinator implements KeyEventListener {
 	private final FileOpenService fileOpenService;
 	/** 効果音再生クラス */
 	private final SoundPlayer soundPlayer;
-	/** 撮影通知を表示するクラス */
-	private final SnapNotificationPresenter notificationPresenter;
 	/** マウスカーソルを書き込むクラス */
 	private MouseCursorService mouseCursorService;
+
+	/** 撮影通知を表示するクラス */
+	private final SnapNotificationPresenter notificationPresenter;
+	/** 範囲選択画面を表示するクラス */
+	private RangeSelectionDialog rangeSelectionDialog;
+
+	/** 範囲選択画面を表示中ならtrue */
+	private volatile boolean rangeSelectionModeActive = false;
+	/** ドラッグ範囲 */
+	private volatile Rectangle rangeSelection;
 
 	/** スレッドセーフに撮影処理を呼び出すためのクラス */
 	private final ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -85,6 +97,7 @@ public class InstantSnapCoordinator implements KeyEventListener {
 		this.converter = new MessageKeyConverter(config.getLanguageType());
 		this.saveService = new SnapSaveService(filePathService);
 		this.keyManager = new TriggerKeyManager(config, this);
+		this.rangeSelectionDialog = new RangeSelectionDialog(config, converter, this);
 		this.takeSnapService = new TakeSnapService(areaResolver, saveService, soundPlayer, mouseCursorService);
 
 		// Stage情報を持つクラス
@@ -142,6 +155,7 @@ public class InstantSnapCoordinator implements KeyEventListener {
 		} catch (ServiceException e) {
 			log.error("Instant Snapの終了処理に失敗しました", e);
 		} finally {
+			rangeSelectionDialog.close(); // Swingで表示している範囲選択画面を破棄
 			executor.shutdown(); // 撮影処理の終了
 			soundPlayer.close(); // 音声リソースの開放
 			tmpFolder.cleanTmpDirectory(); // 一時保存ファイルの削除
@@ -150,28 +164,33 @@ public class InstantSnapCoordinator implements KeyEventListener {
 	}
 
 	/**
-	 * 撮影トリガーが押されたとき、撮影処理を呼び出す
+	 * 撮影トリガーが押されたとき呼ばれる。撮影処理を呼び出す
 	 */
 	@Override
 	public void requestSnap() {
+		if (rangeSelectionModeActive && rangeSelection == null) {
+			// 範囲選択画面が表示中、かつ範囲が未確定
+			return;
+		}
 		// 別スレッド立ち上げ
 		executor.submit(() -> {
 			SnapResultBean result;
-
-			// 撮影後、使う変数
-			boolean showNotification;
-			boolean soundNotificationEnabled;
-			AfterSnapActionType afterSnapActionType;
-
+			AfterSnapData afterSnapData;
+			Rectangle snapRange = this.rangeSelection;
+			if (snapRange != null) {
+				snapRange = new Rectangle(snapRange); // 範囲をコピーし、参照から外す
+				this.rangeSelectionDialog.close();
+			}
 			synchronized (configLock) { // 排他制御
 				try {
 					// 撮影処理
-					result = takeSnapService.execute(config);
-
-					// ロック中に設定値を退避する
-					showNotification = config.getIsShowNotification();
-					soundNotificationEnabled = config.getIsNotificationSoundEnabled();
-					afterSnapActionType = config.getAfterSnapActionType();
+					result = takeSnapService.execute(config, snapRange);
+					// ロック中に撮影後処理に使う分の設定値を退避する
+					afterSnapData = new AfterSnapData(
+							new SnapResultBean(result),
+							config.getIsShowNotification(),
+							config.getIsNotificationSoundEnabled(),
+							config.getAfterSnapActionType());
 
 				} catch (Exception e) {
 					log.error("スクリーンショットの撮影または保存に失敗しました", e);
@@ -179,39 +198,87 @@ public class InstantSnapCoordinator implements KeyEventListener {
 				}
 			}
 
-			// 撮影結果がない場合、早期リターン
-			if (!result.hasResult()) {
-				return;
+			// 撮影結果がある場合は、撮影後処理を行う
+			if (afterSnapData.result().hasResult()) {
+				afterSnapAction(afterSnapData);
 			}
 
-			try {
-				// 通知表示が有効な場合
-				if (showNotification) {
-					notificationPresenter.show(result, fileOpenService, converter);
-				}
-
-				// 通知音が有効な場合
-				if (soundNotificationEnabled) {
-					soundPlayer.playNotificationSound();
-				}
-
-				// 撮影後アクションを実行
-				if (result.getTargetPath() != null) {
-					fileOpenService.execute(afterSnapActionType, result.getTargetPath());
-				}
-
-			} catch (Exception e) {
-				log.error("撮影後処理に失敗しました", e);
-			}
 		});
 	}
 
 	/**
-	 * アプリの終了キーが押されたとき、アプリを終了する
+	 * 範囲トリガーが押されたとき呼ばれる。撮影範囲選択モードの無効・有効を切り替える
+	 */
+	@Override
+	public void requestRangeSelection() {
+		GraphicsDevice screenDevice = areaResolver.getGraphicsDeviceAtPointer();
+		rangeSelectionDialog.switchRangeSelectionMode(screenDevice);
+	}
+
+	@Override
+	public void onShown() {
+		rangeSelection = null;
+		rangeSelectionModeActive = true;
+	}
+
+	/**
+	 * 範囲選択画面が閉じられた場合に呼ばれる。選択範囲を破棄する
+	 */
+	@Override
+	public void onClosed() {
+		rangeSelection = null;
+		rangeSelectionModeActive = false;
+	}
+
+	/**
+	 * 範囲選択更新後に呼ばれる。選択した範囲を取得する。
+	 */
+	@Override
+	public void onUpdatedArea(Rectangle selectedArea) {
+		if (selectedArea == null) {
+			rangeSelection = null;
+			return;
+		}
+		rangeSelection = new Rectangle(selectedArea);
+	}
+
+	/**
+	 * アプリの終了キーが押されたとき呼ばれる。アプリを終了する
 	 */
 	@Override
 	public void requestExit() {
 		exit(); // アプリを正常終了させる
+	}
+
+	/**
+	 * 撮影後処理を実施する
+	 *
+	 * @param afterSnapData 撮影後処理の判定で使うrecord
+	 */
+	private void afterSnapAction(AfterSnapData afterSnapData) {
+
+		try {
+			// 通知表示が有効な場合
+			if (afterSnapData.showNotification()) {
+				notificationPresenter.show(
+						afterSnapData.result(), // 撮影結果
+						fileOpenService, // ファイルを開くインスタンス
+						converter); // メッセージ変換インスタンス
+			}
+
+			// 通知音が有効な場合
+			if (afterSnapData.soundNotificationEnabled()) {
+				soundPlayer.playNotificationSound();
+			}
+
+			// 撮影後アクションを実行
+			if (afterSnapData.result().getTargetPath() != null) {
+				fileOpenService.execute(afterSnapData.afterSnapActionType(), afterSnapData.result().getTargetPath());
+			}
+
+		} catch (Exception e) {
+			log.error("撮影後処理に失敗しました", e);
+		}
 	}
 
 	/**
@@ -221,7 +288,7 @@ public class InstantSnapCoordinator implements KeyEventListener {
 	public ConfigBean getConfigBean() {
 		return config;
 	}
-	
+
 	/**
 	 * メッセージキーをメッセージに変換するコンバーターを取得する
 	 * @return converter
@@ -229,12 +296,27 @@ public class InstantSnapCoordinator implements KeyEventListener {
 	public MessageKeyConverter getMessageKeyConverter() {
 		return converter;
 	}
-	
+
 	/**
 	 * ファイル名生成、ディレクトリ解決を行うクラスを取得する
 	 * @return filePathService
 	 */
 	public FilePathService getFilePathService() {
 		return filePathService;
+	}
+
+	/**
+	 * 撮影後の処理で使う変数をひとまとめにしたレコードクラス
+	 *
+	 * @param result 撮影結果
+	 * @param showNotification 通知表示の有無
+	 * @param soundNotificationEnabled 撮影音の有無
+	 * @param afterSnapActionType 撮影後動作
+	 */
+	private record AfterSnapData(
+			SnapResultBean result,
+			boolean showNotification,
+			boolean soundNotificationEnabled,
+			AfterSnapActionType afterSnapActionType) {
 	}
 }

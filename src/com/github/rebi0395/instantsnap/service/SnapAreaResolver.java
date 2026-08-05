@@ -81,12 +81,7 @@ public class SnapAreaResolver {
 	 * @return アクティブモニターの撮影範囲
 	 */
 	public Rectangle getActiveScreenArea() {
-		PointerInfo pointer = MouseInfo.getPointerInfo();
-		if (pointer == null || pointer.getDevice() == null) {
-			log.warn("マウスポインターの位置からモニターを特定できませんでした");
-			return getMainScreenArea();
-		}
-		GraphicsDevice activeDevice = pointer.getDevice();
+		GraphicsDevice activeDevice = getGraphicsDeviceAtPointer(); // モニター特定処理
 		return activeDevice.getDefaultConfiguration().getBounds();
 	}
 
@@ -123,6 +118,22 @@ public class SnapAreaResolver {
 	public Rectangle getDefaultScreenArea() {
 		log.info("撮影範囲をデフォルト値で設定しました");
 		return getActiveScreenArea();
+	}
+
+	/**
+	 * マウスポインターの属するGraphicsDeviceを返却する。
+	 * モニターを特定できない場合は、メインモニターを返却する
+	 *
+	 * @return マウスポインターの属するGraphicsDevice
+	 */
+	public GraphicsDevice getGraphicsDeviceAtPointer() {
+		PointerInfo pointer = MouseInfo.getPointerInfo();
+		if (pointer == null || pointer.getDevice() == null) {
+			log.warn("マウスポインターの位置からモニターを特定できませんでした");
+			GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+			return ge.getDefaultScreenDevice(); // メインモニターを返す
+		}
+		return pointer.getDevice(); // マウスポインターの属するモニターを返却
 	}
 
 	/**

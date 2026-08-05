@@ -26,6 +26,11 @@ public class KeyCombinationBean {
 		this.useShift = useShift;
 	}
 
+	/** 未定義のキー設定を作成するコンストラクタ */
+	public KeyCombinationBean() {
+		this(VC_UNDEFINED, false, false, false);
+	}
+
 	/**
 	 * 現在の設定しているキー設定を文字列で取得する
 	 * @return キー設定の文字列(例：Shift + F10)
@@ -48,6 +53,30 @@ public class KeyCombinationBean {
 		// nativeキーコードからJavaFXのキー名を取得する
 		builder.append(NativeKeyCodeConverter.toFXKeyName(triggerKey));
 		return builder.toString();
+	}
+
+	/**
+	 * triggerキーが設定されているかを判定する
+	 * 
+	 * @return トリガーキーが設定されている場合はtrue
+	 */
+	public boolean isTriggerKeyDefined() {
+		return triggerKey != VC_UNDEFINED;
+	}
+
+	/**
+	 * キーコンビネーションが一致しているかを判定する
+	 * 
+	 * @return 完全一致していればtrue
+	 */
+	public boolean isSameKeyCombination(KeyCombinationBean other) {
+		if (other == null) {
+			return false;
+		}
+		return this.triggerKey == other.triggerKey &&
+				this.useCtrl == other.useCtrl &&
+				this.useAlt == other.useAlt &&
+				this.useShift == other.useShift;
 	}
 
 	/**

@@ -1,6 +1,6 @@
 
 /** 画面全体 */
-.root {
+.main-window-root {
     /* 主操作ボタンはテーマを問わず同じ緑色を使用する */
     -primary-action-top: #62c873;
     -primary-action-bottom: #329b5c;
@@ -83,7 +83,7 @@
 
 /** テキストフィールド、コンボボックス、ボタン横幅統一 */
 .text-field, .combo-box, .button {
-    -fx-pref-width: 200px;
+    -fx-pref-width: 210px;
 }
 
 /** ボタン高さ統一 */
@@ -96,7 +96,7 @@
 /** テキストフィールド、コンボボックス共通 */
 .text-field,
 .combo-box-base {
-    -fx-pref-width: 200px;
+    -fx-pref-width: 210px;
 
     -fx-pref-height: 34px;
     -fx-min-height: 34px;
