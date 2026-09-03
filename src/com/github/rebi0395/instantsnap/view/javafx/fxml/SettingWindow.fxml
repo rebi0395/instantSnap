@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.Region?>
 <?import java.lang.String?>
 
-<BorderPane fx:id="rootPane" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" StyleClass="main-window-root">
+<BorderPane fx:id="rootPane" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" StyleClass="setting-window-root">
 	<top>
 		<HBox styleClass="top-bar">
 			<StackPane fx:id="statusArea" HBox.hgrow="ALWAYS" styleClass="status-area">

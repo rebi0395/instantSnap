@@ -1,4 +1,4 @@
-package com.github.rebi0395.instantsnap.view;
+package com.github.rebi0395.instantsnap.view.javafx.util;
 
 import javafx.collections.ObservableList;
 import javafx.scene.Node;

@@ -21,7 +21,7 @@ import com.github.rebi0395.instantsnap.model.bean.KeyCombinationBean;
  * 撮影処理を呼び出すクラス
  * JNativeHookライブラリを使用。
  */
-public class TriggerKeyManager implements NativeKeyListener {
+public class TriggerKeyWatcher implements NativeKeyListener {
 
 	/** ユーザー設定値 */
 	private ConfigBean config;
@@ -30,7 +30,7 @@ public class TriggerKeyManager implements NativeKeyListener {
 	/** キー監視を行ってるかを判定する変数 trueで監視中 */
 	private boolean keyListenerRunning = false;
 	/** ロガー */
-	private static final Logger log = LoggerFactory.getLogger(TriggerKeyManager.class);
+	private static final Logger log = LoggerFactory.getLogger(TriggerKeyWatcher.class);
 
 	/** 撮影トリガーキーの押下フラグ */
 	private boolean isSnapTriggerPressed = false;
@@ -67,7 +67,7 @@ public class TriggerKeyManager implements NativeKeyListener {
 	 * コンストラクタ
 	 * @param listener イベントの通知先
 	 */
-	public TriggerKeyManager(ConfigBean config, KeyEventListener listener) {
+	public TriggerKeyWatcher(ConfigBean config, KeyEventListener listener) {
 		this.config = config;
 		this.listener = listener;
 	}
@@ -200,7 +200,8 @@ public class TriggerKeyManager implements NativeKeyListener {
 		boolean isTriggerKeyPressed = triggerPressed;
 
 		// トリガーキー押下フラグ
-		if (nativeKeyCode == triggerKeys) {
+		// 未設定を表す0は、半角/全角キーなどの未定義イベントと一致させない。
+		if (triggerKeys != VC_UNDEFINED && nativeKeyCode == triggerKeys) {
 			isTriggerKeyPressed = setPressed;
 		}
 		// ALT押下フラグ
@@ -227,6 +228,10 @@ public class TriggerKeyManager implements NativeKeyListener {
 	 * 押されていないキーがある場合、余計な修飾キーが押されている場合はfalseを返す
 	 */
 	private boolean isShortcutPressed(boolean isTriggerKeyPressed, KeyCombinationBean keys) {
+		// 未設定のショートカットは、キーコード0のイベントを含め常に不一致とする。
+		if (!keys.isTriggerKeyDefined()) {
+			return false;
+		}
 		return (keys.isUseAlt() == isAltPressed)
 				&& (keys.isUseCtrl() == isCtrlPressed)
 				&& (keys.isUseShift() == isShiftPressed)

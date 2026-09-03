@@ -2,6 +2,7 @@ package com.github.rebi0395.instantsnap.app;
 
 import java.awt.GraphicsDevice;
 import java.awt.Rectangle;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -13,6 +14,7 @@ import com.github.rebi0395.instantsnap.exception.ServiceException;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.model.bean.SnapResultBean;
 import com.github.rebi0395.instantsnap.model.enums.AfterSnapActionType;
+import com.github.rebi0395.instantsnap.model.enums.LanguageType;
 import com.github.rebi0395.instantsnap.repository.PropertiesRepository;
 import com.github.rebi0395.instantsnap.service.MouseCursorService;
 import com.github.rebi0395.instantsnap.service.FileOpenService;
@@ -22,13 +24,11 @@ import com.github.rebi0395.instantsnap.service.SnapSaveService;
 import com.github.rebi0395.instantsnap.service.SoundPlayer;
 import com.github.rebi0395.instantsnap.service.TakeSnapService;
 import com.github.rebi0395.instantsnap.service.TmpFolderService;
-import com.github.rebi0395.instantsnap.service.TriggerKeyManager;
-import com.github.rebi0395.instantsnap.service.TriggerKeyManager.KeyEventListener;
-import com.github.rebi0395.instantsnap.view.presenter.SnapNotificationPresenter;
-import com.github.rebi0395.instantsnap.view.swing.RangeSelectionDialog;
-import com.github.rebi0395.instantsnap.view.swing.RangeSelectionDialog.SelectionListener;
-
-import javafx.application.Platform;
+import com.github.rebi0395.instantsnap.service.TriggerKeyWatcher;
+import com.github.rebi0395.instantsnap.service.TriggerKeyWatcher.KeyEventListener;
+import com.github.rebi0395.instantsnap.view.swing.dialog.RangeSelectionDialog;
+import com.github.rebi0395.instantsnap.view.swing.dialog.RangeSelectionDialog.SelectionListener;
+import com.github.rebi0395.instantsnap.view.swing.presenter.SnapNotificationPresenter;
 
 /**
  * 対応するサービスクラスに処理を振り分ける、司令塔クラス
@@ -50,7 +50,7 @@ public class InstantSnapCoordinator implements KeyEventListener, SelectionListen
 	/** ファイル名生成、ディレクトリ解決を行うクラス */
 	private final FilePathService filePathService;
 	/** 撮影トリガーの管理クラス */
-	private final TriggerKeyManager keyManager;
+	private final TriggerKeyWatcher triggerKeyWatcher;
 
 	/** 撮影範囲を解決するクラス */
 	private final SnapAreaResolver areaResolver;
@@ -66,7 +66,7 @@ public class InstantSnapCoordinator implements KeyEventListener, SelectionListen
 	/** マウスカーソルを書き込むクラス */
 	private MouseCursorService mouseCursorService;
 
-	/** 撮影通知を表示するクラス */
+	/** 撮影結果を表示するSwing通知 */
 	private final SnapNotificationPresenter notificationPresenter;
 	/** 範囲選択画面を表示するクラス */
 	private RangeSelectionDialog rangeSelectionDialog;
@@ -80,9 +80,13 @@ public class InstantSnapCoordinator implements KeyEventListener, SelectionListen
 	private final ExecutorService executor = Executors.newSingleThreadExecutor();
 	/** 設定値の保存処理と、撮影処理の同時呼び出しを防止するオブジェクト */
 	private final Object configLock = new Object();
+	/** 終了処理の二重実行を防止するフラグ */
+	private final AtomicBoolean closed = new AtomicBoolean(false);
+	/** Pauseキーなどから要求されたアプリ終了処理の通知先 */
+	private volatile Runnable exitRequestHandler = () -> exit();
 
-	/** コンストラクタ 初期化処理を実行する */
-	public InstantSnapCoordinator(SnapNotificationPresenter notificationPresenter) {
+	/** 常駐処理に必要なサービスとSwing通知を生成します。 */
+	public InstantSnapCoordinator() {
 		// インスタンスを生成
 		this.config = new ConfigBean();
 		this.repository = new PropertiesRepository();
@@ -96,12 +100,11 @@ public class InstantSnapCoordinator implements KeyEventListener, SelectionListen
 		// 依存性の注入があるクラス
 		this.converter = new MessageKeyConverter(config.getLanguageType());
 		this.saveService = new SnapSaveService(filePathService);
-		this.keyManager = new TriggerKeyManager(config, this);
+		this.triggerKeyWatcher = new TriggerKeyWatcher(config, this);
 		this.rangeSelectionDialog = new RangeSelectionDialog(config, converter, this);
 		this.takeSnapService = new TakeSnapService(areaResolver, saveService, soundPlayer, mouseCursorService);
 
-		// Stage情報を持つクラス
-		this.notificationPresenter = notificationPresenter;
+		this.notificationPresenter = new SnapNotificationPresenter();
 
 		init();
 	}
@@ -115,10 +118,9 @@ public class InstantSnapCoordinator implements KeyEventListener, SelectionListen
 			repository.read(config);
 			// 言語設定を初期化
 			converter.changeLanguage(config.getLanguageType());
-			// 一時保存ファイルのリセット
+			// 一時ファイルを整理し、常駐プロセスのホットキー監視を開始する。
 			tmpFolder.cleanTmpDirectory();
-			// キー監視開始
-			keyManager.activate();
+			triggerKeyWatcher.activate();
 
 		} catch (ServiceException e) {
 			// チェック済例外
@@ -130,19 +132,57 @@ public class InstantSnapCoordinator implements KeyEventListener, SelectionListen
 	}
 
 	/**
-	 * プロパティファイルに設定を保存します
+	 * 設定プロセスが保存したプロパティを再読込し、常駐処理へ反映します。
+	 *
+	 * @return 再読込に成功した場合true
 	 */
-	public void save() {
-		try {
-			synchronized (configLock) { // 排他制御
-				repository.save(config); // プロパティファイルを更新
+	public boolean reloadConfig() {
+		if (closed.get()) {
+			return false;
+		}
+
+		synchronized (configLock) {
+			try {
+				// キー監視は同じConfigBeanを参照しているため、停止せずに設定値だけ更新する。
+				repository.read(config);
+				converter.changeLanguage(config.getLanguageType());
+				return true;
+			} catch (ServiceException e) {
+				log.error("設定の再読み込みに失敗しました", e);
+				return false;
 			}
-			// チェック済例外
-		} catch (ServiceException e) {
-			log.error("設定の更新に失敗しました", e);
-			// 非チェック例外
-		} catch (Exception e) {
-			log.error("想定外のエラーが発生しました", e);
+		}
+	}
+
+	/**
+	 * ミニウィンドウで選択された言語を保存し、常駐側へ即時反映します。
+	 *
+	 * @param languageType 新しい言語設定
+	 * @return 保存と反映に成功した場合true
+	 */
+	public boolean updateLanguage(LanguageType languageType) {
+		if (languageType == null || closed.get()) {
+			return false;
+		}
+
+		synchronized (configLock) {
+			LanguageType previousLanguage = config.getLanguageType();
+			if (previousLanguage == languageType) {
+				return true;
+			}
+
+			try {
+				// 既存のテンプレート維持方式で、変更後の設定値を保存する。
+				config.setLanguageType(languageType);
+				repository.save(config);
+				converter.changeLanguage(languageType);
+				return true;
+			} catch (ServiceException e) {
+				config.setLanguageType(previousLanguage);
+				converter.changeLanguage(previousLanguage);
+				log.error("言語設定の更新に失敗しました", e);
+				return false;
+			}
 		}
 	}
 
@@ -150,16 +190,21 @@ public class InstantSnapCoordinator implements KeyEventListener, SelectionListen
 	 * アプリを終了する
 	 */
 	public void exit() {
+		if (!closed.compareAndSet(false, true)) {
+			return;
+		}
 		try {
-			keyManager.deactivate(); // キー監視の停止
+			if (triggerKeyWatcher.isKeyListenerRunning()) {
+				triggerKeyWatcher.deactivate(); // キー監視の停止
+			}
 		} catch (ServiceException e) {
 			log.error("Instant Snapの終了処理に失敗しました", e);
 		} finally {
 			rangeSelectionDialog.close(); // Swingで表示している範囲選択画面を破棄
+			notificationPresenter.close(); // 表示中の通知とタイマーを破棄
 			executor.shutdown(); // 撮影処理の終了
 			soundPlayer.close(); // 音声リソースの開放
 			tmpFolder.cleanTmpDirectory(); // 一時保存ファイルの削除
-			Platform.exit(); // 画面を閉じる
 		}
 	}
 
@@ -247,7 +292,7 @@ public class InstantSnapCoordinator implements KeyEventListener, SelectionListen
 	 */
 	@Override
 	public void requestExit() {
-		exit(); // アプリを正常終了させる
+		exitRequestHandler.run();
 	}
 
 	/**
@@ -258,17 +303,17 @@ public class InstantSnapCoordinator implements KeyEventListener, SelectionListen
 	private void afterSnapAction(AfterSnapData afterSnapData) {
 
 		try {
+			// 通知より先に音を鳴らし、画面表示の準備による遅延を避ける。
+			if (afterSnapData.soundNotificationEnabled()) {
+				soundPlayer.playNotificationSound();
+			}
+
 			// 通知表示が有効な場合
 			if (afterSnapData.showNotification()) {
 				notificationPresenter.show(
 						afterSnapData.result(), // 撮影結果
 						fileOpenService, // ファイルを開くインスタンス
 						converter); // メッセージ変換インスタンス
-			}
-
-			// 通知音が有効な場合
-			if (afterSnapData.soundNotificationEnabled()) {
-				soundPlayer.playNotificationSound();
 			}
 
 			// 撮影後アクションを実行
@@ -298,11 +343,16 @@ public class InstantSnapCoordinator implements KeyEventListener, SelectionListen
 	}
 
 	/**
-	 * ファイル名生成、ディレクトリ解決を行うクラスを取得する
-	 * @return filePathService
+	 * ホットキーなどからの終了要求を処理する通知先を登録します。
+	 *
+	 * @param handler 終了確認画面を含む終了要求処理
 	 */
-	public FilePathService getFilePathService() {
-		return filePathService;
+	public void setExitRequestHandler(Runnable handler) {
+		if (handler == null) {
+			this.exitRequestHandler = () -> exit();
+		} else {
+			this.exitRequestHandler = handler;
+		}
 	}
 
 	/**

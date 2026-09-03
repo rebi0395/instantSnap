@@ -15,7 +15,7 @@ public enum ThemeType implements BaseEnum, MessageEnum {
 	/** デフォルト テーマなし */
 	DEFAULT("0", "Default", THEME_DEFAULT, null, null),
 	/** 絵本テーマ */
-	STORYBOOK("1", "Storybook", THEME_STORYBOOK, CSS_MAIN_THEME_STORYBOOK, "theme-storybook");
+	STORYBOOK("1", "Storybook", THEME_STORYBOOK, CSS_SETTING_THEME_STORYBOOK, "theme-storybook");
 
 	/** プロパティファイルと紐つく値 */
 	private final String value;

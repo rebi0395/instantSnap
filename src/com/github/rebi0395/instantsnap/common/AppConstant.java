@@ -96,22 +96,15 @@ public final class AppConstant {
 	public static final boolean DEFAULT_SOUND_NOTIFICATION_ENABLED = true;
 
 	// -- 外部ファイル --
-	/** メインウィンドウのFXMLファイル */
-	public static final String FXML_MAIN_WINDOW = "/com/github/rebi0395/instantsnap/view/fxml/MainWindow.fxml";
-	/** 終了ダイアログのFXMLファイル */
-	public static final String FXML_EXIT_DIALOG = "/com/github/rebi0395/instantsnap/view/fxml/ExitDialog.fxml";
-	/** 通知画面のFXMLファイル */
-	public static final String FXML_NOTIFICATION = "/com/github/rebi0395/instantsnap/view/fxml/SnapNotification.fxml";
+	/** JavaFX設定ウィンドウのFXMLファイル */
+	public static final String FXML_SETTING_WINDOW = "/com/github/rebi0395/instantsnap/view/javafx/fxml/SettingWindow.fxml";
 
-	/** メインウィンドウのCSSファイル */
-	public static final String CSS_MAIN_WINDOW = "/com/github/rebi0395/instantsnap/view/css/main-window.css";
-	/** メインウィンドウのテーマCSS：絵本 */
-	public static final String CSS_MAIN_THEME_STORYBOOK = "/com/github/rebi0395/instantsnap/view/css/theme-storybook.css";
+	/** JavaFX設定ウィンドウのCSSファイル */
+	public static final String CSS_SETTING_WINDOW = "/com/github/rebi0395/instantsnap/view/javafx/css/setting-window.css";
+	/** JavaFX設定ウィンドウのテーマCSS：絵本 */
+	public static final String CSS_SETTING_THEME_STORYBOOK = "/com/github/rebi0395/instantsnap/view/javafx/css/theme-storybook.css";
 	/** テーマCSSファイル名とテーマstyleClassの接頭辞 */
 	public static final String THEME_CSS_PREFIX = "theme-";
-	/** 通知画面のCSSファイル */
-	public static final String CSS_NOTIFICATION = "/com/github/rebi0395/instantsnap/view/css/notification.css";
-
 	/** アイコンのpngファイル */
 	public static final String ICON_APP = "/images/icon/InstantSnap.png";
 
