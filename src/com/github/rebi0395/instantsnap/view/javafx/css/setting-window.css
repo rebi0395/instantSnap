@@ -1,6 +1,6 @@
 
 /** 画面全体 */
-.main-window-root {
+.setting-window-root {
     /* 主操作ボタンはテーマを問わず同じ緑色を使用する */
     -primary-action-top: #62c873;
     -primary-action-bottom: #329b5c;

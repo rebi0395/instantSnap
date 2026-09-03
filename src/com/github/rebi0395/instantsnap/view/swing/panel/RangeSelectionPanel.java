@@ -1,4 +1,4 @@
-package com.github.rebi0395.instantsnap.view.swing;
+package com.github.rebi0395.instantsnap.view.swing.panel;
 
 import java.awt.AWTException;
 import java.awt.AlphaComposite;
@@ -25,12 +25,12 @@ import com.github.rebi0395.instantsnap.common.AppLogger;
 import com.github.rebi0395.instantsnap.common.MessageKeyConstant;
 import com.github.rebi0395.instantsnap.common.MessageKeyConverter;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
-import com.github.rebi0395.instantsnap.view.swing.RangeSelectionDialog.SelectionListener;
+import com.github.rebi0395.instantsnap.view.swing.dialog.RangeSelectionDialog.SelectionListener;
 
 /**
  * 範囲選択画面を表示するパネルを作成するクラス
  */
-class RangeSelectionPanel extends JPanel {
+public class RangeSelectionPanel extends JPanel {
 
 	/** ユーザー設定値クラス */
 	private final ConfigBean config;
@@ -139,7 +139,7 @@ class RangeSelectionPanel extends JPanel {
 	/**
 	 * パネル表示直後のマウス位置を初期値として設定する
 	 */
-	protected void initializeCurrentPoint() {
+	public void initializeCurrentPoint() {
 		Point point = getMousePosition();
 
 		if (point == null) {
@@ -151,7 +151,7 @@ class RangeSelectionPanel extends JPanel {
 	/**
 	 * クリック、Enterなどで選択範囲状態に応じた処理を実施し、選択範囲状態を進める。
 	 */
-	protected void advanceStateWithAction() {
+	public void advanceStateWithAction() {
 		if (currentPoint == null) {
 			// 座標がない場合、早期リターン
 			return;
@@ -177,7 +177,7 @@ class RangeSelectionPanel extends JPanel {
 	 *
 	 * @param movement 移動量
 	 */
-	protected void moveMouse(Point movement) {
+	public void moveMouse(Point movement) {
 		if (currentPoint == null) {
 			return;
 		}
@@ -207,7 +207,7 @@ class RangeSelectionPanel extends JPanel {
 	 *
 	 * @param movement 移動量
 	 */
-	protected void moveSelectionArea(Point movement) {
+	public void moveSelectionArea(Point movement) {
 		if (state != SelectionState.SELECTING || selectionArea == null ||
 				startPoint == null || currentPoint == null) {
 			return; // 待機中の場合、早期リターン

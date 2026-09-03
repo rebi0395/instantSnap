@@ -1,10 +1,9 @@
-package com.github.rebi0395.instantsnap.view.controller;
+package com.github.rebi0395.instantsnap.view.javafx.controller;
 
 import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import com.github.rebi0395.instantsnap.app.InstantSnapCoordinator;
 import com.github.rebi0395.instantsnap.common.AppLogger;
 import com.github.rebi0395.instantsnap.common.MessageKeyConstant;
 import com.github.rebi0395.instantsnap.common.MessageKeyConverter;
@@ -19,7 +18,8 @@ import com.github.rebi0395.instantsnap.model.enums.SnapAreaType;
 import com.github.rebi0395.instantsnap.model.enums.StatusType;
 import com.github.rebi0395.instantsnap.model.enums.ThemeType;
 import com.github.rebi0395.instantsnap.service.FilePathService;
-import com.github.rebi0395.instantsnap.view.StyleSheetUtil;
+import com.github.rebi0395.instantsnap.service.SettingsService;
+import com.github.rebi0395.instantsnap.view.javafx.util.StyleSheetUtil;
 
 import static com.github.rebi0395.instantsnap.common.AppConstant.*;
 import static com.github.rebi0395.instantsnap.common.StrCheckUtil.*;
@@ -46,12 +46,12 @@ import javafx.stage.DirectoryChooser;
 import javafx.util.Duration;
 
 /**
- * メイン画面のコントローラクラス
+ * JavaFX設定画面のコントローラクラス
  */
-public class MainWindowController {
+public class SettingWindowController {
 
-	/** サービスクラスの司令塔クラス */
-	private final InstantSnapCoordinator coordinator;
+	/** 設定値の読込・保存を担当するクラス */
+	private final SettingsService settingsService;
 
 	/** メッセージの多言語変換クラス */
 	private MessageKeyConverter converter;
@@ -312,8 +312,8 @@ public class MainWindowController {
 	private static final String STYLE_INVALID_VALUE = "invalid-value";
 
 	/** コンストラクタ */
-	public MainWindowController(InstantSnapCoordinator coordinator) {
-		this.coordinator = coordinator;
+	public SettingWindowController(SettingsService settingsService) {
+		this.settingsService = settingsService;
 	}
 
 	/**
@@ -321,9 +321,9 @@ public class MainWindowController {
 	 */
 	@FXML
 	public void initialize() {
-		ConfigBean config = coordinator.getConfigBean(); // 設定値保持クラス
-		this.converter = coordinator.getMessageKeyConverter(); // メッセージキー変換クラス
-		this.filePathService = coordinator.getFilePathService(); // ファイル名生成、ディレクトリ解決を行うクラス
+		ConfigBean config = settingsService.getConfigBean(); // 設定値保持クラス
+		this.converter = settingsService.getMessageKeyConverter(); // メッセージキー変換クラス
+		this.filePathService = settingsService.getFilePathService(); // ファイル名生成、ディレクトリ解決を行うクラス
 
 		// コンボボックスの初期設定
 		setupComboBoxes();
@@ -455,9 +455,9 @@ public class MainWindowController {
 				return;
 			}
 
-			ConfigBean config = coordinator.getConfigBean();
+			ConfigBean config = settingsService.getConfigBean();
 			config.setLanguageType(newVal); // 最新の言語設定をセット
-			coordinator.save(); // 内部では全項目更新
+			settingsService.save(); // 内部では全項目更新
 
 			converter.changeLanguage(config.getLanguageType()); // リソースバンドルを読み直す
 			updateLanguageTexts(config); // 言語変更を反映させる
@@ -475,9 +475,9 @@ public class MainWindowController {
 				return;
 			}
 
-			ConfigBean config = coordinator.getConfigBean();
+			ConfigBean config = settingsService.getConfigBean();
 			config.setThemeType(newVal); // 最新のテーマ設定をセット
-			coordinator.save(); // 内部では全項目更新
+			settingsService.save(); // 内部では全項目更新
 
 			StyleSheetUtil.changeTheme(rootPane, config.getThemeType()); // テーマCSSを即時反映
 		});
@@ -672,7 +672,7 @@ public class MainWindowController {
 		// 入力部品からフォーカスを外す
 		rootPane.requestFocus();
 
-		ConfigBean config = coordinator.getConfigBean();
+		ConfigBean config = settingsService.getConfigBean();
 		config.setLanguageType(comboLanguageType.getValue()); // 言語設定
 		config.setThemeType(comboThemeType.getValue()); // テーマ設定
 
@@ -724,7 +724,7 @@ public class MainWindowController {
 		updateInvalidStyle(config);
 
 		// 更新されたconfigを用いて、司令塔クラスにプロパティ更新を依頼する
-		coordinator.save();
+		settingsService.save();
 
 		// 設定値再読み込み(ショートカットキーのなどのフォールバック反映)
 		applyConfigValues(config);

@@ -1,4 +1,4 @@
-package com.github.rebi0395.instantsnap.view.swing;
+package com.github.rebi0395.instantsnap.view.swing.dialog;
 
 import java.awt.Color;
 import java.awt.Dialog;
@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import com.github.rebi0395.instantsnap.common.MessageKeyConverter;
 import com.github.rebi0395.instantsnap.common.OsUtil;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
+import com.github.rebi0395.instantsnap.view.swing.panel.RangeSelectionPanel;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.WinDef.BOOL;
