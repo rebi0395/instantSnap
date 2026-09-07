@@ -109,9 +109,13 @@
 												</Region>
 												<Label fx:id="sectionSnapOption" styleClass="section-title"/>
 											</HBox>
-											<HBox spacing="10" styleClass="output-switch-item">
+											<HBox spacing="5" styleClass="output-switch-item">
 												<CheckBox fx:id="checkIncludeCursor" prefWidth="160" maxWidth="160"/><!-- マウスカーソルの有無 -->
 												<Label fx:id="labelIncludeCursor" styleClass="current-value"/>
+											</HBox>
+											<HBox spacing="10" styleClass="output-switch-item">
+												<CheckBox fx:id="checkIncludeSettingWindow" prefWidth="160" maxWidth="160"/><!-- ウィンドウを含むかの有無 -->
+												<Label fx:id="labelIncludeSettingWindow" styleClass="current-value"/>
 											</HBox>
 										</VBox>
 									</GridPane>

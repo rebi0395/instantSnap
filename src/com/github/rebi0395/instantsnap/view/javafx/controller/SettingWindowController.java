@@ -181,6 +181,10 @@ public class SettingWindowController {
 	/** マウスカーソルを画像に含める設定の有効/無効を表示するラベル */
 	@FXML
 	private Label labelIncludeCursor;
+	
+	/** InstantSnapのウィンドウを画像に含める設定の有効/無効を表示するラベル */
+	@FXML
+	private Label labelIncludeSettingWindow;
 
 	/** 画像を保存する設定の有効/無効を表示するラベル */
 	@FXML
@@ -244,7 +248,10 @@ public class SettingWindowController {
 	/** マウスカーソルを画像に含めるかを設定するチェックボックス */
 	@FXML
 	private CheckBox checkIncludeCursor;
-
+	/** InstantSnapのウィンドウを画像に含めるかを設定するチェックボックス */
+	@FXML
+	private CheckBox checkIncludeSettingWindow;
+	
 	// -- 出力設定 --
 	/** 画像を保存する設定のチェックボックス */
 	@FXML
@@ -425,6 +432,7 @@ public class SettingWindowController {
 
 		comboSnapArea.setValue(config.getSnapAreaType()); // 撮影範囲
 		checkIncludeCursor.setSelected(config.getIsIncludeCursor()); // マウスカーソル設定
+		checkIncludeSettingWindow.setSelected(config.getIsIncludeSettingWindow()); // 設定画面を画像に含めるか設定
 
 		checkSaveImage.setSelected(config.getIsSaveImage()); // 画像保存の有無の値を設定
 		checkClipboard.setSelected(config.getIsCopyToClipboard()); // クリップボードに画像をするかの値をセット
@@ -742,6 +750,8 @@ public class SettingWindowController {
 		config.setSelectionKeyBean(selectionKeys);
 		// マウスカーソルの有無
 		config.setIsIncludeCursor(checkIncludeCursor.isSelected());
+		// InstantSnapのウィンドウを含めるか
+		config.setIsIncludeSettingWindow(checkIncludeSettingWindow.isSelected());
 
 		// -- 出力設定 --
 		config.setIsSaveImage(checkSaveImage.isSelected()); // 画像保存の有無
@@ -785,6 +795,7 @@ public class SettingWindowController {
 		// -- 撮影設定 --
 		comboSnapArea.getSelectionModel().selectFirst();
 		checkIncludeCursor.setSelected(DEFAULT_INCLUDE_CURSOR_ENABLED); // マウスカーソルの有無
+		checkIncludeSettingWindow.setSelected(DEFAULT_INCLUDE_SETTING_WINDOW_ENABLED); // 設定ウィンドウを画像に含む
 		// ショートカットキーの設定をリセットする
 		KeyCombinationBean defaultSnapKeys = ConfigBean.createDefaultSnapKey();
 		snapNativeCode = defaultSnapKeys.getTriggerKey();
@@ -864,7 +875,6 @@ public class SettingWindowController {
 
 	/**
 	 * ComboBoxのコンバーターを再設定し、表示を更新する
-	 *
 	 */
 	private void updateComboBoxConverters() {
 		updatingComboBoxConverters = true;
@@ -917,6 +927,7 @@ public class SettingWindowController {
 
 		labelSnapArea.setText(config.getSnapAreaType().getMessage(converter));
 		labelIncludeCursor.setText(converter.getEnabledMessage(config.getIsIncludeCursor()));
+		labelIncludeSettingWindow.setText(converter.getEnabledMessage(config.getIsIncludeSettingWindow()));
 
 		// -- 出力設定
 		labelSaveImage.setText(converter.getEnabledMessage(config.getIsSaveImage()));
@@ -969,6 +980,8 @@ public class SettingWindowController {
 		// チェックボックス
 		checkIncludeCursor.setText(
 				converter.getMessage(MessageKeyConstant.CHECK_INCLUDE_CURSOR, "Include cursor"));
+		checkIncludeSettingWindow.setText(
+				converter.getMessage(MessageKeyConstant.CHECK_INCLUDE_SETTING_WINDOW, "Include settings window"));
 		checkSaveImage.setText(converter.getMessage(MessageKeyConstant.CHECK_SAVE_IMAGE, "Save image"));
 		checkClipboard.setText(converter.getMessage(MessageKeyConstant.CHECK_COPY_TO_CLIPBOARD, "Copy to clipboard"));
 		checkNotification
