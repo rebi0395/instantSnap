@@ -73,6 +73,8 @@ public class PropertiesRepository {
 					properties.getProperty(PROPERTY_SNAP_AREA)));
 			config.setIsIncludeCursor(readBooleanOrDefault(
 					properties.getProperty(PROPERTY_INCLUDE_CURSOR_ENABLED), DEFAULT_INCLUDE_CURSOR_ENABLED));
+			config.setIsIncludeSettingWindow(readBooleanOrDefault(
+					properties.getProperty(PROPERTY_INCLUDE_SETTING_WINDOW_ENABLED), DEFAULT_INCLUDE_SETTING_WINDOW_ENABLED));
 
 			// 出力設定
 			config.setIsSaveImage(readBooleanOrDefault(
@@ -250,6 +252,7 @@ public class PropertiesRepository {
 		// 撮影設定
 		updateMap.put(PROPERTY_SNAP_AREA, config.getSnapAreaType().getValue());
 		updateMap.put(PROPERTY_INCLUDE_CURSOR_ENABLED, String.valueOf(config.getIsIncludeCursor()));
+		updateMap.put(PROPERTY_INCLUDE_SETTING_WINDOW_ENABLED, String.valueOf(config.getIsIncludeSettingWindow()));
 
 		// 出力設定
 		updateMap.put(PROPERTY_SAVE_IMAGE_ENABLED, String.valueOf(config.getIsSaveImage()));
@@ -329,6 +332,9 @@ public class PropertiesRepository {
 			# マウスカーソルを画像に含める
 			includeCursorEnabled=false
 
+			# InstantSnapのウィンドウを画像に含める
+			includeSettingWindowEnabled=false
+
 			# ～～ 出力設定 ～～
 			# 画像を保存する（有効にする場合は"true"と記載してください）
 			saveImageEnabled=true
@@ -399,6 +405,9 @@ public class PropertiesRepository {
 
 			# Include the mouse cursor in the image
 			includeCursorEnabled=false
+
+			# Include the setting window in the image
+			includeSettingWindowEnabled=false
 
 			# ~~ Output Settings ~~
 			# Save the image (set to "true" to enable)

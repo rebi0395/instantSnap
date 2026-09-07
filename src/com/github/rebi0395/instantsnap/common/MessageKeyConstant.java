@@ -46,6 +46,8 @@ public final class MessageKeyConstant {
 
 	/** チェック項目：マウスカーソルを画像に含める */
 	public static final String CHECK_INCLUDE_CURSOR = "check.includeCursor";
+	/** チェック項目：マウスカーソルを画像に含める */
+	public static final String CHECK_INCLUDE_SETTING_WINDOW = "check.includeSettingWindow";
 	/** チェック項目：画像を保存する */
 	public static final String CHECK_SAVE_IMAGE = "check.saveImage";
 	/** チェック項目：クリップボードにコピーする */

@@ -41,6 +41,8 @@ public final class AppConstant {
 	public static final String PROPERTY_SNAP_AREA = "snapArea";
 	/** プロパティ マウスカーソルを写すか */
 	public static final String PROPERTY_INCLUDE_CURSOR_ENABLED = "includeCursorEnabled";
+	/** プロパティ InstantSnapのウィンドウを写すか */
+	public static final String PROPERTY_INCLUDE_SETTING_WINDOW_ENABLED = "includeSettingWindowEnabled";
 	/** プロパティ 画像保存をするか */
 	public static final String PROPERTY_SAVE_IMAGE_ENABLED = "saveImageEnabled";
 	/** プロパティ クリップボードコピーをするか */
@@ -84,6 +86,8 @@ public final class AppConstant {
 	public static final boolean DEFAULT_SELECTION_USE_SHIFT = false;
 	/** 画像にマウスカーソルを含めるかどうかのデフォルト値 */
 	public static final boolean DEFAULT_INCLUDE_CURSOR_ENABLED = false;
+	/** 画像にInstantSnapのウィンドウを含めるかどうかのデフォルト値 */
+	public static final boolean DEFAULT_INCLUDE_SETTING_WINDOW_ENABLED = false;
 	/** 画像保存を有効にするかどうかのデフォルト値 */
 	public static final boolean DEFAULT_SAVE_IMAGE_ENABLED = true;
 	/** クリップボード保存を有効にするかどうかのデフォルト値 */

@@ -28,6 +28,8 @@ public class ConfigBean {
 	private SnapAreaType snapAreaType;
 	/** マウスカーソルを写す (trueで写す) */
 	private boolean isIncludeCursor;
+	/** InstantSnapのWindowを写す (trueで写す) */
+	private boolean isIncludeSettingWindow;
 	/** 画像を保存する (trueで保存する) */
 	private boolean isSaveImage;
 	/** クリップボードに画像に保存する (trueで保存する) */
@@ -64,6 +66,7 @@ public class ConfigBean {
 		this.selectionKeyBean = createDefaultSelectionKey();
 		this.snapAreaType = SnapAreaType.ACTIVE_WINDOW;
 		this.isIncludeCursor = DEFAULT_INCLUDE_CURSOR_ENABLED;
+		this.isIncludeSettingWindow = DEFAULT_INCLUDE_SETTING_WINDOW_ENABLED;
 
 		// -- 出力設定
 		this.isSaveImage = DEFAULT_SAVE_IMAGE_ENABLED;
@@ -229,6 +232,22 @@ public class ConfigBean {
 	 */
 	public void setIsIncludeCursor(boolean isIncludeCursor) {
 		this.isIncludeCursor = isIncludeCursor;
+	}
+
+	/**
+	 * 画像にInstantSnapのウィンドウを含めるかの設定を返します
+	 * @return isIncludeCursor
+	 */
+	public boolean getIsIncludeSettingWindow() {
+		return isIncludeSettingWindow;
+	}
+
+	/**
+	 * 画像にInstantSnapのウィンドウを含めるかの設定をセットします
+	 * @param isIncludeSettingWindow セットする
+	 */
+	public void setIsIncludeSettingWindow(boolean isIncludeSettingWindow) {
+		this.isIncludeSettingWindow = isIncludeSettingWindow;
 	}
 
 	/**
