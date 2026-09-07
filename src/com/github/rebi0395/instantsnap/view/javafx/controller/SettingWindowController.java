@@ -74,6 +74,9 @@ public class SettingWindowController {
 	/** ComboBoxの表示更新中かを判定するフラグ */
 	private boolean updatingComboBoxConverters = false;
 
+	/** プロパティ再読込による画面反映中かを判定するフラグ */
+	private boolean applyingConfigValues = false;
+
 	/** 画面全体の親レイアウト */
 	@FXML
 	private BorderPane rootPane;
@@ -311,7 +314,12 @@ public class SettingWindowController {
 	/** 不正値用スタイルクラス */
 	private static final String STYLE_INVALID_VALUE = "invalid-value";
 
-	/** コンストラクタ */
+	/**
+	 * 設定の読込・保存に使用するサービスを受け取ります。
+	 * 入力部品の初期化はFXMLの読込後にinitializeで行います。
+	 *
+	 * @param settingsService この設定画面で共有する設定サービス
+	 */
 	public SettingWindowController(SettingsService settingsService) {
 		this.settingsService = settingsService;
 	}
@@ -352,19 +360,49 @@ public class SettingWindowController {
 	}
 
 	/**
-	 * ユーザー設定値から、入力値を読み取り、各項目にセットする
-	 * @param config ユーザー設定値
+	 * 再読込済みの設定値を、JavaFXスレッド上で入力部品と文言へ反映します。
+	 * 画面内の未保存の入力値も、ファイルから読み込んだ値で置き換えます。
+	 */
+	public void reloadSettings() {
+		ConfigBean config = settingsService.getConfigBean();
+		applyConfigValues(config);
+		updateLanguageTexts(config);
+		StyleSheetUtil.changeTheme(rootPane, config.getThemeType());
+		updateInvalidStyle(config);
+	}
+
+	/**
+	 * 即時保存リスナーを抑止しながら、設定値を入力部品へ反映します。
+	 *
+	 * @param config 入力部品へ反映する設定値
 	 */
 	private void applyConfigValues(ConfigBean config) {
+		// 言語・テーマの再読込で保存が発生し、変更通知が循環することを防ぐ。
+		applyingConfigValues = true;
+		try {
+			setConfigValuesToControls(config);
+		} finally {
+			applyingConfigValues = false;
+		}
+	}
+
+	/**
+	 * 設定値を各入力部品へ設定します。リスナー抑止中に呼び出します。
+	 *
+	 * @param config 各部品へ表示する設定値
+	 */
+	private void setConfigValuesToControls(ConfigBean config) {
 		comboLanguageType.setValue(config.getLanguageType()); // 言語設定の読み込み
 		comboThemeType.setValue(config.getThemeType()); // テーマの読み込み
 
 		// 撮影キーを設定
 		KeyCombinationBean snapKeys = config.getSnapKeyBean();
 		snapNativeCode = snapKeys.getTriggerKey(); // nativeキーコードを保持
-		if (!(snapNativeCode == VC_UNDEFINED)) {
+		if (snapNativeCode != VC_UNDEFINED) {
 			// 未定義でない場合、テキストフィールドにキーの名前をセットする
 			textSnapInputKey.setText(NativeKeyCodeConverter.toFXKeyName(snapNativeCode));
+		} else {
+			textSnapInputKey.clear();
 		}
 		// 修飾キーを設定
 		checkSnapCtrl.setSelected(snapKeys.isUseCtrl());
@@ -374,9 +412,11 @@ public class SettingWindowController {
 		// 範囲選択キーを設定
 		KeyCombinationBean selectionKeys = config.getSelectionKeyBean();
 		selectionNativeCode = selectionKeys.getTriggerKey();
-		if (!(selectionNativeCode == VC_UNDEFINED)) {
+		if (selectionNativeCode != VC_UNDEFINED) {
 			// 未定義でない場合、テキストフィールドにキーの名前をセットする
 			textSelectionInputKey.setText(NativeKeyCodeConverter.toFXKeyName(selectionNativeCode));
+		} else {
+			textSelectionInputKey.clear();
 		}
 		// 修飾キーを設定
 		checkSelectionCtrl.setSelected(selectionKeys.isUseCtrl());
@@ -451,7 +491,7 @@ public class SettingWindowController {
 	 */
 	private void registerLanguageChangeListener() {
 		comboLanguageType.valueProperty().addListener((obs, oldVal, newVal) -> {
-			if (newVal == null || newVal == oldVal) {
+			if (applyingConfigValues || newVal == null || newVal == oldVal) {
 				return;
 			}
 
@@ -471,7 +511,7 @@ public class SettingWindowController {
 	 */
 	private void registerThemeChangeListener() {
 		comboThemeType.valueProperty().addListener((obs, oldVal, newVal) -> {
-			if (updatingComboBoxConverters || newVal == null || newVal == oldVal) {
+			if (applyingConfigValues || updatingComboBoxConverters || newVal == null || newVal == oldVal) {
 				return;
 			}
 
@@ -723,7 +763,7 @@ public class SettingWindowController {
 		// 不正値の場合、スタイルを反映
 		updateInvalidStyle(config);
 
-		// 更新されたconfigを用いて、司令塔クラスにプロパティ更新を依頼する
+		// 設定サービスが保持する更新済みConfigBeanをプロパティファイルへ保存する。
 		settingsService.save();
 
 		// 設定値再読み込み(ショートカットキーのなどのフォールバック反映)

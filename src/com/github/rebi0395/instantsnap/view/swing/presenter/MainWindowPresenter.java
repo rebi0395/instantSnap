@@ -15,17 +15,17 @@ import javax.swing.JOptionPane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.rebi0395.instantsnap.app.InstantSnapApp;
 import com.github.rebi0395.instantsnap.common.MessageKeyConstant;
 import com.github.rebi0395.instantsnap.common.MessageKeyConverter;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
-import com.github.rebi0395.instantsnap.model.bean.KeyCombinationBean;
 import com.github.rebi0395.instantsnap.model.enums.LanguageType;
 import com.github.rebi0395.instantsnap.view.swing.panel.MainWindowPanel;
-import com.github.rebi0395.instantsnap.view.swing.panel.MainWindowPanel.LanguageChangeListener;
 
 /**
  * Swingメインウィンドウの生成、表示、表示内容の更新を行うプレゼンターです。
- * アプリの起動や撮影処理は持たず、利用者の操作を登録された通知先へ渡します。
+ * 利用者の操作を受け取り、InstantSnapAppの対応する処理を呼び出します。
+ * 生成・表示・更新はSwingイベントディスパッチスレッド（EDT）上で行います。
  */
 public final class MainWindowPresenter {
 
@@ -34,6 +34,9 @@ public final class MainWindowPresenter {
 
 	/** Swingメインウィンドウのタイトル */
 	private static final String WINDOW_TITLE = "InstantSnap";
+
+	/** メインウィンドウから要求されたアプリ処理の呼び出し先 */
+	private final InstantSnapApp app;
 
 	/** Swingメインウィンドウ */
 	private final JFrame frame;
@@ -47,61 +50,81 @@ public final class MainWindowPresenter {
 	/**
 	 * 現在の設定値を使ってSwingメインウィンドウを生成します。
 	 *
+	 * @param app メインウィンドウからアプリ処理を呼び出すクラス
 	 * @param config 現在の設定値
 	 * @param converter 言語別メッセージの取得クラス
-	 * @param languageChangeListener 言語変更時の通知先
-	 * @param settingsAction 設定ボタン押下時の処理
-	 * @param captureAction 撮影ボタン押下時の処理
-	 * @param rangeSelectionAction 範囲選択ボタン押下時の処理
-	 * @param exitAction ウィンドウを閉じようとした時の処理
 	 */
 	public MainWindowPresenter(
+			InstantSnapApp app,
 			ConfigBean config,
-			MessageKeyConverter converter,
-			LanguageChangeListener languageChangeListener,
-			Runnable settingsAction,
-			Runnable captureAction,
-			Runnable rangeSelectionAction,
-			Runnable exitAction) {
+			MessageKeyConverter converter) {
+		this.app = app;
 		this.converter = converter;
 
-		UiTexts texts = resolveUiTexts(config.getLanguageType());
-		this.panel = new MainWindowPanel(
-				texts.settings(),
-				texts.capture(),
-				texts.rangeSelection(),
-				resolveShortcutText(config.getSnapKeyBean(), texts.notSet()),
-				resolveShortcutText(config.getSelectionKeyBean(), texts.notSet()),
-				config.getLanguageType(),
-				languageChangeListener,
-				settingsAction,
-				captureAction,
-				rangeSelectionAction);
-		this.frame = createFrame(panel, exitAction);
+		this.panel = new MainWindowPanel(config, this);
+		this.frame = createFrame();
 	}
 
-	/** メインウィンドウを表示します。 */
+	/**
+	 * メインウィンドウを表示します。
+	 */
 	public void show() {
 		frame.setVisible(true);
 	}
 
-	/** 現在の設定値をメインウィンドウの全表示へ反映します。 */
-	public void refresh(ConfigBean config) {
-		UiTexts texts = resolveUiTexts(config.getLanguageType());
-		panel.updateButtonTexts(texts.settings(), texts.capture(), texts.rangeSelection());
-		panel.updateShortcutTexts(
-				resolveShortcutText(config.getSnapKeyBean(), texts.notSet()),
-				resolveShortcutText(config.getSelectionKeyBean(), texts.notSet()));
-		panel.updateLanguageSelection(config.getLanguageType());
+	/**
+	 * 設定ボタンからJavaFX設定画面の起動をAppへ要求します。
+	 */
+	public void openSettings() {
+		app.openSettings();
 	}
 
-	/** JavaFX設定画面の起動状態に応じて設定操作の有効状態を変更します。 */
+	/**
+	 * 撮影ボタンから通常撮影をAppへ要求します。
+	 */
+	public void requestSnap() {
+		app.requestSnap();
+	}
+
+	/**
+	 * 範囲選択ボタンから撮影範囲の選択をAppへ要求します。
+	 */
+	public void requestRangeSelection() {
+		app.requestRangeSelection();
+	}
+
+	/**
+	 * ミニウィンドウで選択された言語の保存と反映をAppへ要求します。
+	 *
+	 * @param languageType 選択された言語
+	 */
+	public void changeLanguage(LanguageType languageType) {
+		app.changeLanguage(languageType);
+	}
+
+	/**
+	 * 現在の設定値をメインウィンドウの全表示へ反映します。
+	 *
+	 * @param config 再読込または言語変更後の最新の設定値
+	 */
+	public void refresh(ConfigBean config) {
+		panel.refresh(config);
+	}
+
+	/**
+	 * JavaFX設定画面の起動状態に応じて設定操作を有効・無効にします。
+	 *
+	 * @param available 設定画面を新しく開ける場合true。起動中はfalse
+	 */
 	public void setSettingsAvailable(boolean available) {
 		panel.setSettingsEnabled(available);
-		panel.setLanguageSelectionEnabled(available);
 	}
 
-	/** メインウィンドウにある全操作の有効状態を変更します。 */
+	/**
+	 * メインウィンドウにある全操作を有効・無効にします。
+	 *
+	 * @param enabled 操作を許可する場合true。終了処理中はfalse
+	 */
 	public void setActionsEnabled(boolean enabled) {
 		panel.setActionsEnabled(enabled);
 	}
@@ -109,7 +132,7 @@ public final class MainWindowPresenter {
 	/**
 	 * アプリを終了するか確認します。
 	 *
-	 * @return 終了が選択された場合true
+	 * @return 「はい」が選択された場合true。「いいえ」やダイアログを閉じた場合false
 	 */
 	public boolean confirmExit() {
 		String message = converter.getMessage(
@@ -128,7 +151,11 @@ public final class MainWindowPresenter {
 		return result == JOptionPane.YES_OPTION;
 	}
 
-	/** JavaFX設定画面を起動できなかった場合の案内を表示します。 */
+	/**
+	 * JavaFX設定画面を起動できなかった場合の案内を表示します。
+	 *
+	 * @param language 案内の表示言語。日本語以外は英語を使用
+	 */
 	public void showSettingsStartError(LanguageType language) {
 		String message;
 		if (language == LanguageType.JAPANESE) {
@@ -139,17 +166,24 @@ public final class MainWindowPresenter {
 		JOptionPane.showMessageDialog(frame, message, WINDOW_TITLE, JOptionPane.ERROR_MESSAGE);
 	}
 
-	/** メインウィンドウを閉じて画面リソースを解放します。 */
+	/**
+	 * メインウィンドウを閉じて画面リソースを解放します。
+	 */
 	public void close() {
 		frame.setVisible(false);
 		frame.dispose();
 	}
 
-	/** Swingメインウィンドウを生成し、終了要求を登録します。 */
-	private JFrame createFrame(MainWindowPanel mainPanel, Runnable exitAction) {
+	/**
+	 * 所有するパネルを配置し、終了要求をAppへ渡すウィンドウを生成します。
+	 *
+	 * @return 表示前のメインウィンドウ
+	 */
+	private JFrame createFrame() {
 		JFrame mainFrame = new JFrame(WINDOW_TITLE);
+		// 閉じる操作だけでは破棄せず、Appで確認と常駐リソースの解放を行う。
 		mainFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-		mainFrame.setContentPane(mainPanel);
+		mainFrame.setContentPane(panel);
 		mainFrame.setResizable(false);
 		mainFrame.setAlwaysOnTop(true);
 		mainFrame.pack();
@@ -157,31 +191,25 @@ public final class MainWindowPresenter {
 		setApplicationIcon(mainFrame);
 
 		mainFrame.addWindowListener(new WindowAdapter() {
+			/**
+			 * ウィンドウの閉じる操作をAppの終了確認へ渡します。
+			 *
+			 * @param event 閉じる操作のイベント
+			 */
 			@Override
 			public void windowClosing(WindowEvent event) {
-				exitAction.run();
+				app.requestExit();
 			}
 		});
 		return mainFrame;
 	}
 
-	/** キー設定が未定義の場合は代替文言を返します。 */
-	private String resolveShortcutText(KeyCombinationBean keyCombination, String notSetText) {
-		if (keyCombination == null || !keyCombination.isTriggerKeyDefined()) {
-			return notSetText;
-		}
-		return keyCombination.resolveKeyCombinationName();
-	}
-
-	/** 言語設定に対応したメインウィンドウ用の短い表示名を返します。 */
-	private UiTexts resolveUiTexts(LanguageType language) {
-		if (language == LanguageType.JAPANESE) {
-			return new UiTexts("設定", "撮影", "範囲選択", "未設定");
-		}
-		return new UiTexts("Settings", "Capture", "Select area", "Not set");
-	}
-
-	/** メインウィンドウへInstantSnapのアプリアイコンを設定します。 */
+	/**
+	 * メインウィンドウへアプリアイコンを設定します。
+	 * 読込に失敗した場合はログを残し、標準アイコンで起動を継続します。
+	 *
+	 * @param targetFrame アイコンの設定先
+	 */
 	private void setApplicationIcon(JFrame targetFrame) {
 		try (InputStream iconStream = getClass().getResourceAsStream(ICON_APP)) {
 			if (iconStream == null) {
@@ -197,7 +225,4 @@ public final class MainWindowPresenter {
 		}
 	}
 
-	/** メインウィンドウで使う短い文言をまとめたレコードです。 */
-	private record UiTexts(String settings, String capture, String rangeSelection, String notSet) {
-	}
 }

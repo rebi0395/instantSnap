@@ -18,17 +18,22 @@ import com.github.rebi0395.instantsnap.common.DpiUtil;
 import com.github.rebi0395.instantsnap.common.MessageKeyConstant;
 import com.github.rebi0395.instantsnap.common.MessageKeyConverter;
 import com.github.rebi0395.instantsnap.common.OsUtil;
+import com.github.rebi0395.instantsnap.exception.ServiceException;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.model.enums.LanguageType;
 import com.github.rebi0395.instantsnap.repository.PropertiesRepository;
 import com.github.rebi0395.instantsnap.service.SettingsFileWatcher;
+import com.github.rebi0395.instantsnap.service.SettingsFileWatcher.SettingsChangeListener;
+import com.github.rebi0395.instantsnap.service.TriggerKeyWatcher;
+import com.github.rebi0395.instantsnap.service.TriggerKeyWatcher.KeyEventListener;
 import com.github.rebi0395.instantsnap.view.swing.presenter.MainWindowPresenter;
 
 /**
  * InstantSnap常駐プロセスの起動、画面と各サービスの結線、終了処理を管理します。
  * 撮影などの機能はCoordinatorへ、Swing画面の操作はMainWindowPresenterへ委譲します。
+ * JavaFX設定画面は子プロセスで起動し、両プロセスは設定ファイルを介して変更を共有します。
  */
-public final class InstantSnapApp {
+public final class InstantSnapApp implements KeyEventListener, SettingsChangeListener {
 
 	/** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(InstantSnapApp.class);
@@ -36,10 +41,13 @@ public final class InstantSnapApp {
 	/** 二重起動防止用ロックの管理クラス */
 	private final SingleInstanceManager instanceManager;
 
-	/** 撮影処理とキー監視を管理するCoordinator */
+	/** 撮影処理を管理するCoordinator */
 	private final InstantSnapCoordinator coordinator;
 
-	/** Swingメインウィンドウの表示と更新を管理するサービス */
+	/** 撮影、範囲選択、終了のショートカットキーを監視するクラス */
+	private final TriggerKeyWatcher triggerKeyWatcher;
+
+	/** Swingメインウィンドウの表示と更新を管理するプレゼンター */
 	private final MainWindowPresenter mainWindowPresenter;
 
 	/** 設定ファイルの変更を監視するサービス */
@@ -52,7 +60,8 @@ public final class InstantSnapApp {
 	private volatile boolean shuttingDown;
 
 	/**
-	 * アプリケーションを起動します
+	 * 二重起動ロックを取得し、EDT上で常駐処理とメインウィンドウを起動します。
+	 * ロックを取得できない場合は案内を表示し、起動を中止します。
 	 */
 	public static void launch() {
 		LanguageType language = PropertiesRepository.readLanguageOnly();
@@ -91,41 +100,54 @@ public final class InstantSnapApp {
 	 *
 	 * @param instanceManager 起動時にロックを取得済みの管理クラス
 	 * @throws IOException 設定ファイルの監視を開始できない場合
+	 * @throws ServiceException トリガーキー監視を開始できない場合
 	 */
-	private InstantSnapApp(SingleInstanceManager instanceManager) throws IOException {
+	private InstantSnapApp(SingleInstanceManager instanceManager) throws IOException, ServiceException {
 		this.instanceManager = instanceManager;
 		this.coordinator = new InstantSnapCoordinator();
 
 		ConfigBean config = coordinator.getConfigBean();
 		this.mainWindowPresenter = new MainWindowPresenter(
+				this,
 				config,
-				coordinator.getMessageKeyConverter(),
-				languageType -> changeLanguage(languageType),
-				() -> openSettings(),
-				() -> coordinator.requestSnap(),
-				() -> coordinator.requestRangeSelection(),
-				() -> requestExit());
-		this.coordinator.setExitRequestHandler(() -> requestExit());
+				coordinator.getMessageKeyConverter());
 
+		SettingsFileWatcher createdSettingsFileWatcher = null;
+		TriggerKeyWatcher createdTriggerKeyWatcher = new TriggerKeyWatcher(config, this);
 		try {
 			// 設定画面と手動編集のどちらも、設定ファイルの更新として同じ経路で検知する。
-			this.settingsFileWatcher = new SettingsFileWatcher(
+			createdSettingsFileWatcher = new SettingsFileWatcher(
 					PROPERTIES_PATH,
-					() -> requestSettingsReload());
-		} catch (IOException e) {
+					this);
+			// キーイベントはAppで受け取り、撮影要求だけをCoordinatorへ委譲する。
+			createdTriggerKeyWatcher.activate();
+		} catch (IOException | ServiceException e) {
+			// 起動途中で失敗した場合も、ここまでに開始した監視と画面を解放する。
+			if (createdSettingsFileWatcher != null) {
+				createdSettingsFileWatcher.close();
+			}
+			stopTriggerKeyWatcher(createdTriggerKeyWatcher);
 			mainWindowPresenter.close();
 			coordinator.exit();
 			throw e;
 		}
+		this.settingsFileWatcher = createdSettingsFileWatcher;
+		this.triggerKeyWatcher = createdTriggerKeyWatcher;
 	}
 
-	/** Swingメインウィンドウを表示します。 */
+	/**
+	 * Swingメインウィンドウを表示します。
+	 */
 	private void show() {
 		mainWindowPresenter.show();
 	}
 
-	/** JavaFX設定画面を別JVMプロセスとして起動します。 */
-	private void openSettings() {
+	/**
+	 * EDT上でJavaFX設定画面を別JVMプロセスとして起動します。
+	 * 既に起動中の場合は音で知らせ、二つ目の設定画面は開きません。
+	 * 起動に失敗した場合は操作を再び有効にし、案内を表示します。
+	 */
+	public void openSettings() {
 		Process currentProcess = settingsProcess;
 		if (currentProcess != null && currentProcess.isAlive()) {
 			Toolkit.getDefaultToolkit().beep();
@@ -150,7 +172,12 @@ public final class InstantSnapApp {
 		}
 	}
 
-	/** JavaFX設定プロセスを起動するコマンドを作成します。 */
+	/**
+	 * 常駐側と同じJavaランタイムとクラスパスで設定画面を起動するコマンドを作成します。
+	 *
+	 * @return 実行ファイルと引数を要素ごとに分けたProcessBuilder用の配列
+	 * @throws IOException 使用中のJavaランタイム内に実行ファイルが存在しない場合
+	 */
 	private String[] createSettingsCommand() throws IOException {
 		String executableName = "java";
 		if (OsUtil.isWindows()) {
@@ -169,7 +196,12 @@ public final class InstantSnapApp {
 		};
 	}
 
-	/** JavaFX設定プロセスの終了を監視し、メインウィンドウの操作を再開します。 */
+	/**
+	 * 子プロセスの終了を別スレッドで待ち、設定操作を再び有効にします。
+	 * 設定値の反映はファイル監視が担当するため、ここでは再読込を行いません。
+	 *
+	 * @param process 起動済みのJavaFX設定プロセス
+	 */
 	private void watchSettingsProcess(Process process) {
 		Thread watcher = new Thread(() -> {
 			try {
@@ -188,15 +220,21 @@ public final class InstantSnapApp {
 		watcher.start();
 	}
 
-	/** 設定ファイルの変更通知をSwingイベントスレッドへ渡します。 */
-	private void requestSettingsReload() {
+	/**
+	 * ファイル監視スレッドからの変更通知を受け取り、EDTへ再読込を予約します。
+	 * 終了処理中の通知は無視します。
+	 */
+	@Override
+	public void onSettingsFileChanged() {
 		if (shuttingDown) {
 			return;
 		}
 		SwingUtilities.invokeLater(() -> reloadSettings());
 	}
 
-	/** 設定ファイルを再読込し、常駐処理とメインウィンドウへ反映します。 */
+	/**
+	 * 設定ファイルを再読込し、常駐処理とメインウィンドウへ反映します。
+	 */
 	private void reloadSettings() {
 		if (shuttingDown) {
 			return;
@@ -206,8 +244,13 @@ public final class InstantSnapApp {
 		}
 	}
 
-	/** ミニウィンドウで選択された言語を保存し、表示へ即時反映します。 */
-	private void changeLanguage(LanguageType languageType) {
+	/**
+	 * EDT上で選択言語を保存し、表示へ即時反映します。
+	 * 保存に失敗した場合は音で知らせ、Coordinatorが戻した元の設定で表示を更新します。
+	 *
+	 * @param languageType ミニウィンドウで選択された言語
+	 */
+	public void changeLanguage(LanguageType languageType) {
 		if (shuttingDown) {
 			return;
 		}
@@ -217,8 +260,31 @@ public final class InstantSnapApp {
 		mainWindowPresenter.refresh(coordinator.getConfigBean());
 	}
 
-	/** Coordinatorやウィンドウからの終了要求をSwingイベントスレッドへ集約します。 */
-	private void requestExit() {
+	/**
+	 * 撮影要求をCoordinatorへ委譲します。
+	 */
+	@Override
+	public void requestSnap() {
+		if (!shuttingDown) {
+			coordinator.requestSnap();
+		}
+	}
+
+	/**
+	 * 範囲選択要求をCoordinatorへ委譲します。
+	 */
+	@Override
+	public void requestRangeSelection() {
+		if (!shuttingDown) {
+			coordinator.requestRangeSelection();
+		}
+	}
+
+	/**
+	 * 終了要求をSwingイベントスレッドへ集約し、終了確認画面を表示します。
+	 */
+	@Override
+	public void requestExit() {
 		if (!SwingUtilities.isEventDispatchThread()) {
 			SwingUtilities.invokeLater(() -> requestExit());
 			return;
@@ -232,8 +298,12 @@ public final class InstantSnapApp {
 		}
 	}
 
-	/** 常駐リソース、子プロセス、二重起動防止ロックを順番に解放します。 */
+	/**
+	 * 終了確認で承諾された後、EDT上で常駐プロセスを終了します。
+	 * 子プロセス、監視、撮影用リソース、二重起動ロックを順に解放します。
+	 */
 	private void shutdown() {
+		// 新しい操作や設定の再読込を受け付けない状態にしてから解放する。
 		shuttingDown = true;
 		mainWindowPresenter.setActionsEnabled(false);
 
@@ -244,12 +314,30 @@ public final class InstantSnapApp {
 
 		mainWindowPresenter.close();
 		settingsFileWatcher.close();
+		stopTriggerKeyWatcher(triggerKeyWatcher);
 		coordinator.exit();
 		instanceManager.close();
 		System.exit(0);
 	}
 
-	/** OS標準のSwingデザインを適用します。 */
+	/**
+	 * トリガーキー監視を停止し、停止失敗時も残りの終了処理を継続します。
+	 *
+	 * @param targetWatcher 停止するキー監視。開始前または停止済みの場合は何もしない
+	 */
+	private static void stopTriggerKeyWatcher(TriggerKeyWatcher targetWatcher) {
+		try {
+			if (targetWatcher.isKeyListenerRunning()) {
+				targetWatcher.deactivate();
+			}
+		} catch (ServiceException e) {
+			log.error("トリガーキー監視の終了に失敗しました", e);
+		}
+	}
+
+	/**
+	 * OS標準のSwingデザインを適用します。
+	 */
 	private static void applySystemLookAndFeel() {
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -258,7 +346,11 @@ public final class InstantSnapApp {
 		}
 	}
 
-	/** 二重起動時の案内を表示します。 */
+	/**
+	 * 二重起動時の案内を表示します。
+	 *
+	 * @param startupConverter 起動前に取得した言語で案内を表示する変換クラス
+	 */
 	private static void showSingleInstanceMessage(MessageKeyConverter startupConverter) {
 		Toolkit.getDefaultToolkit().beep();
 		JOptionPane.showMessageDialog(
@@ -268,7 +360,11 @@ public final class InstantSnapApp {
 				JOptionPane.INFORMATION_MESSAGE);
 	}
 
-	/** 起動処理に失敗した場合の案内を表示します。 */
+	/**
+	 * 起動処理に失敗した場合の案内を表示します。
+	 *
+	 * @param startupConverter 起動前に取得した言語で案内を表示する変換クラス
+	 */
 	private static void showStartupError(MessageKeyConverter startupConverter) {
 		Toolkit.getDefaultToolkit().beep();
 		JOptionPane.showMessageDialog(

@@ -10,6 +10,8 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
@@ -25,6 +27,8 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 
+import com.github.rebi0395.instantsnap.view.swing.presenter.SnapNotificationPresenter;
+
 /**
  * 撮影結果通知画面のSwingパネルクラスです。
  * <p>
@@ -32,7 +36,7 @@ import javax.swing.border.EmptyBorder;
  * 文言とアクションの設定、背景描画をこのクラスにまとめています。
  * </p>
  */
-public final class SnapNotificationPanel extends JPanel {
+public final class SnapNotificationPanel extends JPanel implements ActionListener {
 
 	/** シリアルバージョンUID */
 	private static final long serialVersionUID = 1L;
@@ -67,10 +71,17 @@ public final class SnapNotificationPanel extends JPanel {
 	/** 通知を閉じるボタン */
 	private final JButton buttonClose;
 
+	/** 通知上の操作を受け取るプレゼンター */
+	private final SnapNotificationPresenter presenter;
+
 	/**
 	 * 通知に必要なSwing部品を生成して配置します。
+	 * EDT上で生成し、文言はsetupで設定します。
+	 *
+	 * @param presenter 保存先操作と通知を閉じる処理の呼び出し先
 	 */
-	public SnapNotificationPanel() {
+	public SnapNotificationPanel(SnapNotificationPresenter presenter) {
+		this.presenter = presenter;
 		setOpaque(false);
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		setBorder(new EmptyBorder(18, 30, 18, 24));
@@ -80,6 +91,10 @@ public final class SnapNotificationPanel extends JPanel {
 		textAreaMessage = createMessageArea();
 		buttonOpenFolder = createOpenFolderButton();
 		panelOpenFolder = createOpenFolderPanel();
+		// 文言の再設定でリスナーが増えないよう、イベント登録は生成時に一度だけ行う。
+		buttonOpenFolder.addActionListener(this);
+		buttonClose.addActionListener(this);
+		registerOpenDirectoryRequest();
 
 		add(createHeaderPanel());
 		add(Box.createVerticalStrut(7));
@@ -90,43 +105,55 @@ public final class SnapNotificationPanel extends JPanel {
 	}
 
 	/**
-	 * 通知の文言やアクションを設定します。
+	 * 通知の文言と保存先を開けるかどうかを設定します。
 	 *
 	 * @param messageList 表示するメッセージリスト
 	 * @param openMessage クリック時にフォルダを開けることを通知するメッセージ
-	 * @param openAction クリック時にフォルダを開く動作。画像保存でない場合はnull
-	 * @param closeAction 通知を閉じる動作
+	 * @param openDirectoryAvailable 保存先を開ける場合true
 	 */
 	public void setup(
 			List<String> messageList,
 			String openMessage,
-			Runnable openAction,
-			Runnable closeAction) {
+			boolean openDirectoryAvailable) {
 
 		// メッセージを設定する。
 		labelTitle.setText("InstantSnap");
 		textAreaMessage.setText(String.join(System.lineSeparator(), messageList));
 
 		// 画像保存があり、フォルダを開く処理を搭載する場合だけボタンを表示する。
-		if (openAction != null) {
+		if (openDirectoryAvailable) {
 			buttonOpenFolder.setText(openMessage);
 			panelOpenFolder.setVisible(true);
-			buttonOpenFolder.addActionListener(event -> {
-				openAction.run();
-			});
-			registerOpenAction(openAction);
+			textAreaMessage.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		} else {
 			panelOpenFolder.setVisible(false);
 			buttonOpenFolder.setText(null);
+			textAreaMessage.setCursor(Cursor.getDefaultCursor());
 		}
-
-		// 閉じるボタン押下時に通知を閉じるアクションを設定する。
-		buttonClose.addActionListener(event -> {
-			closeAction.run();
-		});
 	}
 
-	/** タイトルと閉じるボタンを配置したヘッダーを作成します。 */
+	/**
+	 * 通知上のボタン操作に対応するPresenterのメソッドを呼び出します。
+	 *
+	 * @param event 保存先を開くボタン、または閉じるボタンの操作イベント
+	 */
+	@Override
+	public void actionPerformed(ActionEvent event) {
+		Object eventSource = event.getSource();
+		if (eventSource == buttonOpenFolder) {
+			presenter.openSaveDirectory();
+			return;
+		}
+		if (eventSource == buttonClose) {
+			presenter.closeNotification();
+		}
+	}
+
+	/**
+	 * タイトルと閉じるボタンを配置したヘッダーを作成します。
+	 *
+	 * @return 左にタイトル、右に閉じるボタンを配置した透明背景のパネル
+	 */
 	private JPanel createHeaderPanel() {
 		JPanel headerPanel = new JPanel(new BorderLayout(8, 0));
 		headerPanel.setOpaque(false);
@@ -136,7 +163,11 @@ public final class SnapNotificationPanel extends JPanel {
 		return headerPanel;
 	}
 
-	/** 通知タイトルを表示するラベルを作成します。 */
+	/**
+	 * 通知タイトルを表示するラベルを作成します。
+	 *
+	 * @return アクセント色と太字を設定したタイトルラベル
+	 */
 	private JLabel createTitleLabel() {
 		Font baseFont = UIManager.getFont("Label.font");
 		JLabel titleLabel = new JLabel();
@@ -145,7 +176,11 @@ public final class SnapNotificationPanel extends JPanel {
 		return titleLabel;
 	}
 
-	/** 通知を閉じるボタンを作成します。 */
+	/**
+	 * 通知を閉じるボタンを作成します。
+	 *
+	 * @return 枠と背景を描画しない閉じるボタン
+	 */
 	private JButton createCloseButton() {
 		Font baseFont = UIManager.getFont("Label.font");
 		JButton closeButton = new JButton("×");
@@ -161,7 +196,11 @@ public final class SnapNotificationPanel extends JPanel {
 		return closeButton;
 	}
 
-	/** 改行と折り返しに対応した通知本文を作成します。 */
+	/**
+	 * 改行と折り返しに対応した通知本文を作成します。
+	 *
+	 * @return 編集・フォーカス取得を無効にした通知本文の表示部品
+	 */
 	private JTextArea createMessageArea() {
 		Font baseFont = UIManager.getFont("Label.font");
 		JTextArea messageArea = new JTextArea();
@@ -177,7 +216,11 @@ public final class SnapNotificationPanel extends JPanel {
 		return messageArea;
 	}
 
-	/** 保存先を開くボタンを配置する行を作成します。 */
+	/**
+	 * 保存先を開くボタンを配置する行を作成します。
+	 *
+	 * @return 保存先を開くボタンを左寄せに配置した透明背景のパネル
+	 */
 	private JPanel createOpenFolderPanel() {
 		JPanel openFolderPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
 		openFolderPanel.setOpaque(false);
@@ -187,7 +230,11 @@ public final class SnapNotificationPanel extends JPanel {
 		return openFolderPanel;
 	}
 
-	/** 保存先を開く青いアクションボタンを作成します。 */
+	/**
+	 * 保存先を開く青いアクションボタンを作成します。
+	 *
+	 * @return 文言をsetupで設定する保存先ボタン
+	 */
 	private JButton createOpenFolderButton() {
 		Font baseFont = UIManager.getFont("Button.font");
 		JButton openFolderButton = new JButton();
@@ -203,18 +250,28 @@ public final class SnapNotificationPanel extends JPanel {
 		return openFolderButton;
 	}
 
-	/** 本文クリックでも保存先を開けるようにします。 */
-	private void registerOpenAction(Runnable openAction) {
-		textAreaMessage.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+	/**
+	 * 本文クリックでもPresenterへ保存先を開くよう要求します。
+	 */
+	private void registerOpenDirectoryRequest() {
 		textAreaMessage.addMouseListener(new MouseAdapter() {
+			/**
+			 * 本文クリックを保存先操作へ渡します。保存先の有無はPresenterが判定します。
+			 *
+			 * @param event 本文上で発生したクリックイベント
+			 */
 			@Override
 			public void mouseClicked(MouseEvent event) {
-				openAction.run();
+				presenter.openSaveDirectory();
 			}
 		});
 	}
 
-	/** 通知内容から算出した高さを維持し、横幅だけを固定します。 */
+	/**
+	 * 通知内容から算出した高さを維持し、横幅だけを固定します。
+	 *
+	 * @return 通知本文の折り返しを含めた推奨表示サイズ
+	 */
 	@Override
 	public Dimension getPreferredSize() {
 		Dimension preferredSize = super.getPreferredSize();
@@ -222,11 +279,16 @@ public final class SnapNotificationPanel extends JPanel {
 		return preferredSize;
 	}
 
-	/** 通知の背景、影、左側のアクセントラインを描画します。 */
+	/**
+	 * 通知の背景、影、左側のアクセントラインを描画します。
+	 *
+	 * @param graphics Swingから渡された描画コンテキスト
+	 */
 	@Override
 	protected void paintComponent(Graphics graphics) {
 		super.paintComponent(graphics);
 
+		// Swingから借りたGraphicsを直接変更せず、複製した描画コンテキストだけを解放する。
 		Graphics2D graphics2d = (Graphics2D) graphics.create();
 		try {
 			graphics2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);

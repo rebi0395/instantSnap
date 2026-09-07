@@ -32,7 +32,8 @@ import com.github.rebi0395.instantsnap.view.swing.panel.SnapNotificationPanel;
  * 撮影後に表示するSwing通知の表示制御を行うプレゼンターです。
  * <p>
  * 通知パネルの部品生成と描画は {@link SnapNotificationPanel} に委譲し、
- * このクラスでは表示データ、通知アクション、表示時間、アニメーションを管理します。
+ * このクラスでは表示データ、通知操作、表示時間、アニメーションを管理します。
+ * showは撮影スレッドから呼べます。通知ウィンドウとタイマーはEDT上で操作します。
  * </p>
  */
 public final class SnapNotificationPresenter {
@@ -73,25 +74,44 @@ public final class SnapNotificationPresenter {
 	/** ウィンドウ透明度が利用できる場合true */
 	private boolean opacitySupported = true;
 
+	/** 現在の通知から開く保存先パス */
+	private Path currentTargetPath;
+
+	/** 保存先フォルダを開くサービス */
+	private final FileOpenService fileOpenService;
+
+	/** 通知文言を現在の言語へ変換するクラス */
+	private final MessageKeyConverter converter;
+
 	/**
-	 * 通知を表示します。
+	 * 通知の表示と保存先操作に必要なクラスを受け取ります。
 	 *
-	 * @param result 撮影結果インスタンス
-	 * @param fileOpen ファイルを開く処理を持つインスタンス
-	 * @param converter メッセージキーをメッセージに変換するクラス
+	 * @param fileOpenService 保存先フォルダを開くサービス
+	 * @param converter 常駐側と共有するメッセージ変換クラス
 	 */
-	public void show(SnapResultBean result, FileOpenService fileOpen, MessageKeyConverter converter) {
+	public SnapNotificationPresenter(FileOpenService fileOpenService, MessageKeyConverter converter) {
+		this.fileOpenService = fileOpenService;
+		this.converter = converter;
+	}
+
+	/**
+	 * 撮影結果から表示データを作り、EDTへ通知表示を依頼します。
+	 * 連続撮影の場合、表示中の通知は最新の通知で置き換えます。
+	 *
+	 * @param result 撮影結果。nullまたは保存・コピー結果がない場合は表示しない
+	 */
+	public void show(SnapResultBean result) {
 		if (result == null || !result.hasResult()) {
 			// 通知の表示が不要な場合、早期リターン
 			return;
 		}
 
 		// 撮影スレッドのBeanをSwingスレッドへ持ち込まないよう、表示に必要な値だけコピーする。
-		NotificationRequest notificationRequest = createNotificationData(result, converter);
+		NotificationRequest notificationRequest = createNotificationData(result);
 
 		// Swingの専用スレッドに通知表示を依頼する。
 		SwingUtilities.invokeLater(() -> {
-			showNotification(notificationRequest, fileOpen);
+			showNotification(notificationRequest);
 		});
 	}
 
@@ -99,12 +119,9 @@ public final class SnapNotificationPresenter {
 	 * 撮影結果を元に、通知に必要な情報を通知情報レコードにまとめて返却します。
 	 *
 	 * @param result 撮影結果クラス
-	 * @param converter メッセージ取得クラス
-	 * @return 通知情報
+	 * @return 画像本体を保持しない、文言と保存先だけの通知情報
 	 */
-	private NotificationRequest createNotificationData(
-			SnapResultBean result,
-			MessageKeyConverter converter) {
+	private NotificationRequest createNotificationData(SnapResultBean result) {
 
 		// 通知に表示するメッセージリストを作成する。
 		List<String> noticeMessageList = new ArrayList<String>();
@@ -144,12 +161,11 @@ public final class SnapNotificationPresenter {
 	}
 
 	/**
-	 * 通知画面を作成し、画面右下に表示します。
+	 * EDT上で通知画面を作成し、ポインターがある画面の右下に表示します。
 	 *
 	 * @param notificationRequest 通知表示に必要な情報
-	 * @param fileOpen ファイルを開く処理を持つインスタンス
 	 */
-	private void showNotification(NotificationRequest notificationRequest, FileOpenService fileOpen) {
+	private void showNotification(NotificationRequest notificationRequest) {
 		// 連続撮影時に通知とタイマーが蓄積しないよう、前回分を先に破棄する。
 		disposeCurrentNotification();
 
@@ -166,16 +182,19 @@ public final class SnapNotificationPresenter {
 			log.debug("通知ウィンドウの透明背景を利用できません", e);
 		}
 
-		// 通知が持つアクションを作成する。
-		NotificationAction notificationAction = createNotificationAction(notificationRequest, fileOpen);
+		// 保存先を開ける通知の場合だけ、Presenterが操作に必要な値を保持する。
+		boolean openDirectoryAvailable = false;
+		if (notificationRequest.openDirectoryAvailable() && notificationRequest.targetPath() != null) {
+			currentTargetPath = notificationRequest.targetPath();
+			openDirectoryAvailable = true;
+		}
 
-		// 通知パネルを作成し、文言とアクションをまとめて設定する。
-		SnapNotificationPanel notificationPanel = new SnapNotificationPanel();
+		// 通知パネルを作成し、表示に必要な値を設定する。
+		SnapNotificationPanel notificationPanel = new SnapNotificationPanel(this);
 		notificationPanel.setup(
 				notificationRequest.messageList(),
 				notificationRequest.openMessage(),
-				notificationAction.openAction(),
-				notificationAction.closeAction());
+				openDirectoryAvailable);
 
 		window.setContentPane(notificationPanel); // 通知ウィンドウにパネルを設定する。
 		window.pack();
@@ -191,39 +210,42 @@ public final class SnapNotificationPresenter {
 		setWindowOpacity(window, 0.0f);
 		window.setVisible(true); // 表示後にフェードインを開始する。
 
-		showWithFadeIn(window, endX, startY, endY, notificationRequest.isTmpSaved());
+		showWithFadeIn(window, notificationRequest.isTmpSaved());
 	}
 
 	/**
-	 * 通知が持つアクションを作成し、通知アクションレコードにまとめて返却します。
-	 *
-	 * @param notificationRequest 通知情報
-	 * @param fileOpen ファイルを開く処理を持つインスタンス
-	 * @return 通知アクションを持つレコード
+	 * 通知パネルからEDT上で呼び出し、通知を閉じて保存先フォルダを開きます。
+	 * クリップボードだけの通知など、保存先を持たない場合は何もしません。
 	 */
-	private NotificationAction createNotificationAction(
-			NotificationRequest notificationRequest,
-			FileOpenService fileOpen) {
-
-		// 画像保存がある場合、通知クリック時に保存先を開く処理を設定する。
-		Runnable openAction = null;
-		if (notificationRequest.openActionAvailable() && notificationRequest.targetPath() != null) {
-			openAction = () -> {
-				hideWithFadeOut();
-				fileOpen.openDirectory(notificationRequest.targetPath());
-			};
+	public void openSaveDirectory() {
+		// 通知破棄で参照を消しても、今回開くパスはこの呼び出し内で保持する。
+		Path targetPath = currentTargetPath;
+		if (targetPath == null) {
+			return;
 		}
 
-		// 閉じる押下時の処理を設定する。
-		Runnable closeAction = () -> {
-			hideWithFadeOut();
-		};
-
-		return new NotificationAction(openAction, closeAction);
+		hideWithFadeOut();
+		fileOpenService.openDirectory(targetPath);
 	}
 
-	/** 通知を下から上へ移動しながらフェードイン表示します。 */
-	private void showWithFadeIn(JWindow window, int x, int startY, int endY, boolean temporarySaved) {
+	/**
+	 * 閉じるボタンから現在の通知を閉じます。
+	 */
+	public void closeNotification() {
+		hideWithFadeOut();
+	}
+
+	/**
+	 * 配置済みの通知を下から上へ移動しながらフェードイン表示します。
+	 *
+	 * @param window 開始位置に配置済みの通知ウィンドウ
+	 * @param temporarySaved 一時保存の通知として表示時間を延長する場合true
+	 */
+	private void showWithFadeIn(JWindow window, boolean temporarySaved) {
+		// 座標を重複して渡さず、表示開始時のウィンドウから一度だけ取得する。
+		int x = window.getX();
+		int startY = window.getY();
+		int endY = startY - NOTIFICATION_FADE_IN_DISTANCE;
 		long startNanos = System.nanoTime();
 		animationTimer = new Timer(ANIMATION_INTERVAL_MILLIS, event -> {
 			if (window != currentWindow) {
@@ -251,7 +273,11 @@ public final class SnapNotificationPresenter {
 		animationTimer.start();
 	}
 
-	/** 指定時間経過後に通知を閉じるタイマーを開始します。 */
+	/**
+	 * フェードイン完了後、指定時間で通知を閉じる1回限りのタイマーを開始します。
+	 *
+	 * @param delayMillis 通知を表示しておく時間（ミリ秒）
+	 */
 	private void startDismissTimer(int delayMillis) {
 		dismissTimer = new Timer(delayMillis, event -> {
 			hideWithFadeOut();
@@ -260,7 +286,9 @@ public final class SnapNotificationPresenter {
 		dismissTimer.start();
 	}
 
-	/** 現在の通知を下へ移動しながらフェードアウトします。 */
+	/**
+	 * 現在の通知を下へ移動しながらフェードアウトします。
+	 */
 	private void hideWithFadeOut() {
 		if (!SwingUtilities.isEventDispatchThread()) {
 			SwingUtilities.invokeLater(() -> {
@@ -303,18 +331,35 @@ public final class SnapNotificationPresenter {
 		animationTimer.start();
 	}
 
-	/** アニメーション開始からの進捗を0.0～1.0で返します。 */
+	/**
+	 * 単調増加する時計からアニメーションの進捗を算出します。
+	 *
+	 * @param startNanos 開始時にSystem.nanoTimeで取得した時刻（ナノ秒）
+	 * @return 0.0～1.0の進捗率。設定時間を過ぎた場合は1.0
+	 */
 	private double calculateProgress(long startNanos) {
 		double elapsedMillis = (System.nanoTime() - startNanos) / 1_000_000.0;
 		return Math.min(1.0, elapsedMillis / NOTIFICATION_ANIMATION_MILLIS);
 	}
 
-	/** 開始値と終了値の間を進捗率で補間します。 */
+	/**
+	 * 開始座標と終了座標の間を進捗率で補間します。
+	 *
+	 * @param start 開始座標
+	 * @param end 終了座標
+	 * @param progress 0.0～1.0の進捗率
+	 * @return 四捨五入した現在の座標
+	 */
 	private int interpolate(int start, int end, double progress) {
 		return (int) Math.round(start + ((end - start) * progress));
 	}
 
-	/** タスクバーなどを除いた、通知を配置可能な画面領域を取得します。 */
+	/**
+	 * ポインターがある画面からタスクバーなどを除いた領域を取得します。
+	 *
+	 * @param fallbackConfiguration ポインター位置を取得できない場合に使う画面情報
+	 * @return 画面全体の座標系で表した通知配置可能領域
+	 */
 	private Rectangle resolveUsableScreenBounds(GraphicsConfiguration fallbackConfiguration) {
 		GraphicsConfiguration configuration = fallbackConfiguration;
 		PointerInfo pointerInfo = MouseInfo.getPointerInfo();
@@ -331,7 +376,13 @@ public final class SnapNotificationPresenter {
 		return bounds;
 	}
 
-	/** 対応環境の場合だけウィンドウ透明度を変更します。 */
+	/**
+	 * 対応環境の場合だけウィンドウ透明度を変更します。
+	 * 非対応と判明した後は、以降の透明度操作を省略して表示を継続します。
+	 *
+	 * @param window 透明度を変更する通知ウィンドウ
+	 * @param opacity 0.0（透明）～1.0（不透明）。範囲外の値は上下限に補正
+	 */
 	private void setWindowOpacity(JWindow window, float opacity) {
 		if (!opacitySupported) {
 			return;
@@ -349,7 +400,12 @@ public final class SnapNotificationPresenter {
 		}
 	}
 
-	/** 透明度非対応環境では完全表示として扱います。 */
+	/**
+	 * フェードアウト開始時の透明度を取得します。
+	 *
+	 * @param window 透明度を取得する通知ウィンドウ
+	 * @return 現在の透明度。透明度非対応環境の場合は1.0
+	 */
 	private float readWindowOpacity(JWindow window) {
 		if (!opacitySupported) {
 			return 1.0f;
@@ -362,7 +418,9 @@ public final class SnapNotificationPresenter {
 		}
 	}
 
-	/** 現在表示している通知と関連タイマーを即時破棄します。 */
+	/**
+	 * 現在表示している通知と関連タイマーを即時破棄します。
+	 */
 	private void disposeCurrentNotification() {
 		stopTimer(animationTimer);
 		stopTimer(dismissTimer);
@@ -370,29 +428,41 @@ public final class SnapNotificationPresenter {
 		dismissTimer = null;
 
 		if (currentWindow != null) {
-			currentWindow.setVisible(false);
-			currentWindow.dispose();
-			currentWindow = null;
+			disposeWindow(currentWindow);
 		}
+		currentTargetPath = null;
 	}
 
-	/** 指定ウィンドウが現在の通知なら破棄します。 */
+	/**
+	 * 指定した通知ウィンドウを破棄します。
+	 * 現在表示中の通知の場合だけ、保存先を含めた保持情報も解除します。
+	 *
+	 * @param window 破棄する通知ウィンドウ
+	 */
 	private void disposeWindow(JWindow window) {
 		window.setVisible(false);
 		window.dispose();
 		if (window == currentWindow) {
 			currentWindow = null;
+			currentTargetPath = null;
 		}
 	}
 
-	/** nullでないSwingタイマーを停止します。 */
+	/**
+	 * Swingタイマーを停止します。呼び出し元が保持する参照は変更しません。
+	 *
+	 * @param timer 停止するタイマー。nullの場合は何もしない
+	 */
 	private void stopTimer(Timer timer) {
 		if (timer != null) {
 			timer.stop();
 		}
 	}
 
-	/** 現在表示している通知を破棄し、関連タイマーを停止します。 */
+	/**
+	 * 現在表示している通知と関連タイマーを、アニメーションなしで破棄します。
+	 * EDT以外から呼ばれた場合はEDTへ処理を予約し、完了を待たずに戻ります。
+	 */
 	public void close() {
 		if (SwingUtilities.isEventDispatchThread()) {
 			disposeCurrentNotification();
@@ -409,25 +479,14 @@ public final class SnapNotificationPresenter {
 	 * @param messageList 通知メッセージリスト
 	 * @param openMessage 保存先フォルダを開く表示文言
 	 * @param targetPath 保存先パス
-	 * @param openActionAvailable 通知クリックで保存先を開ける場合true
+	 * @param openDirectoryAvailable 通知クリックで保存先を開ける場合true
 	 * @param isTmpSaved 一時保存の場合true
 	 */
 	private record NotificationRequest(
 			List<String> messageList,
 			String openMessage,
 			Path targetPath,
-			boolean openActionAvailable,
+			boolean openDirectoryAvailable,
 			boolean isTmpSaved) {
-	}
-
-	/**
-	 * 通知に必要なアクションをまとめて持つレコードです。
-	 *
-	 * @param openAction 保存先フォルダを開くアクション。画像保存でない場合はnull
-	 * @param closeAction 通知を閉じるアクション
-	 */
-	private record NotificationAction(
-			Runnable openAction,
-			Runnable closeAction) {
 	}
 }
