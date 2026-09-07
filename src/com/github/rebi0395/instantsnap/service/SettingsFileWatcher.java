@@ -17,10 +17,26 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 設定ファイルの更新を監視し、常駐側へ変更を通知するクラスです。
- * JavaFX設定画面と常駐プロセスを直接依存させず、手動編集も同じ経路で検知します。
+ * 設定ファイルの作成・更新をOSの通知で待ち、変更を通知するクラスです。
+ * 常駐プロセスとJavaFX設定プロセスで、それぞれ監視インスタンスを所有します。
+ * <p>
+ * ファイルそのものではなく親ディレクトリを監視するため、一時ファイルからの
+ * 置き換え保存も検知します。削除だけでは通知せず、再作成された時点で通知します。
+ * 監視先ディレクトリが無効になった場合は終了し、自動再登録は行いません。
+ * </p>
  */
 public final class SettingsFileWatcher implements AutoCloseable {
+
+	/** 設定ファイルの変更を受け取るクラスが実装するインターフェースです。 */
+	public interface SettingsChangeListener {
+
+		/**
+		 * 設定ファイルの変更を監視スレッド上で通知します。
+		 * OSから同じ保存に複数の通知が届く場合があります。
+		 * 画面更新は受信側でSwingまたはJavaFXのUIスレッドへ引き継ぎます。
+		 */
+		void onSettingsFileChanged();
+	}
 
 	/** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(SettingsFileWatcher.class);
@@ -32,7 +48,7 @@ public final class SettingsFileWatcher implements AutoCloseable {
 	private final Path watchedFileName;
 
 	/** 設定ファイル更新時の通知先 */
-	private final Runnable updateHandler;
+	private final SettingsChangeListener changeListener;
 
 	/** ファイル監視を行うデーモンスレッド */
 	private final Thread watchThread;
@@ -42,17 +58,19 @@ public final class SettingsFileWatcher implements AutoCloseable {
 
 	/**
 	 * 指定された設定ファイルの監視を開始します。
+	 * 生成直後から通知するため、通知先は生成前に初期化を済ませておきます。
 	 *
 	 * @param settingsFile 監視対象の設定ファイル
-	 * @param updateHandler 設定ファイル更新時に実行する処理
+	 * @param changeListener 設定ファイルの変更通知を受け取るクラス
 	 * @throws IOException 監視サービスを開始できない場合
+	 * @throws IllegalArgumentException 設定ファイルまたは通知先がnullの場合
 	 */
-	public SettingsFileWatcher(Path settingsFile, Runnable updateHandler) throws IOException {
+	public SettingsFileWatcher(Path settingsFile, SettingsChangeListener changeListener) throws IOException {
 		if (settingsFile == null) {
 			throw new IllegalArgumentException("監視対象の設定ファイルはnullにできません");
 		}
-		if (updateHandler == null) {
-			throw new IllegalArgumentException("設定更新時の処理はnullにできません");
+		if (changeListener == null) {
+			throw new IllegalArgumentException("設定更新の通知先はnullにできません");
 		}
 
 		Path absoluteSettingsFile = settingsFile.toAbsolutePath().normalize();
@@ -62,8 +80,9 @@ public final class SettingsFileWatcher implements AutoCloseable {
 		}
 
 		this.watchedFileName = absoluteSettingsFile.getFileName();
-		this.updateHandler = updateHandler;
+		this.changeListener = changeListener;
 		this.watchService = FileSystems.getDefault().newWatchService();
+		// 置き換え保存ではファイル自体が変わるため、親ディレクトリを監視する。
 		watchDirectory.register(watchService, ENTRY_CREATE, ENTRY_MODIFY);
 
 		this.watchThread = new Thread(() -> watchLoop(), "instantsnap-settings-file-watcher");
@@ -71,7 +90,10 @@ public final class SettingsFileWatcher implements AutoCloseable {
 		this.watchThread.start();
 	}
 
-	/** OSから通知されたファイル更新を待ち、対象ファイルの場合だけ通知します。 */
+	/**
+	 * OSの変更通知を待ち、対象ファイルの変更がある場合だけ通知します。
+	 * takeで待機するため、一定間隔でファイルを読み直す処理は行いません。
+	 */
 	private void watchLoop() {
 		while (running.get()) {
 			WatchKey watchKey;
@@ -98,9 +120,10 @@ public final class SettingsFileWatcher implements AutoCloseable {
 				}
 			}
 
+			// 今回取り出した通知をまとめ、次回のイベントを受け取れる状態に戻す。
 			boolean watchKeyValid = watchKey.reset();
 			if (settingsChanged && running.get()) {
-				notifyUpdate();
+				notifySettingsChanged();
 			}
 			if (!watchKeyValid) {
 				log.warn("設定ファイルの監視先が無効になったため、監視を終了します");
@@ -109,16 +132,22 @@ public final class SettingsFileWatcher implements AutoCloseable {
 		}
 	}
 
-	/** 更新通知先の例外で監視スレッドが終了しないように呼び出します。 */
-	private void notifyUpdate() {
+	/**
+	 * 更新通知先の例外で監視スレッドが終了しないように呼び出します。
+	 */
+	private void notifySettingsChanged() {
 		try {
-			updateHandler.run();
+			changeListener.onSettingsFileChanged();
 		} catch (RuntimeException e) {
 			log.error("設定ファイル更新後の処理に失敗しました", e);
 		}
 	}
 
-	/** ファイル監視とデーモンスレッドを終了します。 */
+	/**
+	 * ファイル監視を終了し、待機中の監視スレッドを起こします。
+	 * 複数回呼ばれても終了処理は一度だけ実行します。
+	 * 既に通知先へ引き継いだ処理の完了は待ちません。
+	 */
 	@Override
 	public void close() {
 		if (!running.compareAndSet(true, false)) {
@@ -126,6 +155,7 @@ public final class SettingsFileWatcher implements AutoCloseable {
 		}
 
 		try {
+			// WatchServiceを閉じると、takeの待機が解除されて監視ループを抜ける。
 			watchService.close();
 		} catch (IOException e) {
 			log.warn("設定ファイル監視の終了に失敗しました", e);

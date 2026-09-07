@@ -8,14 +8,16 @@ package com.github.rebi0395.instantsnap.app;
  */
 public final class Main {
 
-	/** インスタンス化を禁止します。 */
+	/**
+	 * インスタンス化を禁止します。
+	 */
 	private Main() {
 	}
 
 	/**
 	 * アプリケーションを起動します。
 	 *
-	 * @param args コマンドライン引数
+	 * @param args コマンドライン引数（現在は使用しない）
 	 */
 	public static void main(String[] args) {
 		InstantSnapApp.launch();

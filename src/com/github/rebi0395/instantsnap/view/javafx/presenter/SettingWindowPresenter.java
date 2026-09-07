@@ -22,7 +22,8 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 /**
- * JavaFX設定画面の表示制御を行うクラス
+ * JavaFX設定画面の生成と再読込時の表示反映を管理するクラスです。
+ * 画面に関わるメソッドはJavaFXアプリケーションスレッド上で呼び出します。
  */
 public class SettingWindowPresenter {
 
@@ -34,6 +35,9 @@ public class SettingWindowPresenter {
 
 	/** 設定値の読込・保存を担当するクラス */
 	private final SettingsService settingsService;
+
+	/** 設定画面の入力部品と表示内容を管理するコントローラ */
+	private SettingWindowController settingController;
 
 	/** ウィンドウの最大の横幅 */
 	private static final double SCENE_MAX_WIDTH = 680;
@@ -59,17 +63,19 @@ public class SettingWindowPresenter {
 	}
 
 	/**
-	 * 設定画面を表示する
-	 * @throws IOException ルート読み込み失敗時
+	 * FXMLから設定画面を生成し、現在の設定とテーマを適用して表示します。
+	 *
+	 * @throws IOException FXMLの読込または画面の構築に失敗した場合
 	 */
 	public void show() throws IOException {
 		// コントローラを生成
-		SettingWindowController settingController = new SettingWindowController(settingsService);
+		SettingWindowController createdController = new SettingWindowController(settingsService);
 
 		// FXMLファイルローダーを作成する
 		FXMLLoader loader = new FXMLLoader(getClass().getResource(FXML_SETTING_WINDOW));
-		loader.setController(settingController); // FXMLローダーにコントローラをセットする
+		loader.setController(createdController); // FXMLローダーにコントローラをセットする
 		Parent settingRoot = loader.load();
+		this.settingController = createdController;
 
 		// シーンの設定 (ウィンドウのファイル、横幅、高さを設定)
 		Scene scene = createScene(settingRoot);
@@ -86,6 +92,19 @@ public class SettingWindowPresenter {
 		stage.setTitle("InstantSnap Settings");
 		stage.setScene(scene);
 		stage.show();
+	}
+
+	/**
+	 * 設定ファイルを再読込し、成功した場合に表示中の設定画面へ反映します。
+	 * 画面生成前は何もせず、読込に失敗した場合も入力部品の更新を行いません。
+	 */
+	public void reloadSettings() {
+		if (settingController == null) {
+			return;
+		}
+		if (settingsService.reload()) {
+			settingController.reloadSettings();
+		}
 	}
 
 	/**

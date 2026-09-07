@@ -24,8 +24,6 @@ import com.github.rebi0395.instantsnap.service.SnapSaveService;
 import com.github.rebi0395.instantsnap.service.SoundPlayer;
 import com.github.rebi0395.instantsnap.service.TakeSnapService;
 import com.github.rebi0395.instantsnap.service.TmpFolderService;
-import com.github.rebi0395.instantsnap.service.TriggerKeyWatcher;
-import com.github.rebi0395.instantsnap.service.TriggerKeyWatcher.KeyEventListener;
 import com.github.rebi0395.instantsnap.view.swing.dialog.RangeSelectionDialog;
 import com.github.rebi0395.instantsnap.view.swing.dialog.RangeSelectionDialog.SelectionListener;
 import com.github.rebi0395.instantsnap.view.swing.presenter.SnapNotificationPresenter;
@@ -33,7 +31,7 @@ import com.github.rebi0395.instantsnap.view.swing.presenter.SnapNotificationPres
 /**
  * 対応するサービスクラスに処理を振り分ける、司令塔クラス
  */
-public class InstantSnapCoordinator implements KeyEventListener, SelectionListener {
+public class InstantSnapCoordinator implements SelectionListener {
 
 	/** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(InstantSnapCoordinator.class);
@@ -49,9 +47,6 @@ public class InstantSnapCoordinator implements KeyEventListener, SelectionListen
 	private final TmpFolderService tmpFolder;
 	/** ファイル名生成、ディレクトリ解決を行うクラス */
 	private final FilePathService filePathService;
-	/** 撮影トリガーの管理クラス */
-	private final TriggerKeyWatcher triggerKeyWatcher;
-
 	/** 撮影範囲を解決するクラス */
 	private final SnapAreaResolver areaResolver;
 	/** 画像を保存するクラス */
@@ -82,10 +77,11 @@ public class InstantSnapCoordinator implements KeyEventListener, SelectionListen
 	private final Object configLock = new Object();
 	/** 終了処理の二重実行を防止するフラグ */
 	private final AtomicBoolean closed = new AtomicBoolean(false);
-	/** Pauseキーなどから要求されたアプリ終了処理の通知先 */
-	private volatile Runnable exitRequestHandler = () -> exit();
 
-	/** 常駐処理に必要なサービスとSwing通知を生成します。 */
+	/**
+	 * 常駐処理に必要な撮影サービスとSwing通知を生成し、設定を読み込みます。
+	 * メインウィンドウとキー監視の起動・終了はInstantSnapAppが管理します。
+	 */
 	public InstantSnapCoordinator() {
 		// インスタンスを生成
 		this.config = new ConfigBean();
@@ -100,11 +96,11 @@ public class InstantSnapCoordinator implements KeyEventListener, SelectionListen
 		// 依存性の注入があるクラス
 		this.converter = new MessageKeyConverter(config.getLanguageType());
 		this.saveService = new SnapSaveService(filePathService);
-		this.triggerKeyWatcher = new TriggerKeyWatcher(config, this);
 		this.rangeSelectionDialog = new RangeSelectionDialog(config, converter, this);
 		this.takeSnapService = new TakeSnapService(areaResolver, saveService, soundPlayer, mouseCursorService);
 
-		this.notificationPresenter = new SnapNotificationPresenter();
+		// 通知が繰り返し使うサービスは生成時に渡し、撮影時は結果だけを渡す。
+		this.notificationPresenter = new SnapNotificationPresenter(fileOpenService, converter);
 
 		init();
 	}
@@ -118,9 +114,8 @@ public class InstantSnapCoordinator implements KeyEventListener, SelectionListen
 			repository.read(config);
 			// 言語設定を初期化
 			converter.changeLanguage(config.getLanguageType());
-			// 一時ファイルを整理し、常駐プロセスのホットキー監視を開始する。
+			// 前回終了時に残った一時ファイルを整理する。
 			tmpFolder.cleanTmpDirectory();
-			triggerKeyWatcher.activate();
 
 		} catch (ServiceException e) {
 			// チェック済例外
@@ -132,9 +127,10 @@ public class InstantSnapCoordinator implements KeyEventListener, SelectionListen
 	}
 
 	/**
-	 * 設定プロセスが保存したプロパティを再読込し、常駐処理へ反映します。
+	 * 設定画面または直接編集で保存されたプロパティを再読込します。
+	 * 撮影との同時更新を避けるため、設定読込と言語反映を同じロック内で行います。
 	 *
-	 * @return 再読込に成功した場合true
+	 * @return 再読込に成功した場合true。終了処理中または読込に失敗した場合false
 	 */
 	public boolean reloadConfig() {
 		if (closed.get()) {
@@ -157,8 +153,8 @@ public class InstantSnapCoordinator implements KeyEventListener, SelectionListen
 	/**
 	 * ミニウィンドウで選択された言語を保存し、常駐側へ即時反映します。
 	 *
-	 * @param languageType 新しい言語設定
-	 * @return 保存と反映に成功した場合true
+	 * @param languageType 新しい言語設定。nullの場合は更新しない
+	 * @return 保存と反映に成功した場合、または変更が不要な場合true
 	 */
 	public boolean updateLanguage(LanguageType languageType) {
 		if (languageType == null || closed.get()) {
@@ -179,6 +175,7 @@ public class InstantSnapCoordinator implements KeyEventListener, SelectionListen
 				return true;
 			} catch (ServiceException e) {
 				config.setLanguageType(previousLanguage);
+				// 保存できなかった言語を画面に残さないよう、常駐側の表示言語も戻す。
 				converter.changeLanguage(previousLanguage);
 				log.error("言語設定の更新に失敗しました", e);
 				return false;
@@ -187,31 +184,24 @@ public class InstantSnapCoordinator implements KeyEventListener, SelectionListen
 	}
 
 	/**
-	 * アプリを終了する
+	 * このCoordinatorが所有する撮影・通知関連のリソースを解放します。
+	 * キー監視の停止とプロセスの終了はInstantSnapAppが担当します。
+	 * 複数回呼ばれても解放処理は一度だけ実行します。
 	 */
 	public void exit() {
 		if (!closed.compareAndSet(false, true)) {
 			return;
 		}
-		try {
-			if (triggerKeyWatcher.isKeyListenerRunning()) {
-				triggerKeyWatcher.deactivate(); // キー監視の停止
-			}
-		} catch (ServiceException e) {
-			log.error("Instant Snapの終了処理に失敗しました", e);
-		} finally {
-			rangeSelectionDialog.close(); // Swingで表示している範囲選択画面を破棄
-			notificationPresenter.close(); // 表示中の通知とタイマーを破棄
-			executor.shutdown(); // 撮影処理の終了
-			soundPlayer.close(); // 音声リソースの開放
-			tmpFolder.cleanTmpDirectory(); // 一時保存ファイルの削除
-		}
+		rangeSelectionDialog.close(); // Swingで表示している範囲選択画面を破棄
+		notificationPresenter.close(); // 表示中の通知とタイマーを破棄
+		executor.shutdown(); // 撮影処理の終了
+		soundPlayer.close(); // 音声リソースの開放
+		tmpFolder.cleanTmpDirectory(); // 一時保存ファイルの削除
 	}
 
 	/**
 	 * 撮影トリガーが押されたとき呼ばれる。撮影処理を呼び出す
 	 */
-	@Override
 	public void requestSnap() {
 		if (rangeSelectionModeActive && rangeSelection == null) {
 			// 範囲選択画面が表示中、かつ範囲が未確定
@@ -254,7 +244,6 @@ public class InstantSnapCoordinator implements KeyEventListener, SelectionListen
 	/**
 	 * 範囲トリガーが押されたとき呼ばれる。撮影範囲選択モードの無効・有効を切り替える
 	 */
-	@Override
 	public void requestRangeSelection() {
 		GraphicsDevice screenDevice = areaResolver.getGraphicsDeviceAtPointer();
 		rangeSelectionDialog.switchRangeSelectionMode(screenDevice);
@@ -288,14 +277,6 @@ public class InstantSnapCoordinator implements KeyEventListener, SelectionListen
 	}
 
 	/**
-	 * アプリの終了キーが押されたとき呼ばれる。アプリを終了する
-	 */
-	@Override
-	public void requestExit() {
-		exitRequestHandler.run();
-	}
-
-	/**
 	 * 撮影後処理を実施する
 	 *
 	 * @param afterSnapData 撮影後処理の判定で使うrecord
@@ -310,10 +291,7 @@ public class InstantSnapCoordinator implements KeyEventListener, SelectionListen
 
 			// 通知表示が有効な場合
 			if (afterSnapData.showNotification()) {
-				notificationPresenter.show(
-						afterSnapData.result(), // 撮影結果
-						fileOpenService, // ファイルを開くインスタンス
-						converter); // メッセージ変換インスタンス
+				notificationPresenter.show(afterSnapData.result());
 			}
 
 			// 撮影後アクションを実行
@@ -343,24 +321,11 @@ public class InstantSnapCoordinator implements KeyEventListener, SelectionListen
 	}
 
 	/**
-	 * ホットキーなどからの終了要求を処理する通知先を登録します。
-	 *
-	 * @param handler 終了確認画面を含む終了要求処理
-	 */
-	public void setExitRequestHandler(Runnable handler) {
-		if (handler == null) {
-			this.exitRequestHandler = () -> exit();
-		} else {
-			this.exitRequestHandler = handler;
-		}
-	}
-
-	/**
 	 * 撮影後の処理で使う変数をひとまとめにしたレコードクラス
 	 *
 	 * @param result 撮影結果
 	 * @param showNotification 通知表示の有無
-	 * @param soundNotificationEnabled 撮影音の有無
+	 * @param soundNotificationEnabled 通知音の有無（撮影音とは別の設定）
 	 * @param afterSnapActionType 撮影後動作
 	 */
 	private record AfterSnapData(
