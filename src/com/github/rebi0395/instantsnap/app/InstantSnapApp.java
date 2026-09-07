@@ -3,6 +3,7 @@ package com.github.rebi0395.instantsnap.app;
 import static com.github.rebi0395.instantsnap.common.AppConstant.PROPERTIES_PATH;
 
 import java.awt.Toolkit;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -38,6 +39,9 @@ public final class InstantSnapApp implements KeyEventListener, SettingsChangeLis
 	/** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(InstantSnapApp.class);
 
+	/** 同じexeを設定専用の子プロセスとして起動するための引数 */
+	private static final String SETTINGS_ARGUMENT = "--settings";
+
 	/** 二重起動防止用ロックの管理クラス */
 	private final SingleInstanceManager instanceManager;
 
@@ -62,8 +66,16 @@ public final class InstantSnapApp implements KeyEventListener, SettingsChangeLis
 	/**
 	 * 二重起動ロックを取得し、EDT上で常駐処理とメインウィンドウを起動します。
 	 * ロックを取得できない場合は案内を表示し、起動を中止します。
+	 * 設定専用の起動では常駐側のロックや撮影サービスを生成しません。
+	 *
+	 * @param args 設定専用の場合は--settings、それ以外は常駐アプリの起動引数
 	 */
-	public static void launch() {
+	public static void launch(String[] args) {
+		if (args.length == 1 && SETTINGS_ARGUMENT.equals(args[0])) {
+			SettingsLauncher.main(new String[0]);
+			return;
+		}
+
 		LanguageType language = PropertiesRepository.readLanguageOnly();
 		MessageKeyConverter startupConverter = new MessageKeyConverter(language);
 		SingleInstanceManager instanceManager = new SingleInstanceManager();
@@ -159,9 +171,11 @@ public final class InstantSnapApp implements KeyEventListener, SettingsChangeLis
 			ProcessBuilder processBuilder = new ProcessBuilder(createSettingsCommand());
 			// 設定ファイルを常駐側と同じ場所から読み書きするため、作業ディレクトリを引き継ぐ。
 			processBuilder.directory(Path.of("").toAbsolutePath().toFile());
-			// 子プロセスの出力は更新通知に使用しないため、バッファへ蓄積させず破棄する。
-			processBuilder.redirectOutput(ProcessBuilder.Redirect.DISCARD);
-			processBuilder.redirectError(ProcessBuilder.Redirect.DISCARD);
+			// 起動失敗の詳細を残す。パイプは使わず、起動のたびにログを上書きして肥大化を防ぐ。
+			Path processLog = Path.of("logs", "settings-process.log").toAbsolutePath();
+			Files.createDirectories(processLog.getParent());
+			processBuilder.redirectErrorStream(true);
+			processBuilder.redirectOutput(processLog.toFile());
 			settingsProcess = processBuilder.start();
 			watchSettingsProcess(settingsProcess);
 		} catch (IOException e) {
@@ -174,11 +188,22 @@ public final class InstantSnapApp implements KeyEventListener, SettingsChangeLis
 
 	/**
 	 * 常駐側と同じJavaランタイムとクラスパスで設定画面を起動するコマンドを作成します。
+	 * exe版では同じランチャーを再実行するため、同梱ランタイムのjavaw.exeは不要です。
+	 * Eclipseなどからの起動時のみ、Java実行ファイルを使用します。
 	 *
 	 * @return 実行ファイルと引数を要素ごとに分けたProcessBuilder用の配列
 	 * @throws IOException 使用中のJavaランタイム内に実行ファイルが存在しない場合
 	 */
 	private String[] createSettingsCommand() throws IOException {
+		String launcherPath = System.getProperty("jpackage.app-path");
+		if (launcherPath != null && !launcherPath.isBlank()) {
+			Path launcher = Path.of(launcherPath);
+			if (!Files.isRegularFile(launcher)) {
+				throw new IOException("アプリ実行ファイルが見つかりません: " + launcher);
+			}
+			return new String[] { launcher.toString(), SETTINGS_ARGUMENT };
+		}
+
 		String executableName = "java";
 		if (OsUtil.isWindows()) {
 			executableName = "javaw.exe";
@@ -191,9 +216,33 @@ public final class InstantSnapApp implements KeyEventListener, SettingsChangeLis
 		return new String[] {
 				javaExecutable.toString(),
 				"-cp",
-				System.getProperty("java.class.path"),
+				createDevelopmentClassPath(),
 				SettingsLauncher.class.getName()
 		};
+	}
+
+	/**
+	 * Eclipseから設定画面を起動するため、親JVMのクラスパスとモジュールパスを結合します。
+	 * EclipseはJavaFX依存関係をモジュールパスへ配置する場合があるため、子プロセスでは
+	 * 両方をクラスパスとして渡し、JavaFXを含む全依存関係を読み込めるようにします。
+	 *
+	 * @return 子プロセスへ渡すクラスパス
+	 * @throws IOException 親JVMからクラスパスとモジュールパスのどちらも取得できない場合
+	 */
+	private static String createDevelopmentClassPath() throws IOException {
+		String classPath = System.getProperty("java.class.path", "");
+		String modulePath = System.getProperty("jdk.module.path", "");
+
+		if (classPath.isBlank() && modulePath.isBlank()) {
+			throw new IOException("設定画面の起動に必要なクラスパスを取得できません");
+		}
+		if (classPath.isBlank()) {
+			return modulePath;
+		}
+		if (modulePath.isBlank()) {
+			return classPath;
+		}
+		return classPath + File.pathSeparator + modulePath;
 	}
 
 	/**
@@ -205,7 +254,15 @@ public final class InstantSnapApp implements KeyEventListener, SettingsChangeLis
 	private void watchSettingsProcess(Process process) {
 		Thread watcher = new Thread(() -> {
 			try {
-				process.waitFor();
+				int exitCode = process.waitFor();
+				if (exitCode != 0 && !shuttingDown) {
+					log.error("設定プロセスが異常終了しました。終了コード: {}。logs/settings-process.logを確認してください", exitCode);
+					SwingUtilities.invokeLater(() -> {
+						if (!shuttingDown) {
+							mainWindowPresenter.showSettingsStartError(coordinator.getConfigBean().getLanguageType());
+						}
+					});
+				}
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
 				log.warn("設定プロセスの終了待機が中断されました", e);
@@ -285,6 +342,7 @@ public final class InstantSnapApp implements KeyEventListener, SettingsChangeLis
 	 */
 	@Override
 	public void requestExit() {
+		Toolkit.getDefaultToolkit().beep();
 		if (!SwingUtilities.isEventDispatchThread()) {
 			SwingUtilities.invokeLater(() -> requestExit());
 			return;
