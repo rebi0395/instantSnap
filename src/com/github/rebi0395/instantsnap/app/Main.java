@@ -17,9 +17,9 @@ public final class Main {
 	/**
 	 * アプリケーションを起動します。
 	 *
-	 * @param args コマンドライン引数（現在は使用しない）
+	 * @param args 起動引数。設定画面用の引数の解釈もAppへ委譲する
 	 */
 	public static void main(String[] args) {
-		InstantSnapApp.launch();
+		InstantSnapApp.launch(args);
 	}
 }

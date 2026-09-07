@@ -62,8 +62,26 @@ public final class SnapNotificationPresenter {
 	/** アニメーションの更新間隔 */
 	private static final int ANIMATION_INTERVAL_MILLIS = 16;
 
-	/** 現在表示している通知ウィンドウ */
-	private JWindow currentWindow;
+	/** 撮影スレッドとEDTの間で最新通知を受け渡すためのロック */
+	private final Object notificationRequestLock = new Object();
+
+	/** アプリ終了まで再利用する通知ウィンドウ */
+	private JWindow notificationWindow;
+
+	/** アプリ終了まで再利用する通知パネル */
+	private SnapNotificationPanel notificationPanel;
+
+	/** EDTでまだ表示していない最新の通知情報 */
+	private NotificationRequest pendingNotificationRequest;
+
+	/** 最新通知を表示する処理がEDTへ登録済みの場合true */
+	private boolean notificationUpdateScheduled;
+
+	/** 古いタイマーイベントが新しい通知を変更しないようにする世代番号 */
+	private long notificationGeneration;
+
+	/** 終了後に新しい通知を受け付けないためのフラグ */
+	private volatile boolean closed;
 
 	/** 表示・非表示アニメーション用タイマー */
 	private Timer animationTimer;
@@ -109,10 +127,47 @@ public final class SnapNotificationPresenter {
 		// 撮影スレッドのBeanをSwingスレッドへ持ち込まないよう、表示に必要な値だけコピーする。
 		NotificationRequest notificationRequest = createNotificationData(result);
 
-		// Swingの専用スレッドに通知表示を依頼する。
-		SwingUtilities.invokeLater(() -> {
+		boolean scheduleNotificationUpdate = false;
+		synchronized (notificationRequestLock) {
+			if (closed) {
+				return;
+			}
+
+			// EDTが混雑していても通知要求を蓄積せず、未表示分を最新の1件で置き換える。
+			pendingNotificationRequest = notificationRequest;
+			if (!notificationUpdateScheduled) {
+				notificationUpdateScheduled = true;
+				scheduleNotificationUpdate = true;
+			}
+		}
+
+		if (scheduleNotificationUpdate) {
+			SwingUtilities.invokeLater(() -> {
+				showLatestNotification();
+			});
+		}
+	}
+
+	/**
+	 * EDTに登録された複数の通知要求を最新の1件へまとめて表示します。
+	 * 表示中に次の撮影が完了した場合は、その1件だけを改めてEDTへ登録します。
+	 */
+	private void showLatestNotification() {
+		NotificationRequest notificationRequest;
+		synchronized (notificationRequestLock) {
+			if (closed) {
+				pendingNotificationRequest = null;
+				notificationUpdateScheduled = false;
+				return;
+			}
+			notificationRequest = pendingNotificationRequest;
+			pendingNotificationRequest = null;
+			notificationUpdateScheduled = false;
+		}
+
+		if (notificationRequest != null) {
 			showNotification(notificationRequest);
-		});
+		}
 	}
 
 	/**
@@ -161,42 +216,35 @@ public final class SnapNotificationPresenter {
 	}
 
 	/**
-	 * EDT上で通知画面を作成し、ポインターがある画面の右下に表示します。
+	 * EDT上で再利用中の通知内容を更新し、ポインターがある画面の右下に表示します。
 	 *
 	 * @param notificationRequest 通知表示に必要な情報
 	 */
 	private void showNotification(NotificationRequest notificationRequest) {
-		// 連続撮影時に通知とタイマーが蓄積しないよう、前回分を先に破棄する。
-		disposeCurrentNotification();
-
-		// 通知を表示するウィンドウを作成する。
-		JWindow window = new JWindow();
-		window.setName("InstantSnapNotification");
-		window.setType(Type.POPUP);
-		window.setAlwaysOnTop(true);
-		window.setFocusableWindowState(false);
-		try {
-			window.setBackground(new Color(0, 0, 0, 0));
-		} catch (UnsupportedOperationException e) {
-			// 透明背景が使えない環境でも、通常の白背景で通知表示を継続する。
-			log.debug("通知ウィンドウの透明背景を利用できません", e);
+		if (closed) {
+			return;
 		}
 
+		// 前回のアニメーションを止め、同じウィンドウとパネルへ最新内容を設定する。
+		stopNotificationTimers();
+		notificationGeneration++;
+		long generation = notificationGeneration;
+		JWindow window = getOrCreateNotificationWindow();
+
 		// 保存先を開ける通知の場合だけ、Presenterが操作に必要な値を保持する。
+		currentTargetPath = null;
 		boolean openDirectoryAvailable = false;
 		if (notificationRequest.openDirectoryAvailable() && notificationRequest.targetPath() != null) {
 			currentTargetPath = notificationRequest.targetPath();
 			openDirectoryAvailable = true;
 		}
 
-		// 通知パネルを作成し、表示に必要な値を設定する。
-		SnapNotificationPanel notificationPanel = new SnapNotificationPanel(this);
+		// 再利用する通知パネルへ表示に必要な値を設定する。
 		notificationPanel.setup(
 				notificationRequest.messageList(),
 				notificationRequest.openMessage(),
 				openDirectoryAvailable);
 
-		window.setContentPane(notificationPanel); // 通知ウィンドウにパネルを設定する。
 		window.pack();
 
 		// タスクバーを除いた表示可能領域を取得し、通知の右下座標を算出する。
@@ -205,12 +253,39 @@ public final class SnapNotificationPresenter {
 		int endY = usableBounds.y + usableBounds.height - window.getHeight() - NOTIFICATION_MARGIN;
 		int startY = endY + NOTIFICATION_FADE_IN_DISTANCE;
 
-		currentWindow = window;
 		window.setLocation(endX, startY);
 		setWindowOpacity(window, 0.0f);
 		window.setVisible(true); // 表示後にフェードインを開始する。
 
-		showWithFadeIn(window, notificationRequest.isTmpSaved());
+		showWithFadeIn(window, notificationRequest.isTmpSaved(), generation);
+	}
+
+	/**
+	 * 通知ウィンドウとパネルを初回だけ生成し、以降の撮影では同じインスタンスを返します。
+	 *
+	 * @return 表示内容を差し替えて再利用する通知ウィンドウ
+	 */
+	private JWindow getOrCreateNotificationWindow() {
+		if (notificationWindow != null) {
+			return notificationWindow;
+		}
+
+		JWindow createdWindow = new JWindow();
+		createdWindow.setName("InstantSnapNotification");
+		createdWindow.setType(Type.POPUP);
+		createdWindow.setAlwaysOnTop(true);
+		createdWindow.setFocusableWindowState(false);
+		try {
+			createdWindow.setBackground(new Color(0, 0, 0, 0));
+		} catch (UnsupportedOperationException e) {
+			// 透明背景が使えない環境でも、通常の白背景で通知表示を継続する。
+			log.debug("通知ウィンドウの透明背景を利用できません", e);
+		}
+
+		notificationPanel = new SnapNotificationPanel(this);
+		createdWindow.setContentPane(notificationPanel);
+		notificationWindow = createdWindow;
+		return createdWindow;
 	}
 
 	/**
@@ -240,16 +315,18 @@ public final class SnapNotificationPresenter {
 	 *
 	 * @param window 開始位置に配置済みの通知ウィンドウ
 	 * @param temporarySaved 一時保存の通知として表示時間を延長する場合true
+	 * @param generation 表示対象となる通知の世代番号
 	 */
-	private void showWithFadeIn(JWindow window, boolean temporarySaved) {
+	private void showWithFadeIn(JWindow window, boolean temporarySaved, long generation) {
 		// 座標を重複して渡さず、表示開始時のウィンドウから一度だけ取得する。
 		int x = window.getX();
 		int startY = window.getY();
 		int endY = startY - NOTIFICATION_FADE_IN_DISTANCE;
 		long startNanos = System.nanoTime();
 		animationTimer = new Timer(ANIMATION_INTERVAL_MILLIS, event -> {
-			if (window != currentWindow) {
-				((Timer) event.getSource()).stop();
+			Timer sourceTimer = (Timer) event.getSource();
+			if (sourceTimer != animationTimer || generation != notificationGeneration || closed) {
+				sourceTimer.stop();
 				return;
 			}
 
@@ -259,7 +336,7 @@ public final class SnapNotificationPresenter {
 			setWindowOpacity(window, (float) progress);
 
 			if (progress >= 1.0) {
-				((Timer) event.getSource()).stop();
+				sourceTimer.stop();
 				animationTimer = null;
 				int displayMillis = NOTIFICATION_DISPLAY_MILLIS;
 				if (temporarySaved) {
@@ -267,7 +344,7 @@ public final class SnapNotificationPresenter {
 					displayMillis = NOTIFICATION_DISPLAY_LONG_MILLIS;
 				}
 				// 指定時間経過後に自動で閉じるタイマーを開始する。
-				startDismissTimer(displayMillis);
+				startDismissTimer(displayMillis, generation);
 			}
 		});
 		animationTimer.start();
@@ -277,9 +354,16 @@ public final class SnapNotificationPresenter {
 	 * フェードイン完了後、指定時間で通知を閉じる1回限りのタイマーを開始します。
 	 *
 	 * @param delayMillis 通知を表示しておく時間（ミリ秒）
+	 * @param generation 表示対象となる通知の世代番号
 	 */
-	private void startDismissTimer(int delayMillis) {
+	private void startDismissTimer(int delayMillis, long generation) {
 		dismissTimer = new Timer(delayMillis, event -> {
+			Timer sourceTimer = (Timer) event.getSource();
+			if (sourceTimer != dismissTimer || generation != notificationGeneration || closed) {
+				sourceTimer.stop();
+				return;
+			}
+			dismissTimer = null;
 			hideWithFadeOut();
 		});
 		dismissTimer.setRepeats(false);
@@ -297,8 +381,9 @@ public final class SnapNotificationPresenter {
 			return;
 		}
 
-		JWindow window = currentWindow;
-		if (window == null) {
+		JWindow window = notificationWindow;
+		if (window == null || !window.isVisible()) {
+			currentTargetPath = null;
 			return;
 		}
 		stopTimer(dismissTimer);
@@ -310,10 +395,12 @@ public final class SnapNotificationPresenter {
 		int endY = startY + NOTIFICATION_FADE_OUT_DISTANCE;
 		float startOpacity = readWindowOpacity(window);
 		long startNanos = System.nanoTime();
+		long generation = notificationGeneration;
 
 		animationTimer = new Timer(ANIMATION_INTERVAL_MILLIS, event -> {
-			if (window != currentWindow) {
-				((Timer) event.getSource()).stop();
+			Timer sourceTimer = (Timer) event.getSource();
+			if (sourceTimer != animationTimer || generation != notificationGeneration || closed) {
+				sourceTimer.stop();
 				return;
 			}
 
@@ -323,9 +410,10 @@ public final class SnapNotificationPresenter {
 			setWindowOpacity(window, (float) (startOpacity * (1.0 - progress)));
 
 			if (progress >= 1.0) {
-				((Timer) event.getSource()).stop();
+				sourceTimer.stop();
 				animationTimer = null;
-				disposeWindow(window);
+				window.setVisible(false);
+				currentTargetPath = null;
 			}
 		});
 		animationTimer.start();
@@ -419,33 +507,29 @@ public final class SnapNotificationPresenter {
 	}
 
 	/**
-	 * 現在表示している通知と関連タイマーを即時破棄します。
+	 * 通知タイマーを停止します。
+	 * ウィンドウとパネルは次回の通知で再利用するため、ここでは破棄しません。
 	 */
-	private void disposeCurrentNotification() {
+	private void stopNotificationTimers() {
 		stopTimer(animationTimer);
 		stopTimer(dismissTimer);
 		animationTimer = null;
 		dismissTimer = null;
-
-		if (currentWindow != null) {
-			disposeWindow(currentWindow);
-		}
-		currentTargetPath = null;
 	}
 
 	/**
-	 * 指定した通知ウィンドウを破棄します。
-	 * 現在表示中の通知の場合だけ、保存先を含めた保持情報も解除します。
-	 *
-	 * @param window 破棄する通知ウィンドウ
+	 * アプリ終了時に、再利用していた通知ウィンドウ、パネル、タイマーを破棄します。
 	 */
-	private void disposeWindow(JWindow window) {
-		window.setVisible(false);
-		window.dispose();
-		if (window == currentWindow) {
-			currentWindow = null;
-			currentTargetPath = null;
+	private void disposeNotificationResources() {
+		notificationGeneration++;
+		stopNotificationTimers();
+		if (notificationWindow != null) {
+			notificationWindow.setVisible(false);
+			notificationWindow.dispose();
+			notificationWindow = null;
 		}
+		notificationPanel = null;
+		currentTargetPath = null;
 	}
 
 	/**
@@ -464,11 +548,17 @@ public final class SnapNotificationPresenter {
 	 * EDT以外から呼ばれた場合はEDTへ処理を予約し、完了を待たずに戻ります。
 	 */
 	public void close() {
+		synchronized (notificationRequestLock) {
+			closed = true;
+			pendingNotificationRequest = null;
+			notificationUpdateScheduled = false;
+		}
+
 		if (SwingUtilities.isEventDispatchThread()) {
-			disposeCurrentNotification();
+			disposeNotificationResources();
 		} else {
 			SwingUtilities.invokeLater(() -> {
-				disposeCurrentNotification();
+				disposeNotificationResources();
 			});
 		}
 	}
