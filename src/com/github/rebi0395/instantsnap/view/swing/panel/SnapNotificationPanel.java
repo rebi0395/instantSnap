@@ -26,9 +26,9 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 
-import com.github.rebi0395.instantsnap.model.bean.ThemePalette;
 import com.github.rebi0395.instantsnap.model.enums.ThemeType;
 import com.github.rebi0395.instantsnap.view.swing.presenter.SnapNotificationPresenter;
+import com.github.rebi0395.instantsnap.view.swing.util.ThemePalette;
 
 /**
  * 撮影結果通知画面のSwingパネルクラスです。
@@ -127,7 +127,7 @@ public final class SnapNotificationPanel extends JPanel implements ActionListene
 			Dimension openFolderSize = labelOpenFolder.getPreferredSize();
 			openFolderSize.width += 6;
 			labelOpenFolder.setPreferredSize(openFolderSize);
-			labelOpenFolder.setBackground(themePalette.getAccent());
+			labelOpenFolder.setBackground(themePalette.getAccentColor());
 			panelOpenFolder.setVisible(true);
 			textAreaMessage.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		} else {
@@ -149,11 +149,11 @@ public final class SnapNotificationPanel extends JPanel implements ActionListene
 		}
 
 		themePalette = appliedTheme.getThemePalette();
-		labelTitle.setForeground(themePalette.getAccent());
-		buttonClose.setForeground(themePalette.getMutedText());
-		textAreaMessage.setForeground(themePalette.getText());
-		labelOpenFolder.setForeground(themePalette.getAccentText());
-		labelOpenFolder.setBackground(themePalette.getAccent());
+		labelTitle.setForeground(themePalette.getAccentColor());
+		buttonClose.setForeground(themePalette.getMutedTextColor());
+		textAreaMessage.setForeground(themePalette.getTextColor());
+		labelOpenFolder.setForeground(themePalette.getAccentTextColor());
+		labelOpenFolder.setBackground(themePalette.getAccentColor());
 		repaint();
 	}
 
@@ -191,7 +191,7 @@ public final class SnapNotificationPanel extends JPanel implements ActionListene
 	 */
 	private JLabel createTitleLabel() {
 		JLabel titleLabel = new JLabel();
-		titleLabel.setForeground(themePalette.getAccent());
+		titleLabel.setForeground(themePalette.getAccentColor());
 		titleLabel.setFont(createNotificationFont(Font.BOLD, 17.0f));
 		return titleLabel;
 	}
@@ -203,7 +203,7 @@ public final class SnapNotificationPanel extends JPanel implements ActionListene
 	 */
 	private JButton createCloseButton() {
 		JButton closeButton = new JButton("×");
-		closeButton.setForeground(themePalette.getMutedText());
+		closeButton.setForeground(themePalette.getMutedTextColor());
 		closeButton.setFont(createNotificationFont(Font.BOLD, 20.0f));
 		closeButton.setPreferredSize(new Dimension(30, 30));
 		closeButton.setHorizontalAlignment(SwingConstants.CENTER);
@@ -223,7 +223,7 @@ public final class SnapNotificationPanel extends JPanel implements ActionListene
 	private JTextArea createMessageArea() {
 		JTextArea messageArea = new JTextArea();
 		messageArea.setFont(createNotificationFont(Font.PLAIN, 13.0f));
-		messageArea.setForeground(themePalette.getText());
+		messageArea.setForeground(themePalette.getTextColor());
 		messageArea.setOpaque(false);
 		messageArea.setEditable(false);
 		messageArea.setFocusable(false);
@@ -257,8 +257,8 @@ public final class SnapNotificationPanel extends JPanel implements ActionListene
 	private JLabel createOpenFolderLabel() {
 		JLabel openFolderLabel = new JLabel();
 		openFolderLabel.setFont(createNotificationFont(Font.BOLD, 12.0f));
-		openFolderLabel.setForeground(themePalette.getAccentText());
-		openFolderLabel.setBackground(themePalette.getAccent());
+		openFolderLabel.setForeground(themePalette.getAccentTextColor());
+		openFolderLabel.setBackground(themePalette.getAccentColor());
 		openFolderLabel.setOpaque(true);
 		openFolderLabel.setBorder(new EmptyBorder(6, 12, 6, 12));
 		openFolderLabel.setHorizontalAlignment(SwingConstants.CENTER);
@@ -279,25 +279,25 @@ public final class SnapNotificationPanel extends JPanel implements ActionListene
 
 			@Override
 			public void mouseEntered(MouseEvent event) {
-				labelOpenFolder.setBackground(themePalette.getAccentHover());
+				labelOpenFolder.setBackground(themePalette.getAccentHoverColor());
 			}
 
 			@Override
 			public void mouseExited(MouseEvent event) {
-				labelOpenFolder.setBackground(themePalette.getAccent());
+				labelOpenFolder.setBackground(themePalette.getAccentColor());
 			}
 
 			@Override
 			public void mousePressed(MouseEvent event) {
-				labelOpenFolder.setBackground(themePalette.getAccentPressed());
+				labelOpenFolder.setBackground(themePalette.getAccentPressedColor());
 			}
 
 			@Override
 			public void mouseReleased(MouseEvent event) {
 				if (labelOpenFolder.contains(event.getPoint())) {
-					labelOpenFolder.setBackground(themePalette.getAccentHover());
+					labelOpenFolder.setBackground(themePalette.getAccentHoverColor());
 				} else {
-					labelOpenFolder.setBackground(themePalette.getAccent());
+					labelOpenFolder.setBackground(themePalette.getAccentColor());
 				}
 			}
 		});
@@ -371,7 +371,7 @@ public final class SnapNotificationPanel extends JPanel implements ActionListene
 
 			// 複数の半透明枠を重ね、JavaFX版に近い柔らかな影を描画する。
 			for (int spread = 7; spread >= 1; spread--) {
-				graphics2d.setColor(themePalette.getNotificationShadow());
+				graphics2d.setColor(themePalette.getNotificationShadowColor());
 				graphics2d.fillRoundRect(
 						x - spread,
 						y - spread + 3,
@@ -382,16 +382,16 @@ public final class SnapNotificationPanel extends JPanel implements ActionListene
 			}
 
 			// 選択中のテーマ色で通知本体となる角丸背景を描画する。
-			graphics2d.setColor(themePalette.getNotificationBackground());
+			graphics2d.setColor(themePalette.getNotificationBackgroundColor());
 			graphics2d.fillRoundRect(x, y, width, height, 12, 12);
 
 			// JavaFX版のnotification-accentに相当するテーマ色のラインを左側へ描画する。
-			graphics2d.setColor(themePalette.getAccent());
+			graphics2d.setColor(themePalette.getAccentColor());
 			graphics2d.fillRoundRect(x, y, 10, height, 12, 12);
 			graphics2d.fillRect(x + 5, y, 5, height);
 
 			// 通知の輪郭が背景に埋もれないよう、外周へ細い枠線を描画する。
-			graphics2d.setColor(themePalette.getNotificationBorder());
+			graphics2d.setColor(themePalette.getNotificationBorderColor());
 			graphics2d.setStroke(new BasicStroke(1.0f));
 			graphics2d.drawRoundRect(x, y, width, height, 12, 12);
 		} finally {
