@@ -63,36 +63,49 @@ public final class ActiveWindowResolver {
 	}
 
 	/**
-	 * ショートカット操作時の撮影対象ウィンドウを返します。
-	 * InstantSnapを画像へ含めない設定で、そのウィンドウが前面にある場合は、
-	 * Zオーダー上で直後にある外部ウィンドウを探します。
+	 * 撮影対象のアクティブウィンドウのネイティブハンドルを返します。
+	 * 見つからない場合は、Zオーダー上で直後にあるウィンドウが取得できなくなるまで、
+	 * 撮影対象になるウィンドウを探します。
 	 *
 	 * @param isIncludeInstantSnapWindow このアプリのウィンドウも撮影対象に含める場合はtrue
+	 * @param isFromMainWindow 撮影元がメインウィンドウのパネルからであればtrueを指定
 	 * @return 撮影ウィンドウのネイティブハンドル。見つからない場合は0
 	 */
-	public long getForegroundWindowHandle(boolean isIncludeInstantSnapWindow) {
+	public long getForegroundWindowHandle(boolean isIncludeInstantSnapWindow, boolean isFromMainWindow) {
 		if (!OsUtil.isWindows()) {
 			return NO_WINDOW_HANDLE;
 		}
 
 		try {
-			// ショートカット操作では、通常は撮影したい外部アプリが前面にある。
+			// 前面のウィンドウを取得
 			HWND foregroundWindow = WindowsApi.USER32.GetForegroundWindow();
-			if (foregroundWindow == null) {
-				return NO_WINDOW_HANDLE;
-			}
+			// ウィンドウが存在しない場合は、ループを抜けて0を返す
+			while (foregroundWindow != null) {
+				// アプリのウィンドウを含める場合
+				if (isIncludeInstantSnapWindow) {
+					// メインウィンドウからの撮影要求では、メインウィンドウは常に除外
+					if (isFromMainWindow && isUsableCaptureWindow(foregroundWindow, residentProcessId)) {
+						return toWindowHandleValue(foregroundWindow);
+					}
+					// ショートカット撮影の場合は、除外対象なし
+					if (!isFromMainWindow && isUsableCaptureWindow(foregroundWindow)) {
+						return toWindowHandleValue(foregroundWindow);
+					}
+				} else {
+					// InstantSnapのウィンドウを除外する
+					if (isUsableCaptureWindow(foregroundWindow, residentProcessId, settingsProcessId)) {
+						return toWindowHandleValue(foregroundWindow);
+					}
+				}
 
-			// 「InstantSnapを含める」場合は、設定画面などが前面でもそのまま撮影できる。
-			if (isIncludeInstantSnapWindow && isUsableCaptureTarget(foregroundWindow)) {
-				return toWindowHandleValue(foregroundWindow);
+				/*
+				 * 次のウィンドウに上書きし、次ループに移行する
+				 * GW_HWNDNEXTは、現在のウィンドウよりZオーダーが一つ後ろのHWNDを返す。
+				 */
+				foregroundWindow = User32Ex.INSTANCE.GetWindow(foregroundWindow, User32Ex.GW_HWNDNEXT);
 			}
-			// 前面が外部アプリなら、画像へ含める設定に関係なくそのウィンドウを使う。
-			if (isExternalCaptureTarget(foregroundWindow)) {
-				return toWindowHandleValue(foregroundWindow);
-			}
+			return NO_WINDOW_HANDLE; // 見つからなかった場合
 
-			// 前面が除外対象のInstantSnapなら、その一つ後ろから外部アプリを探す。
-			return findExternalWindowBehind(foregroundWindow);
 		} catch (RuntimeException | LinkageError e) {
 			log.warn("アクティブウィンドウを取得できませんでした。", e);
 			return NO_WINDOW_HANDLE;
@@ -100,69 +113,18 @@ public final class ActiveWindowResolver {
 	}
 
 	/**
-	 * ミニウィンドウの撮影ボタンを押す直前に操作していた外部ウィンドウを返します。
-	 * ボタンイベントの発生時にはミニウィンドウがフォアグラウンドになっているため、
-	 * その直後からZオーダーをたどります。
-	 *
-	 * @return 撮影する外部ウィンドウのネイティブハンドル。見つからない場合は0
-	 */
-	public long getPreviousExternalWindowHandle() {
-		if (!OsUtil.isWindows()) {
-			return NO_WINDOW_HANDLE;
-		}
-
-		try {
-			HWND foregroundWindow = WindowsApi.USER32.GetForegroundWindow();
-			if (foregroundWindow == null) {
-				return NO_WINDOW_HANDLE;
-			}
-
-			// フォーカス移動前にイベントが届いた場合は、その外部ウィンドウをそのまま使う。
-			if (isExternalCaptureTarget(foregroundWindow)) {
-				return toWindowHandleValue(foregroundWindow);
-			}
-
-			// 通常はミニウィンドウが前面なので、その背後にある撮影対象を探す。
-			return findExternalWindowBehind(foregroundWindow);
-		} catch (RuntimeException | LinkageError e) {
-			log.warn("ミニウィンドウ操作前の外部ウィンドウを取得できませんでした。", e);
-			return NO_WINDOW_HANDLE;
-		}
-	}
-
-	/**
-	 * 指定ウィンドウの直後からZオーダーをたどり、最初の外部ウィンドウを返します。
-	 * EnumWindowsの先頭から探すと、撮影操作とは無関係な常時前面ウィンドウを拾うため、
-	 * 必ず撮影ボタンによって前面になったInstantSnapウィンドウを起点にします。
-	 *
-	 * @param frontWindow Zオーダー探索の起点となる前面ウィンドウ
-	 * @return 外部ウィンドウのネイティブハンドル。見つからない場合は0
-	 */
-	private long findExternalWindowBehind(HWND frontWindow) {
-		HWND currentWindow = frontWindow;
-		while (currentWindow != null) {
-			// GW_HWNDNEXTは、現在のウィンドウよりZオーダーが一つ後ろのHWNDを返す。
-			currentWindow = User32Ex.INSTANCE.GetWindow(currentWindow, User32Ex.GW_HWNDNEXT);
-
-			// 不可視・最小化・InstantSnap関連は飛ばし、最初の外部ウィンドウを採用する。
-			if (isExternalCaptureTarget(currentWindow)) {
-				return toWindowHandleValue(currentWindow);
-			}
-		}
-		return NO_WINDOW_HANDLE;
-	}
-
-	/**
 	 * 指定ウィンドウが、撮影対象として利用できるか判定します。
 	 *
 	 * @param windowHandle 判定するウィンドウハンドル
+	 * @param excludedProcessIds 0個以上指定できる、撮影対象の除外プロセスID
 	 * @return 撮影可能なウィンドウの場合true
 	 */
-	private boolean isUsableCaptureTarget(HWND windowHandle) {
+	private boolean isUsableCaptureWindow(HWND windowHandle, int... excludedProcessIds) {
 		// Zオーダーには撮影できないシステム用ウィンドウも含まれるため、順番に除外する。
 		if (windowHandle == null || windowHandle.getPointer() == null) {
 			return false;
 		}
+		// 最小化している場合は除外する
 		if (!WindowsApi.USER32.IsWindow(windowHandle)
 				|| !WindowsApi.USER32.IsWindowVisible(windowHandle)
 				|| isMinimized(windowHandle)) {
@@ -171,23 +133,20 @@ public final class ActiveWindowResolver {
 		if (WindowsApi.USER32.GetWindowTextLength(windowHandle) <= 0) {
 			return false;
 		}
-
 		int processId = getProcessId(windowHandle);
-		return processId != 0;
-	}
 
-	/**
-	 * 指定ウィンドウが、外部ウィンドウかつ、撮影対象として利用できるか判定します。
-	 *
-	 * @param windowHandle 判定するウィンドウハンドル
-	 * @return InstantSnap以外の撮影可能なウィンドウの場合true
-	 */
-	private boolean isExternalCaptureTarget(HWND windowHandle) {
-		if (!isUsableCaptureTarget(windowHandle)) {
+		// プロセスIDが0の場合は、ウィンドウが存在しないか、所有者不明のため除外する
+		if (processId == 0) {
 			return false;
 		}
-		int processId = getProcessId(windowHandle);
-		return processId != residentProcessId && processId != settingsProcessId;
+		// 引数に除外対象のプロセスIDが指定されている場合は、そのプロセスIDを持つウィンドウを除外する
+		for (int excludedProcessId : excludedProcessIds) {
+			if (processId == excludedProcessId) {
+				return false;
+			}
+		}
+		// 撮影対象として利用可能とする
+		return true;
 	}
 
 	/**

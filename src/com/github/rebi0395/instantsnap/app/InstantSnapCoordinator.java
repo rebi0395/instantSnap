@@ -15,6 +15,7 @@ import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.model.bean.SnapResultBean;
 import com.github.rebi0395.instantsnap.model.enums.AfterSnapActionType;
 import com.github.rebi0395.instantsnap.model.enums.LanguageType;
+import com.github.rebi0395.instantsnap.model.enums.ThemeType;
 import com.github.rebi0395.instantsnap.repository.PropertiesRepository;
 import com.github.rebi0395.instantsnap.service.ActiveWindowResolver;
 import com.github.rebi0395.instantsnap.service.MouseCursorService;
@@ -204,21 +205,21 @@ public class InstantSnapCoordinator implements SelectionListener {
 	}
 
 	/**
-	 * 撮影トリガーが押されたとき呼ばれる。撮影処理を呼び出す
+	 * 撮影トリガーが押されたとき呼ばれ、撮影処理を呼び出す
 	 */
 	public void requestSnap() {
 		long snapTargetWindowHandle = activeWindowResolver.getForegroundWindowHandle(
-				config.getIsIncludeSettingWindow());
+				config.getIsIncludeSettingWindow(), false);
 		requestSnap(snapTargetWindowHandle);
 	}
 
 	/**
-	 * ミニウィンドウの撮影ボタンから撮影を要求します。
-	 * ボタン操作によってミニウィンドウが前面になっているため、Zオーダー上で
-	 * その直後にある外部ウィンドウをアクティブウィンドウ撮影の対象にします。
+	 * メインウィンドウの撮影ボタンから撮影を要求する
+	 * 引数が異なるため、別メソッドに切り出している
 	 */
 	public void requestSnapFromMainWindow() {
-		long snapTargetWindowHandle = activeWindowResolver.getPreviousExternalWindowHandle();
+		long snapTargetWindowHandle = activeWindowResolver.getForegroundWindowHandle(
+						config.getIsIncludeSettingWindow(), true);
 		requestSnap(snapTargetWindowHandle);
 	}
 
@@ -255,7 +256,8 @@ public class InstantSnapCoordinator implements SelectionListener {
 							new SnapResultBean(result),
 							config.getIsShowNotification(),
 							config.getIsNotificationSoundEnabled(),
-							config.getAfterSnapActionType());
+							config.getAfterSnapActionType(),
+							config.getThemeType());
 
 				} catch (Exception e) {
 					log.error("スクリーンショットの撮影または保存に失敗しました", e);
@@ -339,7 +341,7 @@ public class InstantSnapCoordinator implements SelectionListener {
 
 			// 通知表示が有効な場合
 			if (afterSnapData.showNotification()) {
-				notificationPresenter.show(afterSnapData.result());
+				notificationPresenter.show(afterSnapData.result(), afterSnapData.themeType());
 			}
 
 			// 撮影後アクションを実行
@@ -375,11 +377,13 @@ public class InstantSnapCoordinator implements SelectionListener {
 	 * @param showNotification 通知表示の有無
 	 * @param soundNotificationEnabled 通知音の有無（撮影音とは別の設定）
 	 * @param afterSnapActionType 撮影後動作
+	 * @param themeType 撮影時点で選択されているテーマ
 	 */
 	private record AfterSnapData(
 			SnapResultBean result,
 			boolean showNotification,
 			boolean soundNotificationEnabled,
-			AfterSnapActionType afterSnapActionType) {
+			AfterSnapActionType afterSnapActionType,
+			ThemeType themeType) {
 	}
 }

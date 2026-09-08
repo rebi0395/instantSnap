@@ -69,7 +69,6 @@ public final class MainWindowPresenter {
 		this.converter = converter;
 		this.screenCaptureExclusionService = new ScreenCaptureExclusionService();
 		this.includeSettingWindow = config.getIsIncludeSettingWindow();
-
 		this.panel = new MainWindowPanel(config, this);
 		this.frame = createFrame();
 	}

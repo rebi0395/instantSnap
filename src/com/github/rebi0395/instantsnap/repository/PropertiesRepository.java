@@ -308,8 +308,8 @@ public class PropertiesRepository {
 			language=ja
 
 			# テーマを指定してください
-			# 0 -> デフォルト, 1 -> 絵本
-			theme=1
+			# 0 -> デフォルト, 2 -> ダーク, 1 -> 絵本
+			theme=0
 
 			# ～～ 撮影設定 ～～
 			# 撮影ショートカットキー
@@ -382,8 +382,8 @@ public class PropertiesRepository {
 			language=en
 
 			# Please specify the theme
-			# 0 -> Default, 1 -> Storybook
-			theme=1
+			# 0 -> Default, 2 -> Dark, 1 -> Storybook
+			theme=0
 
 			# ~~ Capture Settings ~~
 			# Capture shortcut key

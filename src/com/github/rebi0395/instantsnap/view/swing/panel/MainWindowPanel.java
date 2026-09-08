@@ -1,25 +1,19 @@
 package com.github.rebi0395.instantsnap.view.swing.panel;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.geom.Ellipse2D;
-import java.awt.geom.Path2D;
-import java.awt.geom.RoundRectangle2D;
+import java.net.URL;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -27,10 +21,15 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
+import javax.swing.plaf.basic.BasicButtonUI;
 
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.model.bean.KeyCombinationBean;
+import com.github.rebi0395.instantsnap.model.bean.ThemePalette;
 import com.github.rebi0395.instantsnap.model.enums.LanguageType;
+import com.github.rebi0395.instantsnap.model.enums.ThemeType;
+import com.github.rebi0395.instantsnap.view.swing.icon.ActionIcon;
 import com.github.rebi0395.instantsnap.view.swing.presenter.MainWindowPresenter;
 
 /**
@@ -52,6 +51,15 @@ public class MainWindowPanel extends JPanel implements ActionListener {
 	/** ショートカット表示領域のサイズ */
 	private static final Dimension SHORTCUT_LABEL_SIZE = new Dimension(126, 22);
 
+	/** 絵本テーマで設定ボタンに表示するアイコン */
+	private static final String STORYBOOK_SETTINGS_ICON_PATH = "/images/theme/storybook/icon-bear-32.png";
+
+	/** 絵本テーマで撮影ボタンに表示するアイコン */
+	private static final String STORYBOOK_CAPTURE_ICON_PATH = "/images/theme/storybook/icon-camera-32.png";
+
+	/** 絵本テーマで範囲選択ボタンに表示するアイコン */
+	private static final String STORYBOOK_RANGE_SELECTION_ICON_PATH = "/images/theme/storybook/icon-paw-32.png";
+
 	/** 設定画面を開くボタン */
 	private final JButton settingsButton;
 
@@ -64,6 +72,9 @@ public class MainWindowPanel extends JPanel implements ActionListener {
 	/** ミニウィンドウ上で言語を変更する選択欄 */
 	private final JComboBox<LanguageType> languageComboBox;
 
+	/** 言語選択欄へ現在のテーマ色を反映するレンダラー */
+	private final LanguageListCellRenderer languageRenderer;
+
 	/** 通常撮影のショートカット表示 */
 	private final JLabel captureShortcutLabel;
 
@@ -72,6 +83,24 @@ public class MainWindowPanel extends JPanel implements ActionListener {
 
 	/** パネル上の操作を受け取るプレゼンター */
 	private final MainWindowPresenter presenter;
+
+	/** デフォルト・ダークテーマで設定ボタンに表示するアイコン */
+	private final Icon standardSettingsIcon;
+
+	/** デフォルト・ダークテーマで撮影ボタンに表示するアイコン */
+	private final Icon standardCaptureIcon;
+
+	/** デフォルト・ダークテーマで範囲選択ボタンに表示するアイコン */
+	private final Icon standardRangeSelectionIcon;
+
+	/** 絵本テーマで設定ボタンに表示するアイコン */
+	private final Icon storybookSettingsIcon;
+
+	/** 絵本テーマで撮影ボタンに表示するアイコン */
+	private final Icon storybookCaptureIcon;
+
+	/** 絵本テーマで範囲選択ボタンに表示するアイコン */
+	private final Icon storybookRangeSelectionIcon;
 
 	/** プログラムから言語選択を更新中の場合true */
 	private boolean updatingLanguageSelection;
@@ -86,11 +115,20 @@ public class MainWindowPanel extends JPanel implements ActionListener {
 
 		this.presenter = presenter;
 		// 部品を先に揃え、設定値の反映は初期表示と再読込で同じ経路にする。
-		this.settingsButton = createActionButton(ActionIconType.SETTINGS);
-		this.captureButton = createActionButton(ActionIconType.CAPTURE);
-		this.rangeSelectionButton = createActionButton(ActionIconType.RANGE_SELECTION);
+		this.standardSettingsIcon = new ActionIcon(ActionIcon.Type.SETTINGS);
+		this.standardCaptureIcon = new ActionIcon(ActionIcon.Type.CAPTURE);
+		this.standardRangeSelectionIcon = new ActionIcon(ActionIcon.Type.RANGE_SELECTION);
+		this.storybookSettingsIcon = loadThemeIcon(STORYBOOK_SETTINGS_ICON_PATH, standardSettingsIcon);
+		this.storybookCaptureIcon = loadThemeIcon(STORYBOOK_CAPTURE_ICON_PATH, standardCaptureIcon);
+		this.storybookRangeSelectionIcon = loadThemeIcon(
+				STORYBOOK_RANGE_SELECTION_ICON_PATH,
+				standardRangeSelectionIcon);
+		this.settingsButton = createActionButton(standardSettingsIcon);
+		this.captureButton = createActionButton(standardCaptureIcon);
+		this.rangeSelectionButton = createActionButton(standardRangeSelectionIcon);
 		this.captureShortcutLabel = createShortcutLabel();
 		this.rangeSelectionShortcutLabel = createShortcutLabel();
+		this.languageRenderer = new LanguageListCellRenderer();
 		this.languageComboBox = createLanguageComboBox();
 
 		refresh(config);
@@ -146,11 +184,11 @@ public class MainWindowPanel extends JPanel implements ActionListener {
 	/**
 	 * 操作用のアイコンボタンを作成します。表示名はrefreshで設定します。
 	 *
-	 * @param iconType ボタンに描画するアイコンの種類
+	 * @param icon ボタンに表示するアイコン
 	 * @return このパネルへ操作を通知するボタン
 	 */
-	private JButton createActionButton(ActionIconType iconType) {
-		JButton button = new JButton(new ActionIcon(iconType));
+	private JButton createActionButton(Icon icon) {
+		JButton button = new JButton(icon);
 		button.setPreferredSize(ACTION_BUTTON_SIZE);
 		button.setMinimumSize(ACTION_BUTTON_SIZE);
 		button.setHorizontalTextPosition(SwingConstants.CENTER);
@@ -159,6 +197,22 @@ public class MainWindowPanel extends JPanel implements ActionListener {
 		button.setFocusPainted(false);
 		button.addActionListener(this);
 		return button;
+	}
+
+	/**
+	 * クラスパス上のテーマ用画像を読み込みます。
+	 * パッケージ漏れなどで画像が見つからない場合も操作できるよう、標準アイコンへ戻します。
+	 *
+	 * @param resourcePath クラスパスのルートから始まる画像パス
+	 * @param fallbackIcon 読み込みに失敗した場合に使用するアイコン
+	 * @return 読み込んだ画像アイコン、または標準アイコン
+	 */
+	private Icon loadThemeIcon(String resourcePath, Icon fallbackIcon) {
+		URL imageUrl = MainWindowPanel.class.getResource(resourcePath);
+		if (imageUrl == null) {
+			return fallbackIcon;
+		}
+		return new ImageIcon(imageUrl);
 	}
 
 	/**
@@ -187,7 +241,7 @@ public class MainWindowPanel extends JPanel implements ActionListener {
 		JComboBox<LanguageType> comboBox = new JComboBox<>(LanguageType.values());
 		comboBox.setPreferredSize(SHORTCUT_LABEL_SIZE);
 		comboBox.setMinimumSize(SHORTCUT_LABEL_SIZE);
-		comboBox.setRenderer(new LanguageListCellRenderer());
+		comboBox.setRenderer(languageRenderer);
 		comboBox.setToolTipText("Language / 言語");
 		comboBox.addActionListener(this);
 		return comboBox;
@@ -242,6 +296,107 @@ public class MainWindowPanel extends JPanel implements ActionListener {
 		} finally {
 			updatingLanguageSelection = false;
 		}
+
+		applyTheme(config.getThemeType());
+	}
+
+	/**
+	 * 設定画面で選択されたテーマをミニウィンドウへ反映します。
+	 * デフォルトではSwing標準UIを使い、ダークと絵本では共通Paletteの配色を使います。
+	 *
+	 * @param themeType 最新のテーマ設定
+	 */
+	private void applyTheme(ThemeType themeType) {
+		languageRenderer.setTheme(themeType);
+		applyActionButtonIcons(themeType);
+		ThemePalette themePalette = themeType.getThemePalette();
+
+		if (themeType == ThemeType.DEFAULT) {
+			applyDefaultTheme(themePalette);
+		} else {
+			applyCustomTheme(themePalette);
+		}
+
+		languageComboBox.repaint();
+		revalidate();
+		repaint();
+	}
+
+	/**
+	 * 絵本テーマでは絵柄付きの画像へ切り替え、それ以外ではJava2D製の標準アイコンへ戻します。
+	 *
+	 * @param themeType 最新のテーマ設定
+	 */
+	private void applyActionButtonIcons(ThemeType themeType) {
+		if (themeType == ThemeType.STORYBOOK) {
+			settingsButton.setIcon(storybookSettingsIcon);
+			captureButton.setIcon(storybookCaptureIcon);
+			rangeSelectionButton.setIcon(storybookRangeSelectionIcon);
+			return;
+		}
+		settingsButton.setIcon(standardSettingsIcon);
+		captureButton.setIcon(standardCaptureIcon);
+		rangeSelectionButton.setIcon(standardRangeSelectionIcon);
+	}
+
+	/**
+	 * ダークまたは絵本テーマの共通配色をミニウィンドウへ反映します。
+	 *
+	 * @param themePalette 選択されたテーマのSwing配色
+	 */
+	private void applyCustomTheme(ThemePalette themePalette) {
+		setBackground(themePalette.getBackground());
+		captureShortcutLabel.setForeground(themePalette.getMutedText());
+		rangeSelectionShortcutLabel.setForeground(themePalette.getMutedText());
+
+		languageComboBox.setBackground(themePalette.getControlBackground());
+		languageComboBox.setForeground(themePalette.getText());
+		languageComboBox.setBorder(BorderFactory.createLineBorder(themePalette.getBorder()));
+
+		Border buttonBorder = BorderFactory.createCompoundBorder(
+				BorderFactory.createLineBorder(themePalette.getBorder()),
+				BorderFactory.createEmptyBorder(4, 6, 4, 6));
+		for (JButton button : getActionButtons()) {
+			// OS標準スキンによる色の上書きを避け、テーマ配色を確実に描画する。
+			button.setUI(new BasicButtonUI());
+			button.setOpaque(true);
+			button.setBackground(themePalette.getControlBackground());
+			button.setForeground(themePalette.getText());
+			button.setBorder(buttonBorder);
+		}
+	}
+
+	/**
+	 * カスタムテーマから切り替えたとき、Swing標準のUIと共通配色へ戻します。
+	 *
+	 * @param themePalette デフォルトテーマのSwing配色
+	 */
+	private void applyDefaultTheme(ThemePalette themePalette) {
+		setBackground(themePalette.getBackground());
+		captureShortcutLabel.setForeground(themePalette.getText());
+		rangeSelectionShortcutLabel.setForeground(themePalette.getText());
+
+		languageComboBox.setBackground(themePalette.getControlBackground());
+		languageComboBox.setForeground(themePalette.getText());
+		languageComboBox.setBorder(UIManager.getBorder("ComboBox.border"));
+
+		Border buttonBorder = UIManager.getBorder("Button.border");
+		for (JButton button : getActionButtons()) {
+			// カスタムテーマ専用UIを外し、OSに対応したSwing標準UIへ戻す。
+			button.updateUI();
+			button.setBackground(themePalette.getControlBackground());
+			button.setForeground(themePalette.getText());
+			button.setBorder(buttonBorder);
+		}
+	}
+
+	/**
+	 * テーマを同じ手順で適用する操作ボタンを返します。
+	 *
+	 * @return 設定、撮影、範囲選択ボタン
+	 */
+	private JButton[] getActionButtons() {
+		return new JButton[] { settingsButton, captureButton, rangeSelectionButton };
 	}
 
 	/**
@@ -293,16 +448,6 @@ public class MainWindowPanel extends JPanel implements ActionListener {
 		rangeSelectionButton.setEnabled(enabled);
 	}
 
-	/** パネル内で使用するアイコンの種類です。 */
-	private enum ActionIconType {
-		/** 歯車で表す設定画面の起動 */
-		SETTINGS,
-		/** カメラで表す通常撮影 */
-		CAPTURE,
-		/** 切り取り線で表す範囲選択 */
-		RANGE_SELECTION
-	}
-
 	/**
 	 * メインウィンドウで使う短い文言です。
 	 *
@@ -319,6 +464,22 @@ public class MainWindowPanel extends JPanel implements ActionListener {
 
 		/** シリアルバージョンUID */
 		private static final long serialVersionUID = 1L;
+
+		/** 現在のミニウィンドウテーマ */
+		private ThemeType themeType = ThemeType.DEFAULT;
+
+		/** 現在のミニウィンドウ配色 */
+		private ThemePalette themePalette = ThemeType.DEFAULT.getThemePalette();
+
+		/**
+		 * 言語選択欄の描画テーマを切り替えます。
+		 *
+		 * @param themeType 最新のテーマ設定
+		 */
+		private void setTheme(ThemeType themeType) {
+			this.themeType = themeType;
+			this.themePalette = themeType.getThemePalette();
+		}
 
 		/**
 		 * 言語の列挙値を利用者向けの表示名で描画します。
@@ -346,160 +507,18 @@ public class MainWindowPanel extends JPanel implements ActionListener {
 			if (value instanceof LanguageType languageType) {
 				setText(languageType.getBaseDisplayName());
 			}
-			return component;
-		}
-	}
-
-	/** 画面倍率に依存せず滑らかに表示できるJava2D製アイコンです。 */
-	private static final class ActionIcon implements Icon {
-
-		/** アイコンの一辺 */
-		private static final int SIZE = 34;
-
-		/** 描画するアイコンの種類 */
-		private final ActionIconType type;
-
-		/**
-		 * 指定した種類のアイコンを生成します。
-		 *
-		 * @param type 描画するアイコンの種類
-		 */
-		private ActionIcon(ActionIconType type) {
-			this.type = type;
-		}
-
-		/**
-		 * アイコンの横幅を取得します。
-		 *
-		 * @return Swing論理座標での横幅
-		 */
-		@Override
-		public int getIconWidth() {
-			return SIZE;
-		}
-
-		/**
-		 * アイコンの高さを取得します。
-		 *
-		 * @return Swing論理座標での高さ
-		 */
-		@Override
-		public int getIconHeight() {
-			return SIZE;
-		}
-
-		/**
-		 * 部品の有効状態に応じた色でアイコンを描画します。
-		 *
-		 * @param component アイコンを表示する部品
-		 * @param graphics Swingから渡された描画コンテキスト
-		 * @param x アイコン左端の論理座標
-		 * @param y アイコン上端の論理座標
-		 */
-		@Override
-		public void paintIcon(Component component, Graphics graphics, int x, int y) {
-			// 親部品の描画設定に影響させないようコピーを使い、最後に解放する。
-			Graphics2D g2 = (Graphics2D) graphics.create();
-			try {
-				g2.translate(x, y);
-				g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-				g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
-				g2.setColor(resolveIconColor(component));
-				g2.setStroke(new BasicStroke(2.2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-
-				switch (type) {
-				case SETTINGS -> paintSettingsIcon(g2);
-				case CAPTURE -> paintCaptureIcon(g2);
-				case RANGE_SELECTION -> paintRangeSelectionIcon(g2);
+			if (themeType != ThemeType.DEFAULT) {
+				setForeground(themePalette.getText());
+				setBackground(themePalette.getControlBackground());
+				if (isSelected) {
+					setBackground(themePalette.getSelectionBackground());
+					setForeground(themePalette.getAccentText());
 				}
-			} finally {
-				g2.dispose();
+				if (!list.isEnabled()) {
+					setForeground(themePalette.getMutedText());
+				}
 			}
-		}
-
-		/**
-		 * 部品の有効状態に応じた描画色を取得します。
-		 *
-		 * @param component アイコンを表示する部品
-		 * @return 通常の文字色、無効色、または無効色が未定義の場合は灰色
-		 */
-		private Color resolveIconColor(Component component) {
-			if (component.isEnabled()) {
-				return component.getForeground();
-			}
-			Color disabledColor = UIManager.getColor("Button.disabledText");
-			if (disabledColor != null) {
-				return disabledColor;
-			}
-			return Color.GRAY;
-		}
-
-		/**
-		 * 歯車を簡略化した設定アイコンを描画します。
-		 *
-		 * @param g2 アイコン左上を原点とする描画コンテキスト
-		 */
-		private void paintSettingsIcon(Graphics2D g2) {
-			double center = SIZE / 2.0;
-			for (int index = 0; index < 8; index++) {
-				double angle = Math.PI * index / 4.0;
-				double innerX = center + Math.cos(angle) * 10.5;
-				double innerY = center + Math.sin(angle) * 10.5;
-				double outerX = center + Math.cos(angle) * 14.5;
-				double outerY = center + Math.sin(angle) * 14.5;
-				g2.drawLine((int) innerX, (int) innerY, (int) outerX, (int) outerY);
-			}
-			g2.draw(new Ellipse2D.Double(6.5, 6.5, 21, 21));
-			g2.draw(new Ellipse2D.Double(12.5, 12.5, 9, 9));
-		}
-
-		/**
-		 * カメラ本体とレンズを組み合わせた撮影アイコンを描画します。
-		 *
-		 * @param g2 アイコン左上を原点とする描画コンテキスト
-		 */
-		private void paintCaptureIcon(Graphics2D g2) {
-			g2.draw(new RoundRectangle2D.Double(3.5, 9.5, 27, 20, 4, 4));
-			Path2D top = new Path2D.Double();
-			top.moveTo(9, 9.5);
-			top.lineTo(12, 5.5);
-			top.lineTo(21.5, 5.5);
-			top.lineTo(25, 9.5);
-			g2.draw(top);
-			g2.draw(new Ellipse2D.Double(11, 13, 12, 12));
-			g2.draw(new Ellipse2D.Double(14.5, 16.5, 5, 5));
-		}
-
-		/**
-		 * 四隅の切り取り線で範囲選択アイコンを描画します。
-		 *
-		 * @param g2 アイコン左上を原点とする描画コンテキスト
-		 */
-		private void paintRangeSelectionIcon(Graphics2D g2) {
-			Path2D corners = new Path2D.Double();
-			corners.moveTo(13, 5);
-			corners.lineTo(5, 5);
-			corners.lineTo(5, 13);
-			corners.moveTo(21, 5);
-			corners.lineTo(29, 5);
-			corners.lineTo(29, 13);
-			corners.moveTo(29, 21);
-			corners.lineTo(29, 29);
-			corners.lineTo(21, 29);
-			corners.moveTo(13, 29);
-			corners.lineTo(5, 29);
-			corners.lineTo(5, 21);
-			g2.draw(corners);
-
-			// 選択範囲を示す中央の矩形だけ破線にする。
-			g2.setStroke(new BasicStroke(
-					1.5f,
-					BasicStroke.CAP_BUTT,
-					BasicStroke.JOIN_MITER,
-					10.0f,
-					new float[] { 3.0f, 3.0f },
-					0.0f));
-			g2.drawRect(10, 10, 14, 14);
+			return component;
 		}
 	}
 }

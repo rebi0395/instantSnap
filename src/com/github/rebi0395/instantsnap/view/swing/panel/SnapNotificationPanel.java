@@ -2,7 +2,6 @@ package com.github.rebi0395.instantsnap.view.swing.panel;
 
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -27,6 +26,8 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 
+import com.github.rebi0395.instantsnap.model.bean.ThemePalette;
+import com.github.rebi0395.instantsnap.model.enums.ThemeType;
 import com.github.rebi0395.instantsnap.view.swing.presenter.SnapNotificationPresenter;
 
 /**
@@ -47,32 +48,11 @@ public final class SnapNotificationPanel extends JPanel implements ActionListene
 	/** 影描画用の外側余白 */
 	private static final int SHADOW_SIZE = 8;
 
-	/** 通知のアクセント色 */
-	private static final Color ACCENT_COLOR = new Color(0x09, 0x69, 0xda);
-
-	/** 保存先表示へマウスを乗せたときの色 */
-	private static final Color ACTION_HOVER_COLOR = new Color(0x07, 0x57, 0xb8);
-
-	/** 保存先表示を押しているときの色 */
-	private static final Color ACTION_PRESSED_COLOR = new Color(0x05, 0x4a, 0x9b);
-
-	/** 通知の背景色 */
-	private static final Color NOTIFICATION_BACKGROUND_COLOR = Color.WHITE;
-
-	/** 通知の影色 */
-	private static final Color SHADOW_COLOR = new Color(0, 0, 0, 7);
-
-	/** 通知の枠線色 */
-	private static final Color BORDER_COLOR = new Color(0xd0, 0xd7, 0xde);
-
 	/** JavaFXの日本語Systemフォントに近いWindows標準フォント */
 	private static final String NOTIFICATION_FONT_FAMILY = "Yu Gothic UI";
 
-	/** 本文色 */
-	private static final Color TEXT_COLOR = new Color(0x24, 0x29, 0x2f);
-
-	/** 閉じるボタンの文字色 */
-	private static final Color CLOSE_COLOR = new Color(0x57, 0x60, 0x6a);
+	/** 現在の通知へ適用する配色 */
+	private ThemePalette themePalette = ThemeType.DEFAULT.getThemePalette();
 
 	/** 通知タイトル */
 	private final JLabel labelTitle;
@@ -147,7 +127,7 @@ public final class SnapNotificationPanel extends JPanel implements ActionListene
 			Dimension openFolderSize = labelOpenFolder.getPreferredSize();
 			openFolderSize.width += 6;
 			labelOpenFolder.setPreferredSize(openFolderSize);
-			labelOpenFolder.setBackground(ACCENT_COLOR);
+			labelOpenFolder.setBackground(themePalette.getAccent());
 			panelOpenFolder.setVisible(true);
 			textAreaMessage.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		} else {
@@ -155,6 +135,26 @@ public final class SnapNotificationPanel extends JPanel implements ActionListene
 			labelOpenFolder.setText(null);
 			textAreaMessage.setCursor(Cursor.getDefaultCursor());
 		}
+	}
+
+	/**
+	 * 撮影時点のテーマを再利用中の通知部品へ反映します。
+	 *
+	 * @param themeType 通知へ反映するテーマ。nullの場合はデフォルトを使用
+	 */
+	public void applyTheme(ThemeType themeType) {
+		ThemeType appliedTheme = themeType;
+		if (appliedTheme == null) {
+			appliedTheme = ThemeType.DEFAULT;
+		}
+
+		themePalette = appliedTheme.getThemePalette();
+		labelTitle.setForeground(themePalette.getAccent());
+		buttonClose.setForeground(themePalette.getMutedText());
+		textAreaMessage.setForeground(themePalette.getText());
+		labelOpenFolder.setForeground(themePalette.getAccentText());
+		labelOpenFolder.setBackground(themePalette.getAccent());
+		repaint();
 	}
 
 	/**
@@ -191,7 +191,7 @@ public final class SnapNotificationPanel extends JPanel implements ActionListene
 	 */
 	private JLabel createTitleLabel() {
 		JLabel titleLabel = new JLabel();
-		titleLabel.setForeground(ACCENT_COLOR);
+		titleLabel.setForeground(themePalette.getAccent());
 		titleLabel.setFont(createNotificationFont(Font.BOLD, 17.0f));
 		return titleLabel;
 	}
@@ -203,7 +203,7 @@ public final class SnapNotificationPanel extends JPanel implements ActionListene
 	 */
 	private JButton createCloseButton() {
 		JButton closeButton = new JButton("×");
-		closeButton.setForeground(CLOSE_COLOR);
+		closeButton.setForeground(themePalette.getMutedText());
 		closeButton.setFont(createNotificationFont(Font.BOLD, 20.0f));
 		closeButton.setPreferredSize(new Dimension(30, 30));
 		closeButton.setHorizontalAlignment(SwingConstants.CENTER);
@@ -223,7 +223,7 @@ public final class SnapNotificationPanel extends JPanel implements ActionListene
 	private JTextArea createMessageArea() {
 		JTextArea messageArea = new JTextArea();
 		messageArea.setFont(createNotificationFont(Font.PLAIN, 13.0f));
-		messageArea.setForeground(TEXT_COLOR);
+		messageArea.setForeground(themePalette.getText());
 		messageArea.setOpaque(false);
 		messageArea.setEditable(false);
 		messageArea.setFocusable(false);
@@ -257,8 +257,8 @@ public final class SnapNotificationPanel extends JPanel implements ActionListene
 	private JLabel createOpenFolderLabel() {
 		JLabel openFolderLabel = new JLabel();
 		openFolderLabel.setFont(createNotificationFont(Font.BOLD, 12.0f));
-		openFolderLabel.setForeground(Color.WHITE);
-		openFolderLabel.setBackground(ACCENT_COLOR);
+		openFolderLabel.setForeground(themePalette.getAccentText());
+		openFolderLabel.setBackground(themePalette.getAccent());
 		openFolderLabel.setOpaque(true);
 		openFolderLabel.setBorder(new EmptyBorder(6, 12, 6, 12));
 		openFolderLabel.setHorizontalAlignment(SwingConstants.CENTER);
@@ -279,25 +279,25 @@ public final class SnapNotificationPanel extends JPanel implements ActionListene
 
 			@Override
 			public void mouseEntered(MouseEvent event) {
-				labelOpenFolder.setBackground(ACTION_HOVER_COLOR);
+				labelOpenFolder.setBackground(themePalette.getAccentHover());
 			}
 
 			@Override
 			public void mouseExited(MouseEvent event) {
-				labelOpenFolder.setBackground(ACCENT_COLOR);
+				labelOpenFolder.setBackground(themePalette.getAccent());
 			}
 
 			@Override
 			public void mousePressed(MouseEvent event) {
-				labelOpenFolder.setBackground(ACTION_PRESSED_COLOR);
+				labelOpenFolder.setBackground(themePalette.getAccentPressed());
 			}
 
 			@Override
 			public void mouseReleased(MouseEvent event) {
 				if (labelOpenFolder.contains(event.getPoint())) {
-					labelOpenFolder.setBackground(ACTION_HOVER_COLOR);
+					labelOpenFolder.setBackground(themePalette.getAccentHover());
 				} else {
-					labelOpenFolder.setBackground(ACCENT_COLOR);
+					labelOpenFolder.setBackground(themePalette.getAccent());
 				}
 			}
 		});
@@ -371,7 +371,7 @@ public final class SnapNotificationPanel extends JPanel implements ActionListene
 
 			// 複数の半透明枠を重ね、JavaFX版に近い柔らかな影を描画する。
 			for (int spread = 7; spread >= 1; spread--) {
-				graphics2d.setColor(SHADOW_COLOR);
+				graphics2d.setColor(themePalette.getNotificationShadow());
 				graphics2d.fillRoundRect(
 						x - spread,
 						y - spread + 3,
@@ -381,17 +381,17 @@ public final class SnapNotificationPanel extends JPanel implements ActionListene
 						14);
 			}
 
-			// 通知本体となる白い角丸背景を描画する。
-			graphics2d.setColor(NOTIFICATION_BACKGROUND_COLOR);
+			// 選択中のテーマ色で通知本体となる角丸背景を描画する。
+			graphics2d.setColor(themePalette.getNotificationBackground());
 			graphics2d.fillRoundRect(x, y, width, height, 12, 12);
 
-			// JavaFX版のnotification-accentに相当する青いラインを左側へ描画する。
-			graphics2d.setColor(ACCENT_COLOR);
+			// JavaFX版のnotification-accentに相当するテーマ色のラインを左側へ描画する。
+			graphics2d.setColor(themePalette.getAccent());
 			graphics2d.fillRoundRect(x, y, 10, height, 12, 12);
 			graphics2d.fillRect(x + 5, y, 5, height);
 
 			// 通知の輪郭が背景に埋もれないよう、外周へ細い枠線を描画する。
-			graphics2d.setColor(BORDER_COLOR);
+			graphics2d.setColor(themePalette.getNotificationBorder());
 			graphics2d.setStroke(new BasicStroke(1.0f));
 			graphics2d.drawRoundRect(x, y, width, height, 12, 12);
 		} finally {
