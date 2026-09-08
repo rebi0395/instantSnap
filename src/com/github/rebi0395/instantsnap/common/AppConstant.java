@@ -107,6 +107,8 @@ public final class AppConstant {
 	public static final String CSS_SETTING_WINDOW = "/com/github/rebi0395/instantsnap/view/javafx/css/setting-window.css";
 	/** JavaFX設定ウィンドウのテーマCSS：絵本 */
 	public static final String CSS_SETTING_THEME_STORYBOOK = "/com/github/rebi0395/instantsnap/view/javafx/css/theme-storybook.css";
+	/** JavaFX設定ウィンドウのテーマCSS：ダーク */
+	public static final String CSS_SETTING_THEME_DARK = "/com/github/rebi0395/instantsnap/view/javafx/css/theme-dark.css";
 	/** テーマCSSファイル名とテーマstyleClassの接頭辞 */
 	public static final String THEME_CSS_PREFIX = "theme-";
 	/** アイコンのpngファイル */

@@ -4,6 +4,7 @@ import static com.github.rebi0395.instantsnap.common.AppConstant.*;
 import static com.github.rebi0395.instantsnap.common.MessageKeyConstant.*;
 
 import com.github.rebi0395.instantsnap.common.MessageKeyConverter;
+import com.github.rebi0395.instantsnap.model.bean.ThemePalette;
 
 import javafx.util.StringConverter;
 
@@ -13,9 +14,29 @@ import javafx.util.StringConverter;
 public enum ThemeType implements BaseEnum, MessageEnum {
 
 	/** デフォルト テーマなし */
-	DEFAULT("0", "Default", THEME_DEFAULT, null, null),
+	DEFAULT(
+		"0",
+		"Default",
+		THEME_DEFAULT,
+		null,
+		null,
+		ThemePalette.createDefault()),
+	/** デフォルトテーマの構成を維持したダークテーマ */
+	DARK(
+		"1",
+		"Dark",
+		THEME_DARK,
+		CSS_SETTING_THEME_DARK,
+		"theme-dark",
+		ThemePalette.createDark()),
 	/** 絵本テーマ */
-	STORYBOOK("1", "Storybook", THEME_STORYBOOK, CSS_SETTING_THEME_STORYBOOK, "theme-storybook");
+	STORYBOOK(
+		"2",
+		"Storybook",
+		THEME_STORYBOOK,
+		CSS_SETTING_THEME_STORYBOOK,
+		"theme-storybook",
+		ThemePalette.createStorybook());
 
 	/** プロパティファイルと紐つく値 */
 	private final String value;
@@ -27,14 +48,32 @@ public enum ThemeType implements BaseEnum, MessageEnum {
 	private final String cssFilePath;
 	/** テーマを適用するためのstyleClass */
 	private final String styleClass;
+	/** Swing画面で共有するテーマ配色 */
+	private final ThemePalette themePalette;
 
-	/** コンストラクタ */
-	ThemeType(String value, String baseDisplayName, String messageKey, String cssFilePath, String styleClass) {
+	/**
+	 * テーマの保存値、JavaFX用CSS、Swing用配色を関連付けます。
+	 *
+	 * @param value プロパティファイルと紐つく値
+	 * @param baseDisplayName 基準表示名
+	 * @param messageKey 表示名のメッセージキー
+	 * @param cssFilePath JavaFXで読み込むCSSファイルパス
+	 * @param styleClass JavaFXのルートへ設定するスタイルクラス
+	 * @param themePalette Swing画面で共有する配色
+	 */
+	ThemeType(
+			String value,
+			String baseDisplayName,
+			String messageKey,
+			String cssFilePath,
+			String styleClass,
+			ThemePalette themePalette) {
 		this.value = value;
 		this.baseDisplayName = baseDisplayName;
 		this.messageKey = messageKey;
 		this.cssFilePath = cssFilePath;
 		this.styleClass = styleClass;
+		this.themePalette = themePalette;
 	}
 
 	/**
@@ -76,13 +115,21 @@ public enum ThemeType implements BaseEnum, MessageEnum {
 	}
 
 	/**
+	 * Swing画面で使用する共通配色を取得する
+	 * @return themePalette このテーマに対応するSwing配色
+	 */
+	public ThemePalette getThemePalette() {
+		return themePalette;
+	}
+
+	/**
 	 * プロパティファイルの値から対応する ThemeType を取得する。
 	 * 不正な値が指定された場合は デフォルト値を返し、ログを出力する。
 	 * @param raw プロパティファイルと紐つく値
 	 * @return 対応する ThemeType、またはデフォルトの ThemeType
 	 */
 	public static ThemeType parseOrDefault(String raw) {
-		return BaseEnum.parseOrDefault(ThemeType.class, raw, STORYBOOK, PROPERTY_THEME);
+		return BaseEnum.parseOrDefault(ThemeType.class, raw, DEFAULT, PROPERTY_THEME);
 	}
 
 	/**

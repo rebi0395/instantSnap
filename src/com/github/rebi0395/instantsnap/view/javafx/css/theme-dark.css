@@ -1,0 +1,364 @@
+/* =========================================================
+ * Dark theme
+ * デフォルトテーマの寸法と配置は変えず、配色だけを暗色へ置き換える。
+ * root に theme-dark が付いている間だけ設定画面へ適用される。
+ * ========================================================= */
+
+.theme-dark {
+    -dark-window: #1b1f26;
+    -dark-surface: #242a33;
+    -dark-surface-raised: #2c333e;
+    -dark-surface-hover: #353e4b;
+    -dark-border: #46515f;
+    -dark-border-strong: #607084;
+    -dark-text: #edf1f5;
+    -dark-text-muted: #b8c1cc;
+    -dark-accent: #64a9e8;
+    -dark-accent-strong: #2f80c9;
+    -dark-focus: rgba(100, 169, 232, 0.70);
+
+    -fx-background-color: -dark-window;
+    -fx-text-fill: -dark-text;
+}
+
+/* 文字と上部ステータス */
+.theme-dark .label,
+.theme-dark .check-box,
+.theme-dark .radio-button {
+    -fx-text-fill: -dark-text;
+}
+
+.theme-dark .top-setting-label {
+    -fx-text-fill: -dark-text-muted;
+}
+
+.theme-dark .status-area {
+    -fx-background-color: -dark-surface;
+    -fx-border-color: -dark-accent -dark-border -dark-border -dark-accent;
+}
+
+.theme-dark .status-label {
+    -fx-text-fill: -dark-text;
+}
+
+/* タブとスクロール領域 */
+.theme-dark .main-tab-pane .tab-header-background {
+    -fx-background-color: #181c22;
+    -fx-border-color: -dark-border;
+}
+
+.theme-dark .main-tab-pane .tab {
+    -fx-background-color: linear-gradient(to bottom, #303743, #262c35);
+    -fx-border-color: -dark-border;
+}
+
+.theme-dark .main-tab-pane .tab:hover {
+    -fx-background-color: -dark-surface-hover;
+}
+
+.theme-dark .main-tab-pane .tab:selected {
+    -fx-background-color: -dark-surface;
+    -fx-border-color: -dark-accent;
+}
+
+.theme-dark .main-tab-pane .tab-label {
+    -fx-text-fill: -dark-text-muted;
+}
+
+.theme-dark .main-tab-pane .tab:selected .tab-label {
+    -fx-text-fill: -dark-text;
+}
+
+.theme-dark .scroll-pane,
+.theme-dark .scroll-pane > .viewport,
+.theme-dark .scroll-pane .corner {
+    -fx-background-color: -dark-window;
+}
+
+.theme-dark .scroll-bar:vertical {
+    -fx-background-color: #1d2229;
+}
+
+.theme-dark .scroll-bar:vertical .track {
+    -fx-background-color: #1d2229;
+    -fx-border-color: transparent;
+}
+
+.theme-dark .scroll-bar:vertical .thumb {
+    -fx-background-color: #596575;
+    -fx-background-radius: 5px;
+}
+
+.theme-dark .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: #6b7889;
+}
+
+.theme-dark .scroll-bar .increment-button,
+.theme-dark .scroll-bar .decrement-button {
+    -fx-background-color: #1d2229;
+}
+
+/* 設定項目のカード */
+.theme-dark .section-border {
+    -fx-background-color: -dark-surface;
+    -fx-border-color: #39434f;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.32), 8, 0.12, 0, 2);
+}
+
+.theme-dark .section-border:hover {
+    -fx-border-color: -dark-border-strong;
+}
+
+.theme-dark .section-title,
+.theme-dark .section-main-title {
+    -fx-text-fill: -dark-text;
+}
+
+.theme-dark .current-value {
+    -fx-background-color: #243c55;
+    -fx-border-color: #365d80;
+    -fx-text-fill: #9dcefa;
+}
+
+.theme-dark .status-enabled {
+    -fx-text-fill: #74d995;
+}
+
+.theme-dark .status-disabled {
+    -fx-text-fill: #aeb7c2;
+}
+
+/* 暗色背景でも設定項目を判別できるよう、デフォルトアイコンの明色版へ差し替える。 */
+.theme-dark .icon-shortcut {
+    -fx-background-image: url("/images/theme/dark/icon-shortcut-32.png");
+}
+
+.theme-dark .icon-snap-area {
+    -fx-background-image: url("/images/theme/dark/icon-snap-area-32.png");
+}
+
+.theme-dark .icon-snap-option {
+    -fx-background-image: url("/images/theme/dark/icon-snap-option-32.png");
+}
+
+.theme-dark .icon-save-method {
+    -fx-background-image: url("/images/theme/dark/icon-save-method-32.png");
+}
+
+.theme-dark .icon-after-snap {
+    -fx-background-image: url("/images/theme/dark/icon-after-snap-32.png");
+}
+
+.theme-dark .icon-notification {
+    -fx-background-image: url("/images/theme/dark/icon-notification-32.png");
+}
+
+.theme-dark .icon-sound {
+    -fx-background-image: url("/images/theme/dark/icon-sound-32.png");
+}
+
+/* 入力欄とコンボボックス */
+.theme-dark .text-field,
+.theme-dark .combo-box-base {
+    -fx-background-color: -dark-surface-raised;
+    -fx-border-color: -dark-border;
+    -fx-text-fill: -dark-text;
+    -fx-prompt-text-fill: #8f9aa7;
+}
+
+.theme-dark .combo-box-base:hover,
+.theme-dark .text-field:hover {
+    -fx-background-color: -dark-surface-hover;
+    -fx-border-color: -dark-border-strong;
+}
+
+.theme-dark .combo-box-base:focused,
+.theme-dark .text-field:focused {
+    -fx-border-color: -dark-accent;
+    -fx-effect: dropshadow(gaussian, -dark-focus, 9, 0.30, 0, 0);
+}
+
+.theme-dark .combo-box-base:disabled,
+.theme-dark .text-field:disabled,
+.theme-dark .readonly-text-field {
+    -fx-opacity: 1.0;
+    -fx-background-color: #20252c;
+    -fx-border-color: #353d47;
+    -fx-text-fill: #89939f;
+    -fx-prompt-text-fill: #6f7984;
+}
+
+.theme-dark .combo-box .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: -dark-text;
+}
+
+.theme-dark .combo-box .arrow-button {
+    -fx-background-color: transparent;
+}
+
+.theme-dark .combo-box .arrow {
+    -fx-background-color: -dark-text-muted;
+}
+
+/* ComboBoxの候補一覧は別Popupへ表示されるため、root配下に限定しない。 */
+.combo-box-popup .list-view {
+    -fx-background-color: #242a33;
+    -fx-border-color: #536171;
+}
+
+.combo-box-popup .list-cell {
+    -fx-background-color: #242a33;
+    -fx-text-fill: #edf1f5;
+}
+
+.combo-box-popup .list-cell:hover {
+    -fx-background-color: #353e4b;
+}
+
+.combo-box-popup .list-cell:selected {
+    -fx-background-color: #315f88;
+    -fx-text-fill: #ffffff;
+}
+
+/* チェックボックスとラジオボタン */
+.theme-dark .check-box .box,
+.theme-dark .radio-button .radio {
+    -fx-background-color: -dark-surface-raised;
+    -fx-border-color: #657284;
+}
+
+.theme-dark .check-box:selected .box,
+.theme-dark .radio-button:selected .radio {
+    -fx-background-color: -dark-accent-strong;
+    -fx-border-color: #71b6f2;
+}
+
+.theme-dark .check-box:selected .mark,
+.theme-dark .radio-button:selected .dot {
+    -fx-background-color: #ffffff;
+}
+
+.theme-dark .check-box:disabled,
+.theme-dark .radio-button:disabled {
+    -fx-opacity: 0.58;
+}
+
+/* スイッチ形式のチェックボックス */
+.theme-dark .switch-check-box .box {
+    -fx-background-color: #3a424d;
+    -fx-border-color: #596575;
+}
+
+.theme-dark .switch-check-box:selected .box {
+    -fx-background-color: -dark-accent-strong;
+    -fx-border-color: #71b6f2;
+}
+
+.theme-dark .switch-check-box .mark,
+.theme-dark .switch-check-box:focused .mark,
+.theme-dark .switch-check-box:selected .mark,
+.theme-dark .switch-check-box:selected:focused .mark {
+    -fx-background-color: #f4f7fa;
+}
+
+.theme-dark .switch-check-box:focused .box,
+.theme-dark .switch-check-box:selected:focused .box {
+    -fx-border-color: -dark-accent;
+    -fx-effect: dropshadow(gaussian, -dark-focus, 8, 0.25, 0, 0);
+}
+
+/* 保存先の折りたたみ領域 */
+.theme-dark .titled-pane {
+    -fx-text-fill: -dark-text;
+}
+
+.theme-dark .titled-pane > .title {
+    -fx-background-color: linear-gradient(to bottom, #343c47, #29303a);
+    -fx-border-color: -dark-border;
+}
+
+.theme-dark .titled-pane > .title > .text {
+    -fx-fill: -dark-text;
+}
+
+.theme-dark .titled-pane > .content {
+    -fx-background-color: -dark-surface;
+    -fx-border-color: -dark-border;
+}
+
+/* 通常・補助ボタン。主操作の緑色はデフォルトテーマから継承する。 */
+.theme-dark .button {
+    -fx-background-color: linear-gradient(to bottom, #39424e, #2d343e);
+    -fx-border-color: #596575;
+    -fx-text-fill: -dark-text;
+}
+
+.theme-dark .button:hover {
+    -fx-background-color: linear-gradient(to bottom, #46515f, #353e49);
+    -fx-border-color: #738196;
+}
+
+.theme-dark .button:pressed {
+    -fx-background-color: #252b33;
+}
+
+.theme-dark .primary-action {
+    -fx-background-color: linear-gradient(to bottom, -primary-action-top, -primary-action-bottom);
+    -fx-border-color: -primary-action-border;
+    -fx-text-fill: white;
+}
+
+.theme-dark .primary-action:hover {
+    -fx-background-color: linear-gradient(to bottom, -primary-action-hover-top, -primary-action-hover-bottom);
+}
+
+.theme-dark .primary-action:pressed {
+    -fx-background-color: -primary-action-pressed;
+}
+
+.theme-dark .secondary-action,
+.theme-dark .folder-select-button {
+    -fx-background-color: linear-gradient(to bottom, #39424e, #2d343e);
+    -fx-border-color: #657487;
+    -fx-text-fill: #d9e7f4;
+}
+
+.theme-dark .secondary-action:hover,
+.theme-dark .folder-select-button:hover {
+    -fx-background-color: #414c59;
+    -fx-border-color: #78a9d1;
+}
+
+.theme-dark .secondary-action:pressed,
+.theme-dark .folder-select-button:pressed {
+    -fx-background-color: #272e37;
+}
+
+.theme-dark .separator .line {
+    -fx-border-color: #3b4551;
+}
+
+/* 入力エラーとキーボードフォーカス */
+.theme-dark .invalid-value,
+.theme-dark .text-field.invalid-value {
+    -fx-background-color: #3b2529;
+    -fx-border-color: #e06c75;
+    -fx-text-fill: #ffb4ba;
+}
+
+.theme-dark .check-box:focused .box,
+.theme-dark .radio-button:focused .radio {
+    -fx-effect: dropshadow(gaussian, -dark-focus, 8, 0.35, 0, 0);
+}
+
+.theme-dark .check-box:focused,
+.theme-dark .radio-button:focused {
+    -fx-text-fill: #9dcefa;
+}
+
+.tooltip {
+    -fx-background-color: #101318;
+    -fx-text-fill: #f4f7fa;
+    -fx-border-color: #566273;
+}

@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import com.github.rebi0395.instantsnap.common.MessageKeyConstant;
 import com.github.rebi0395.instantsnap.common.MessageKeyConverter;
 import com.github.rebi0395.instantsnap.model.bean.SnapResultBean;
+import com.github.rebi0395.instantsnap.model.enums.ThemeType;
 import com.github.rebi0395.instantsnap.service.FileOpenService;
 import com.github.rebi0395.instantsnap.view.swing.panel.SnapNotificationPanel;
 
@@ -117,15 +118,16 @@ public final class SnapNotificationPresenter {
 	 * 連続撮影の場合、表示中の通知は最新の通知で置き換えます。
 	 *
 	 * @param result 撮影結果。nullまたは保存・コピー結果がない場合は表示しない
+	 * @param themeType 撮影時点で選択されているテーマ
 	 */
-	public void show(SnapResultBean result) {
+	public void show(SnapResultBean result, ThemeType themeType) {
 		if (result == null || !result.hasResult()) {
 			// 通知の表示が不要な場合、早期リターン
 			return;
 		}
 
 		// 撮影スレッドのBeanをSwingスレッドへ持ち込まないよう、表示に必要な値だけコピーする。
-		NotificationRequest notificationRequest = createNotificationData(result);
+		NotificationRequest notificationRequest = createNotificationData(result, themeType);
 
 		boolean scheduleNotificationUpdate = false;
 		synchronized (notificationRequestLock) {
@@ -174,9 +176,10 @@ public final class SnapNotificationPresenter {
 	 * 撮影結果を元に、通知に必要な情報を通知情報レコードにまとめて返却します。
 	 *
 	 * @param result 撮影結果クラス
+	 * @param themeType 撮影時点で選択されているテーマ
 	 * @return 画像本体を保持しない、文言と保存先だけの通知情報
 	 */
-	private NotificationRequest createNotificationData(SnapResultBean result) {
+	private NotificationRequest createNotificationData(SnapResultBean result, ThemeType themeType) {
 
 		// 通知に表示するメッセージリストを作成する。
 		List<String> noticeMessageList = new ArrayList<String>();
@@ -212,7 +215,8 @@ public final class SnapNotificationPresenter {
 				openMessage,
 				result.getTargetPath(),
 				result.isOpenActionAvailable(),
-				result.getIsTmpSaved());
+				result.getIsTmpSaved(),
+				themeType);
 	}
 
 	/**
@@ -240,6 +244,7 @@ public final class SnapNotificationPresenter {
 		}
 
 		// 再利用する通知パネルへ表示に必要な値を設定する。
+		notificationPanel.applyTheme(notificationRequest.themeType());
 		notificationPanel.setup(
 				notificationRequest.messageList(),
 				notificationRequest.openMessage(),
@@ -571,12 +576,14 @@ public final class SnapNotificationPresenter {
 	 * @param targetPath 保存先パス
 	 * @param openDirectoryAvailable 通知クリックで保存先を開ける場合true
 	 * @param isTmpSaved 一時保存の場合true
+	 * @param themeType 通知へ適用するテーマ
 	 */
 	private record NotificationRequest(
 			List<String> messageList,
 			String openMessage,
 			Path targetPath,
 			boolean openDirectoryAvailable,
-			boolean isTmpSaved) {
+			boolean isTmpSaved,
+			ThemeType themeType) {
 	}
 }

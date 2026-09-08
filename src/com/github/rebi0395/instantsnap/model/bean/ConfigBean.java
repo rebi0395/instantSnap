@@ -59,7 +59,7 @@ public class ConfigBean {
 		// -- 言語設定
 		this.languageType = LanguageType.ENGLISH;
 		// -- テーマ設定
-		this.themeType = ThemeType.STORYBOOK;
+		this.themeType = ThemeType.DEFAULT;
 
 		// -- 撮影設定
 		this.snapKeyBean = createDefaultSnapKey();

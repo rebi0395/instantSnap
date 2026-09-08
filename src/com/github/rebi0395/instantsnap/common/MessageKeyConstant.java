@@ -92,6 +92,8 @@ public final class MessageKeyConstant {
 	public static final String THEME_DEFAULT = "theme.default";
 	/** テーマ：絵本 */
 	public static final String THEME_STORYBOOK = "theme.storybook";
+	/** テーマ：ダーク */
+	public static final String THEME_DARK = "theme.dark";
 
 	// -- SnapAreaType --
 	/** 撮影範囲：使用しているウィンドウのみ撮影 */
