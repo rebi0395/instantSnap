@@ -24,15 +24,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.rebi0395.instantsnap.common.MessageKeyConverter;
-import com.github.rebi0395.instantsnap.common.OsUtil;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
+import com.github.rebi0395.instantsnap.service.ScreenCaptureExclusionService;
 import com.github.rebi0395.instantsnap.view.swing.panel.RangeSelectionPanel;
-import com.sun.jna.Native;
-import com.sun.jna.Pointer;
-import com.sun.jna.platform.win32.WinDef.BOOL;
-import com.sun.jna.platform.win32.WinDef.HWND;
-import com.sun.jna.win32.StdCallLibrary;
-import com.sun.jna.win32.W32APIOptions;
 
 /**
  * Swingを使用して範囲選択画面の表示を制御するダイアログクラス
@@ -48,11 +42,11 @@ public class RangeSelectionDialog {
 	/** 言語変換コンバーター */
 	private MessageKeyConverter converter;
 
-	/** 画面キャプチャからダイアログを除外する設定値 */
-	private static final int WDA_EXCLUDEFROMCAPTURE = 0x00000011;
-
 	/** 範囲決定通知リスナー */
 	private final SelectionListener listener;
+
+	/** 範囲選択画面を撮影対象から除外するサービス */
+	private final ScreenCaptureExclusionService screenCaptureExclusionService;
 
 	/** 表示中の範囲選択ダイアログ */
 	private JDialog dialog;
@@ -76,6 +70,7 @@ public class RangeSelectionDialog {
 		this.config = config;
 		this.converter = converter;
 		this.listener = listener;
+		this.screenCaptureExclusionService = new ScreenCaptureExclusionService();
 	}
 
 	/**
@@ -200,10 +195,8 @@ public class RangeSelectionDialog {
 			this.dialog = createdDialog;
 			this.selectionPanel = createdPanel;
 
-			if (OsUtil.isWindows()) {
-				// user32を用いて、範囲選択ダイアログをキャプチャ対象から除外する
-				excludeFromScreenCapture(createdDialog);
-			}
+			// 範囲選択画面はユーザー設定にかかわらず、常に撮影対象から除外する。
+			screenCaptureExclusionService.setExcluded(createdDialog, true);
 
 			listener.onShown(); // 画面表示を通知
 
@@ -322,33 +315,6 @@ public class RangeSelectionDialog {
 	}
 
 	/**
-	 * 指定したダイアログをキャプチャ対象から除外する。
-	 *
-	 * @param targetDialog 除外対象のダイアログ
-	 */
-	private void excludeFromScreenCapture(JDialog targetDialog) {
-		try {
-			// SwingダイアログからWindowsのウィンドウハンドルを取得する
-			Pointer windowPointer = Native.getComponentPointer(targetDialog);
-			HWND windowHandle = new HWND(windowPointer);
-
-			// 範囲選択ダイアログをキャプチャ対象から除外する
-			BOOL result = User32Ex.INSTANCE.SetWindowDisplayAffinity(
-					windowHandle,
-					WDA_EXCLUDEFROMCAPTURE);
-
-			if (!result.booleanValue()) {
-				// 設定に失敗しても範囲選択自体は継続する
-				log.warn(
-						"範囲選択画面を撮影対象から除外できませんでした。errorCode={}",
-						Native.getLastError());
-			}
-		} catch (RuntimeException | LinkageError e) {
-			log.warn("範囲選択画面を撮影対象から除外できませんでした。", e);
-		}
-	}
-
-	/**
 	 * 範囲選択画面を表示しているかを取得する。
 	 *
 	 * @return 画面を表示中ならtrue
@@ -357,24 +323,4 @@ public class RangeSelectionDialog {
 		return dialog != null && dialog.isShowing();
 	}
 
-	/**
-	 * JNAを介して呼び出すWindowsのUser32 API
-	 */
-	private interface User32Ex extends StdCallLibrary {
-
-		/** User32 APIを呼び出すためのインスタンス */
-		User32Ex INSTANCE = Native.load(
-				"user32",
-				User32Ex.class,
-				W32APIOptions.DEFAULT_OPTIONS);
-
-		/**
-		 * 指定したウィンドウの画面キャプチャに関する表示方法を設定する。
-		 *
-		 * @param window 設定対象のウィンドウハンドル
-		 * @param affinity 画面キャプチャ時の表示方法
-		 * @return 設定に成功した場合はTRUE、失敗した場合はFALSE
-		 */
-		BOOL SetWindowDisplayAffinity(HWND window, int affinity);
-	}
 }

@@ -32,14 +32,18 @@ public class SnapAreaResolver {
 	private static final Logger log = LoggerFactory.getLogger(SnapAreaResolver.class);
 
 	/**
-	 * 列挙型に対応する撮影範囲の座標を返却する
+	 * 列挙型に対応する撮影範囲の座標を返却します。
+	 * ウィンドウ情報は全ての撮影種別で受け取り、アクティブウィンドウ撮影の場合だけ使用します。
+	 * これにより、呼び出し側は撮影種別によって範囲解決の経路を切り替える必要がありません。
+	 *
 	 * @param snapAreaType 撮影範囲の種別
+	 * @param windowHandle 撮影要求時に取得したウィンドウのネイティブハンドル
 	 * @return 撮影範囲の座標
 	 */
-	public Rectangle resolveArea(SnapAreaType snapAreaType) {
+	public Rectangle resolveArea(SnapAreaType snapAreaType, long windowHandle) {
 		switch (snapAreaType) {
 		case ACTIVE_WINDOW:
-			return getActiveWindowArea();
+			return getActiveWindowArea(windowHandle);
 
 		case ACTIVE_SCREEN:
 			return getActiveScreenArea();
@@ -56,22 +60,33 @@ public class SnapAreaResolver {
 	}
 
 	/**
-	 * 影を除外したアクティブウィンドウの撮影範囲を取得する
+	 * 指定されたウィンドウについて、影を除外した撮影範囲を取得します。
 	 * (OSがwindowsのみ対応)
+	 *
+	 * @param windowHandleValue 撮影対象ウィンドウのネイティブハンドル
 	 * @return Rectangle 影を除外したアクティブウィンドウの範囲
 	 */
-	public Rectangle getActiveWindowArea() {
+	private Rectangle getActiveWindowArea(long windowHandleValue) {
 		// Windows以外はデフォルト挙動を行う
 		if (!OsUtil.isWindows()) {
 			log.info("osがwindowsではありません");
 			return getDefaultScreenArea();
 		}
+		if (windowHandleValue == 0L) {
+			log.warn("撮影対象ウィンドウを取得できないため、アクティブモニターを撮影します");
+			return getDefaultScreenArea();
+		}
 
 		try {
-			return WindowsActiveWindowResolver.resolve(this);
+			HWND windowHandle = new HWND(new Pointer(windowHandleValue));
+			if (!User32.INSTANCE.IsWindow(windowHandle)) {
+				log.warn("撮影対象ウィンドウが既に閉じられているため、アクティブモニターを撮影します");
+				return getDefaultScreenArea();
+			}
+			return WindowsActiveWindowResolver.resolveActiveWindow(this, windowHandle);
 
 		} catch (Throwable t) {
-			log.warn("アクティブウィンドウの撮影範囲取得に失敗しました。デフォルト撮影範囲へフォールバックします", t);
+			log.warn("撮影対象ウィンドウの範囲取得に失敗したため、アクティブモニターを撮影します", t);
 			return getDefaultScreenArea();
 		}
 	}
@@ -202,17 +217,13 @@ public class SnapAreaResolver {
 		}
 
 		/**
-		 * アクティブウィンドウの撮影範囲を解決する
+		 * 指定したWindowsウィンドウの撮影範囲を解決します。
+		 *
 		 * @param parent 外側の撮影範囲解決クラス
-		 * @return アクティブウィンドウの撮影範囲
+		 * @param hwnd 撮影対象のウィンドウハンドル
+		 * @return 指定ウィンドウの撮影範囲
 		 */
-		private static Rectangle resolve(SnapAreaResolver parent) {
-			// アクティブウィンドウの識別番号を取得する
-			HWND hwnd = USER32.GetForegroundWindow();
-			if (hwnd == null) {
-				log.warn("アクティブウィンドウの識別番号の取得に失敗しました");
-				return parent.getDefaultScreenArea();
-			}
+		private static Rectangle resolveActiveWindow(SnapAreaResolver parent, HWND hwnd) {
 
 			// Windowsから影を除外した物理座標を取得する
 			Rectangle physRect = getPhysicalWindowRect(hwnd);

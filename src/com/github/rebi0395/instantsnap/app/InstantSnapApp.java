@@ -176,8 +176,11 @@ public final class InstantSnapApp implements KeyEventListener, SettingsChangeLis
 			Files.createDirectories(processLog.getParent());
 			processBuilder.redirectErrorStream(true);
 			processBuilder.redirectOutput(processLog.toFile());
-			settingsProcess = processBuilder.start();
-			watchSettingsProcess(settingsProcess);
+			Process startedProcess = processBuilder.start();
+			settingsProcess = startedProcess;
+			// 別プロセスの設定画面もInstantSnap内部のウィンドウと判定できるよう登録する。
+			coordinator.registerSettingsProcess(startedProcess.pid());
+			watchSettingsProcess(startedProcess);
 		} catch (IOException e) {
 			log.error("JavaFX設定画面の起動に失敗しました", e);
 			settingsProcess = null;
@@ -267,6 +270,7 @@ public final class InstantSnapApp implements KeyEventListener, SettingsChangeLis
 				Thread.currentThread().interrupt();
 				log.warn("設定プロセスの終了待機が中断されました", e);
 			} finally {
+				coordinator.unregisterSettingsProcess(process.pid());
 				settingsProcess = null;
 				if (!shuttingDown) {
 					SwingUtilities.invokeLater(() -> mainWindowPresenter.setSettingsAvailable(true));
@@ -324,6 +328,16 @@ public final class InstantSnapApp implements KeyEventListener, SettingsChangeLis
 	public void requestSnap() {
 		if (!shuttingDown) {
 			coordinator.requestSnap();
+		}
+	}
+
+	/**
+	 * ミニウィンドウの撮影ボタンからの要求をCoordinatorへ委譲します。
+	 * ショートカット撮影とは分け、ボタン操作前に前面だった外部ウィンドウを使用します。
+	 */
+	public void requestSnapFromMainWindow() {
+		if (!shuttingDown) {
+			coordinator.requestSnapFromMainWindow();
 		}
 	}
 

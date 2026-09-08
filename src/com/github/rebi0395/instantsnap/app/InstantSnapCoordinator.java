@@ -16,6 +16,7 @@ import com.github.rebi0395.instantsnap.model.bean.SnapResultBean;
 import com.github.rebi0395.instantsnap.model.enums.AfterSnapActionType;
 import com.github.rebi0395.instantsnap.model.enums.LanguageType;
 import com.github.rebi0395.instantsnap.repository.PropertiesRepository;
+import com.github.rebi0395.instantsnap.service.ActiveWindowResolver;
 import com.github.rebi0395.instantsnap.service.MouseCursorService;
 import com.github.rebi0395.instantsnap.service.FileOpenService;
 import com.github.rebi0395.instantsnap.service.FilePathService;
@@ -53,6 +54,8 @@ public class InstantSnapCoordinator implements SelectionListener {
 	private final SnapSaveService saveService;
 	/** 全体の撮影処理クラス */
 	private final TakeSnapService takeSnapService;
+	/** 撮影対象となるアクティブウィンドウを特定するクラス */
+	private final ActiveWindowResolver activeWindowResolver;
 
 	/** ファイルを開くクラス */
 	private final FileOpenService fileOpenService;
@@ -92,6 +95,7 @@ public class InstantSnapCoordinator implements SelectionListener {
 		this.fileOpenService = new FileOpenService();
 		this.soundPlayer = new SoundPlayer();
 		this.mouseCursorService = new MouseCursorService();
+		this.activeWindowResolver = new ActiveWindowResolver();
 
 		// 依存性の注入があるクラス
 		this.converter = new MessageKeyConverter(config.getLanguageType());
@@ -203,10 +207,32 @@ public class InstantSnapCoordinator implements SelectionListener {
 	 * 撮影トリガーが押されたとき呼ばれる。撮影処理を呼び出す
 	 */
 	public void requestSnap() {
+		long snapTargetWindowHandle = activeWindowResolver.getForegroundWindowHandle(
+				config.getIsIncludeSettingWindow());
+		requestSnap(snapTargetWindowHandle);
+	}
+
+	/**
+	 * ミニウィンドウの撮影ボタンから撮影を要求します。
+	 * ボタン操作によってミニウィンドウが前面になっているため、Zオーダー上で
+	 * その直後にある外部ウィンドウをアクティブウィンドウ撮影の対象にします。
+	 */
+	public void requestSnapFromMainWindow() {
+		long snapTargetWindowHandle = activeWindowResolver.getPreviousExternalWindowHandle();
+		requestSnap(snapTargetWindowHandle);
+	}
+
+	/**
+	 * 解決済みのウィンドウハンドルを使用して撮影処理をキューへ登録します。
+	 *
+	 * @param snapTargetWindowHandle アクティブウィンドウ撮影の対象。未取得の場合は0
+	 */
+	private void requestSnap(long snapTargetWindowHandle) {
 		if (rangeSelectionModeActive && rangeSelection == null) {
 			// 範囲選択画面が表示中、かつ範囲が未確定
 			return;
 		}
+
 		// 別スレッド立ち上げ
 		executor.submit(() -> {
 			SnapResultBean result;
@@ -219,7 +245,11 @@ public class InstantSnapCoordinator implements SelectionListener {
 			synchronized (configLock) { // 排他制御
 				try {
 					// 撮影処理
-					result = takeSnapService.execute(config, snapRange);
+					result = takeSnapService.execute(
+							config,
+							snapRange,
+							snapTargetWindowHandle);
+
 					// ロック中に撮影後処理に使う分の設定値を退避する
 					afterSnapData = new AfterSnapData(
 							new SnapResultBean(result),
@@ -239,6 +269,24 @@ public class InstantSnapCoordinator implements SelectionListener {
 			}
 
 		});
+	}
+
+	/**
+	 * 起動したJavaFX設定プロセスを内部ウィンドウとして外部撮影対象から除外します。
+	 *
+	 * @param processId 設定プロセスのID
+	 */
+	public void registerSettingsProcess(long processId) {
+		activeWindowResolver.registerSettingsProcess(processId);
+	}
+
+	/**
+	 * 終了したJavaFX設定プロセスを内部ウィンドウの一覧から解除します。
+	 *
+	 * @param processId 終了した設定プロセスのID
+	 */
+	public void unregisterSettingsProcess(long processId) {
+		activeWindowResolver.unregisterSettingsProcess(processId);
 	}
 
 	/**

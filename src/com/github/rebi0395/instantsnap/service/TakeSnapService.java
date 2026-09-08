@@ -45,10 +45,14 @@ public class TakeSnapService {
 	 *
 	 * @param config ユーザーの設定値
 	 * @param rangeSelection ドラッグ指定の撮影範囲
+	 * @param windowHandle 撮影要求時に取得したウィンドウのネイティブハンドル
 	 * @return 撮影処理結果
-	 * @throws ServiceException
+	 * @throws ServiceException 撮影処理に失敗した場合
 	 */
-	public SnapResultBean execute(ConfigBean config, Rectangle rangeSelection) throws ServiceException {
+	public SnapResultBean execute(
+			ConfigBean config,
+			Rectangle rangeSelection,
+			long windowHandle) throws ServiceException {
 
 		// 行うべきアクションが設定されていない場合、早期リターン
 		if (!hasResultAction(config)) {
@@ -59,8 +63,10 @@ public class TakeSnapService {
 		SnapResultBean resultBean = new SnapResultBean();
 
 		try {
-			// 画面サイズを取得
-			Rectangle snapSize = areaResolver.resolveArea(config.getSnapAreaType());
+			// 撮影種別にかかわらずウィンドウ情報を渡し、範囲解決の入口を統一する。
+			Rectangle snapSize = areaResolver.resolveArea(
+					config.getSnapAreaType(),
+					windowHandle);
 			if (rangeSelection != null) {
 				// ドラッグ指定している場合は、撮影範囲をドラッグ範囲で上書きする
 				snapSize = rangeSelection;
