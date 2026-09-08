@@ -4,7 +4,7 @@ import static com.github.rebi0395.instantsnap.common.AppConstant.*;
 import static com.github.rebi0395.instantsnap.common.MessageKeyConstant.*;
 
 import com.github.rebi0395.instantsnap.common.MessageKeyConverter;
-import com.github.rebi0395.instantsnap.model.bean.ThemePalette;
+import com.github.rebi0395.instantsnap.view.swing.util.ThemePalette;
 
 import javafx.util.StringConverter;
 

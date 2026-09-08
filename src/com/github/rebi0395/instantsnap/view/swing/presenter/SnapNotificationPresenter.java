@@ -73,7 +73,7 @@ public final class SnapNotificationPresenter {
 	private SnapNotificationPanel notificationPanel;
 
 	/** EDTでまだ表示していない最新の通知情報 */
-	private NotificationRequest pendingNotificationRequest;
+	private NotificationRequest latestNotificationRequest;
 
 	/** 最新通知を表示する処理がEDTへ登録済みの場合true */
 	private boolean notificationUpdateScheduled;
@@ -136,7 +136,7 @@ public final class SnapNotificationPresenter {
 			}
 
 			// EDTが混雑していても通知要求を蓄積せず、未表示分を最新の1件で置き換える。
-			pendingNotificationRequest = notificationRequest;
+			latestNotificationRequest = notificationRequest;
 			if (!notificationUpdateScheduled) {
 				notificationUpdateScheduled = true;
 				scheduleNotificationUpdate = true;
@@ -158,12 +158,12 @@ public final class SnapNotificationPresenter {
 		NotificationRequest notificationRequest;
 		synchronized (notificationRequestLock) {
 			if (closed) {
-				pendingNotificationRequest = null;
+				latestNotificationRequest = null;
 				notificationUpdateScheduled = false;
 				return;
 			}
-			notificationRequest = pendingNotificationRequest;
-			pendingNotificationRequest = null;
+			notificationRequest = latestNotificationRequest;
+			latestNotificationRequest = null;
 			notificationUpdateScheduled = false;
 		}
 
@@ -305,7 +305,7 @@ public final class SnapNotificationPresenter {
 		}
 
 		hideWithFadeOut();
-		fileOpenService.openDirectory(targetPath);
+		fileOpenService.openDirectoryAndSelect(targetPath);
 	}
 
 	/**
@@ -555,7 +555,7 @@ public final class SnapNotificationPresenter {
 	public void close() {
 		synchronized (notificationRequestLock) {
 			closed = true;
-			pendingNotificationRequest = null;
+			latestNotificationRequest = null;
 			notificationUpdateScheduled = false;
 		}
 

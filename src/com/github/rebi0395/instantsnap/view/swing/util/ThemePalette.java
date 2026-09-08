@@ -1,4 +1,4 @@
-package com.github.rebi0395.instantsnap.model.bean;
+package com.github.rebi0395.instantsnap.view.swing.util;
 
 import java.awt.Color;
 
@@ -6,45 +6,41 @@ import javax.swing.UIManager;
 
 /**
  * Swing画面で共有するテーマ配色を保持する不変クラスです。
- * <p>
- * JavaFXの配色はCSSが担当し、このクラスはメインウィンドウや通知などの
- * Swing画面だけで使用します。
- * </p>
  */
 public final class ThemePalette {
 
 	/** 画面全体の背景色 */
-	private final Color background;
+	private final Color backgroundColor;
 
 	/** 入力欄やボタンなどの背景色 */
-	private final Color controlBackground;
+	private final Color controlBackgroundColor;
 
 	/** 通常の文字色 */
-	private final Color text;
+	private final Color textColor;
 
 	/** ショートカットや閉じるボタンなどの補助文字色 */
-	private final Color mutedText;
+	private final Color mutedTextColor;
 
 	/** 入力欄やボタンの枠線色 */
-	private final Color border;
+	private final Color borderColor;
 
 	/** 一覧で選択している項目の背景色 */
-	private final Color selectionBackground;
+	private final Color selectionBackgroundColor;
 
 	/** タイトルや主要操作に使用するアクセント色 */
-	private final Color accent;
+	private final Color accentColor;
 
 	/** アクセント色の上へ表示する文字色 */
-	private final Color accentText;
+	private final Color accentTextColor;
 
 	/** 通知本体の背景色 */
-	private final Color notificationBackground;
+	private final Color notificationBackgroundColor;
 
 	/** 通知本体の枠線色 */
-	private final Color notificationBorder;
+	private final Color notificationBorderColor;
 
 	/** 通知本体の影色 */
-	private final Color notificationShadow;
+	private final Color notificationShadowColor;
 
 	/**
 	 * 各Swing画面で使用する配色を生成します。
@@ -62,17 +58,17 @@ public final class ThemePalette {
 			Color notificationBackground,
 			Color notificationBorder,
 			Color notificationShadow) {
-		this.background = background;
-		this.controlBackground = controlBackground;
-		this.text = text;
-		this.mutedText = mutedText;
-		this.border = border;
-		this.selectionBackground = selectionBackground;
-		this.accent = accent;
-		this.accentText = accentText;
-		this.notificationBackground = notificationBackground;
-		this.notificationBorder = notificationBorder;
-		this.notificationShadow = notificationShadow;
+		this.backgroundColor = background;
+		this.controlBackgroundColor = controlBackground;
+		this.textColor = text;
+		this.mutedTextColor = mutedText;
+		this.borderColor = border;
+		this.selectionBackgroundColor = selectionBackground;
+		this.accentColor = accent;
+		this.accentTextColor = accentText;
+		this.notificationBackgroundColor = notificationBackground;
+		this.notificationBorderColor = notificationBorder;
+		this.notificationShadowColor = notificationShadow;
 	}
 
 	/**
@@ -108,16 +104,16 @@ public final class ThemePalette {
 	 */
 	public static ThemePalette createDark() {
 		return new ThemePalette(
-				new Color(27, 31, 38),
-				new Color(44, 51, 62),
-				new Color(237, 241, 245),
-				new Color(184, 193, 204),
-				new Color(70, 81, 95),
-				new Color(49, 95, 136),
-				new Color(100, 169, 232),
+				new Color(15, 17, 21),
+				new Color(28, 33, 40),
+				new Color(242, 245, 248),
+				new Color(196, 205, 215),
+				new Color(116, 131, 151),
+				new Color(67, 113, 153),
+				new Color(112, 184, 242),
 				new Color(21, 32, 43),
-				new Color(36, 42, 51),
-				new Color(70, 81, 95),
+				new Color(24, 28, 34),
+				new Color(116, 131, 151),
 				new Color(0, 0, 0, 40));
 	}
 
@@ -158,105 +154,105 @@ public final class ThemePalette {
 
 	/**
 	 * 画面全体の背景色を取得する
-	 * @return background 画面全体の背景色
+	 * @return backgroundColor 画面全体の背景色
 	 */
-	public Color getBackground() {
-		return background;
+	public Color getBackgroundColor() {
+		return backgroundColor;
 	}
 
 	/**
 	 * 入力欄やボタンなどの背景色を取得する
-	 * @return controlBackground 入力欄やボタンなどの背景色
+	 * @return controlBackgroundColor 入力欄やボタンなどの背景色
 	 */
-	public Color getControlBackground() {
-		return controlBackground;
+	public Color getControlBackgroundColor() {
+		return controlBackgroundColor;
 	}
 
 	/**
 	 * 通常の文字色を取得する
-	 * @return text 通常の文字色
+	 * @return textColor 通常の文字色
 	 */
-	public Color getText() {
-		return text;
+	public Color getTextColor() {
+		return textColor;
 	}
 
 	/**
 	 * 補助文字色を取得する
-	 * @return mutedText 補助文字色
+	 * @return mutedTextColor 補助文字色
 	 */
-	public Color getMutedText() {
-		return mutedText;
+	public Color getMutedTextColor() {
+		return mutedTextColor;
 	}
 
 	/**
 	 * 入力欄やボタンの枠線色を取得する
-	 * @return border 入力欄やボタンの枠線色
+	 * @return borderColor 入力欄やボタンの枠線色
 	 */
-	public Color getBorder() {
-		return border;
+	public Color getBorderColor() {
+		return borderColor;
 	}
 
 	/**
 	 * 一覧で選択している項目の背景色を取得する
-	 * @return selectionBackground 一覧で選択している項目の背景色
+	 * @return selectionBackgroundColor 一覧で選択している項目の背景色
 	 */
-	public Color getSelectionBackground() {
-		return selectionBackground;
+	public Color getSelectionBackgroundColor() {
+		return selectionBackgroundColor;
 	}
 
 	/**
 	 * タイトルや主要操作に使用するアクセント色を取得する
-	 * @return accent タイトルや主要操作に使用するアクセント色
+	 * @return accentColor タイトルや主要操作に使用するアクセント色
 	 */
-	public Color getAccent() {
-		return accent;
+	public Color getAccentColor() {
+		return accentColor;
 	}
 
 	/**
 	 * アクセント色の上へ表示する文字色を取得する
-	 * @return accentText アクセント色の上へ表示する文字色
+	 * @return accentTextColor アクセント色の上へ表示する文字色
 	 */
-	public Color getAccentText() {
-		return accentText;
+	public Color getAccentTextColor() {
+		return accentTextColor;
 	}
 
 	/**
 	 * アクセント操作へマウスを乗せたときの色を取得する
 	 * @return アクセント色を一段階暗くしたホバー色
 	 */
-	public Color getAccentHover() {
-		return accent.darker();
+	public Color getAccentHoverColor() {
+		return accentColor.darker();
 	}
 
 	/**
 	 * アクセント操作を押しているときの色を取得する
 	 * @return アクセント色を二段階暗くした押下色
 	 */
-	public Color getAccentPressed() {
-		return accent.darker().darker();
+	public Color getAccentPressedColor() {
+		return accentColor.darker().darker();
 	}
 
 	/**
 	 * 通知本体の背景色を取得する
-	 * @return notificationBackground 通知本体の背景色
+	 * @return notificationBackgroundColor 通知本体の背景色
 	 */
-	public Color getNotificationBackground() {
-		return notificationBackground;
+	public Color getNotificationBackgroundColor() {
+		return notificationBackgroundColor;
 	}
 
 	/**
 	 * 通知本体の枠線色を取得する
-	 * @return notificationBorder 通知本体の枠線色
+	 * @return notificationBorderColor 通知本体の枠線色
 	 */
-	public Color getNotificationBorder() {
-		return notificationBorder;
+	public Color getNotificationBorderColor() {
+		return notificationBorderColor;
 	}
 
 	/**
 	 * 通知本体の影色を取得する
-	 * @return notificationShadow 通知本体の影色
+	 * @return notificationShadowColor 通知本体の影色
 	 */
-	public Color getNotificationShadow() {
-		return notificationShadow;
+	public Color getNotificationShadowColor() {
+		return notificationShadowColor;
 	}
 }
