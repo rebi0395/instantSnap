@@ -11,26 +11,29 @@ import java.awt.event.ActionListener;
 import java.net.URL;
 
 import javax.swing.BorderFactory;
-import javax.swing.DefaultListCellRenderer;
+import javax.swing.AbstractButton;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import javax.swing.JToggleButton;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.plaf.basic.BasicButtonUI;
 
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.model.bean.KeyCombinationBean;
-import com.github.rebi0395.instantsnap.model.bean.ThemePalette;
 import com.github.rebi0395.instantsnap.model.enums.LanguageType;
+import com.github.rebi0395.instantsnap.model.enums.SnapAreaType;
 import com.github.rebi0395.instantsnap.model.enums.ThemeType;
 import com.github.rebi0395.instantsnap.view.swing.icon.ActionIcon;
+import com.github.rebi0395.instantsnap.view.swing.icon.QuickSettingIcon;
 import com.github.rebi0395.instantsnap.view.swing.presenter.MainWindowPresenter;
+import com.github.rebi0395.instantsnap.view.swing.util.ComboRenderer;
+import com.github.rebi0395.instantsnap.view.swing.util.ThemePalette;
 
 /**
  * 常駐中に表示する小型メインウィンドウのパネルです。
@@ -50,6 +53,15 @@ public class MainWindowPanel extends JPanel implements ActionListener {
 
 	/** ショートカット表示領域のサイズ */
 	private static final Dimension SHORTCUT_LABEL_SIZE = new Dimension(126, 22);
+
+	/** ショートカット表示に使用するフォントサイズ */
+	private static final float SHORTCUT_FONT_SIZE = 12.0f;
+
+	/** 下段に表示する撮影範囲選択欄のサイズ */
+	private static final Dimension SNAP_AREA_COMBO_SIZE = new Dimension(238, 30);
+
+	/** 下段に表示する小型操作ボタンのサイズ */
+	private static final Dimension QUICK_SETTING_BUTTON_SIZE = new Dimension(34, 34);
 
 	/** 絵本テーマで設定ボタンに表示するアイコン */
 	private static final String STORYBOOK_SETTINGS_ICON_PATH = "/images/theme/storybook/icon-bear-32.png";
@@ -72,8 +84,17 @@ public class MainWindowPanel extends JPanel implements ActionListener {
 	/** ミニウィンドウ上で言語を変更する選択欄 */
 	private final JComboBox<LanguageType> languageComboBox;
 
-	/** 言語選択欄へ現在のテーマ色を反映するレンダラー */
-	private final LanguageListCellRenderer languageRenderer;
+	/** ミニウィンドウ上で撮影範囲を変更する選択欄 */
+	private final JComboBox<SnapAreaOption> snapAreaComboBox;
+
+	/** 現在設定されている保存先フォルダを開く小型ボタン */
+	private final JButton openSaveDirectoryButton;
+
+	/** 撮影後の通知表示を有効・無効にする小型ボタン */
+	private final JToggleButton notificationButton;
+
+	/** コンボボックスへ現在のテーマ色を反映するレンダラー */
+	private final ComboRenderer renderer;
 
 	/** 通常撮影のショートカット表示 */
 	private final JLabel captureShortcutLabel;
@@ -105,6 +126,15 @@ public class MainWindowPanel extends JPanel implements ActionListener {
 	/** プログラムから言語選択を更新中の場合true */
 	private boolean updatingLanguageSelection;
 
+	/** プログラムから撮影範囲選択を更新中の場合true */
+	private boolean updatingSnapAreaSelection;
+
+	/** 保存先フォルダを開く操作が利用可能な場合true */
+	private boolean saveDirectoryAvailable;
+
+	/** 現在のテーマで使用する配色 */
+	private ThemePalette currentThemePalette;
+
 	/**
 	 * 現在の設定値を使ってパネルを生成します。
 	 *
@@ -128,8 +158,13 @@ public class MainWindowPanel extends JPanel implements ActionListener {
 		this.rangeSelectionButton = createActionButton(standardRangeSelectionIcon);
 		this.captureShortcutLabel = createShortcutLabel();
 		this.rangeSelectionShortcutLabel = createShortcutLabel();
-		this.languageRenderer = new LanguageListCellRenderer();
+		this.renderer = new ComboRenderer(ThemeType.DEFAULT, ThemeType.DEFAULT.getThemePalette());
 		this.languageComboBox = createLanguageComboBox();
+		this.snapAreaComboBox = createSnapAreaComboBox();
+		this.openSaveDirectoryButton = createQuickActionButton(
+				new QuickSettingIcon(QuickSettingIcon.Type.DIRECTORY));
+		this.notificationButton = createNotificationButton(
+				new QuickSettingIcon(QuickSettingIcon.Type.NOTIFICATION));
 
 		refresh(config);
 		initializeLayout();
@@ -156,6 +191,20 @@ public class MainWindowPanel extends JPanel implements ActionListener {
 
 		constraints.gridx = 2;
 		add(createActionColumn(rangeSelectionShortcutLabel, rangeSelectionButton), constraints);
+
+		// 左2列を使い、撮影範囲の長い表示名が見切れにくい配置にする。
+		constraints.gridx = 0;
+		constraints.gridy = 1;
+		constraints.gridwidth = 2;
+		constraints.fill = GridBagConstraints.HORIZONTAL;
+		constraints.insets = new Insets(8, 5, 0, 5);
+		add(snapAreaComboBox, constraints);
+
+		// 右下には、保存先を開く操作と通知表示の切替だけを小さく配置する。
+		constraints.gridx = 2;
+		constraints.gridwidth = 1;
+		constraints.fill = GridBagConstraints.NONE;
+		add(createQuickSettingPanel(), constraints);
 	}
 
 	/**
@@ -227,7 +276,7 @@ public class MainWindowPanel extends JPanel implements ActionListener {
 
 		Font baseFont = UIManager.getFont("Label.font");
 		if (baseFont != null) {
-			label.setFont(baseFont.deriveFont(Math.max(11.0f, baseFont.getSize2D() - 1.0f)));
+			label.setFont(baseFont.deriveFont(SHORTCUT_FONT_SIZE));
 		}
 		return label;
 	}
@@ -241,10 +290,83 @@ public class MainWindowPanel extends JPanel implements ActionListener {
 		JComboBox<LanguageType> comboBox = new JComboBox<>(LanguageType.values());
 		comboBox.setPreferredSize(SHORTCUT_LABEL_SIZE);
 		comboBox.setMinimumSize(SHORTCUT_LABEL_SIZE);
-		comboBox.setRenderer(languageRenderer);
+		comboBox.setRenderer(renderer);
 		comboBox.setToolTipText("Language / 言語");
 		comboBox.addActionListener(this);
 		return comboBox;
+	}
+
+	/**
+	 * 撮影範囲を選択するコンボボックスを生成します。
+	 * 表示項目は言語変更時にrefreshで作り直します。
+	 *
+	 * @return 撮影範囲の変更をこのパネルへ通知する選択欄
+	 */
+	private JComboBox<SnapAreaOption> createSnapAreaComboBox() {
+		JComboBox<SnapAreaOption> comboBox = new JComboBox<>();
+		comboBox.setPreferredSize(SNAP_AREA_COMBO_SIZE);
+		comboBox.setMinimumSize(SNAP_AREA_COMBO_SIZE);
+		comboBox.setRenderer(renderer);
+		comboBox.addActionListener(this);
+		return comboBox;
+	}
+
+	/**
+	 * 保存先フォルダを開く正方形の小型ボタンを生成します。
+	 *
+	 * @param icon ボタンへ表示するフォルダアイコン
+	 * @return このパネルへ操作を通知する小型ボタン
+	 */
+	private JButton createQuickActionButton(Icon icon) {
+		JButton button = new JButton(icon);
+		applyQuickButtonBaseSetting(button);
+		return button;
+	}
+
+	/**
+	 * 通知表示を切り替える正方形の小型ボタンを生成します。
+	 *
+	 * @param icon ボタンへ表示する通知アイコン
+	 * @return 選択状態で通知の有効・無効を表す小型ボタン
+	 */
+	private JToggleButton createNotificationButton(Icon icon) {
+		JToggleButton button = new JToggleButton(icon);
+		applyQuickButtonBaseSetting(button);
+		return button;
+	}
+
+	/**
+	 * 小型ボタンで共通するサイズと操作設定を反映します。
+	 *
+	 * @param button 設定対象の小型ボタン
+	 */
+	private void applyQuickButtonBaseSetting(AbstractButton button) {
+		button.setPreferredSize(QUICK_SETTING_BUTTON_SIZE);
+		button.setMinimumSize(QUICK_SETTING_BUTTON_SIZE);
+		button.setFocusPainted(false);
+		button.setMargin(new Insets(2, 2, 2, 2));
+		button.addActionListener(this);
+	}
+
+	/**
+	 * 右下の小型操作ボタンを横並びにします。
+	 *
+	 * @return 保存先フォルダと通知表示のボタンを持つ透明背景のパネル
+	 */
+	private JPanel createQuickSettingPanel() {
+		JPanel panel = new JPanel(new GridBagLayout());
+		panel.setOpaque(false);
+
+		GridBagConstraints constraints = new GridBagConstraints();
+		constraints.gridx = 0;
+		constraints.gridy = 0;
+		constraints.insets = new Insets(0, 0, 0, 4);
+		panel.add(openSaveDirectoryButton, constraints);
+
+		constraints.gridx = 1;
+		constraints.insets = new Insets(0, 0, 0, 0);
+		panel.add(notificationButton, constraints);
+		return panel;
 	}
 
 	/**
@@ -272,6 +394,21 @@ public class MainWindowPanel extends JPanel implements ActionListener {
 			if (selectedItem instanceof LanguageType languageType) {
 				presenter.changeLanguage(languageType);
 			}
+			return;
+		}
+		if (eventSource == snapAreaComboBox && !updatingSnapAreaSelection) {
+			Object selectedItem = snapAreaComboBox.getSelectedItem();
+			if (selectedItem instanceof SnapAreaOption option) {
+				presenter.changeSnapArea(option.snapAreaType());
+			}
+			return;
+		}
+		if (eventSource == openSaveDirectoryButton) {
+			presenter.openSaveDirectory();
+			return;
+		}
+		if (eventSource == notificationButton) {
+			presenter.changeNotificationEnabled(notificationButton.isSelected());
 		}
 	}
 
@@ -286,8 +423,17 @@ public class MainWindowPanel extends JPanel implements ActionListener {
 		settingsButton.setText(texts.settings());
 		captureButton.setText(texts.capture());
 		rangeSelectionButton.setText(texts.rangeSelection());
-		captureShortcutLabel.setText(resolveShortcutText(config.getSnapKeyBean(), texts.notSet()));
-		rangeSelectionShortcutLabel.setText(resolveShortcutText(config.getSelectionKeyBean(), texts.notSet()));
+		updateShortcutLabel(captureShortcutLabel,
+				resolveShortcutText(config.getSnapKeyBean(), texts.notSet()));
+		updateShortcutLabel(rangeSelectionShortcutLabel,
+				resolveShortcutText(config.getSelectionKeyBean(), texts.notSet()));
+		refreshSnapAreaOptions(config.getSnapAreaType());
+		notificationButton.setSelected(config.getIsShowNotification());
+
+		String savePath = config.getSavePath();
+		saveDirectoryAvailable = savePath != null && !savePath.isBlank();
+		openSaveDirectoryButton.setEnabled(saveDirectoryAvailable);
+		updateQuickSettingToolTips(texts, savePath);
 
 		// 再読込による選択変更をユーザー操作と扱い、再保存することを防ぐ。
 		updatingLanguageSelection = true;
@@ -307,9 +453,10 @@ public class MainWindowPanel extends JPanel implements ActionListener {
 	 * @param themeType 最新のテーマ設定
 	 */
 	private void applyTheme(ThemeType themeType) {
-		languageRenderer.setTheme(themeType);
+		renderer.setTheme(themeType);
 		applyActionButtonIcons(themeType);
 		ThemePalette themePalette = themeType.getThemePalette();
+		this.currentThemePalette = themePalette;
 
 		if (themeType == ThemeType.DEFAULT) {
 			applyDefaultTheme(themePalette);
@@ -318,6 +465,8 @@ public class MainWindowPanel extends JPanel implements ActionListener {
 		}
 
 		languageComboBox.repaint();
+		snapAreaComboBox.repaint();
+		updateQuickSettingButtonColors();
 		revalidate();
 		repaint();
 	}
@@ -345,23 +494,24 @@ public class MainWindowPanel extends JPanel implements ActionListener {
 	 * @param themePalette 選択されたテーマのSwing配色
 	 */
 	private void applyCustomTheme(ThemePalette themePalette) {
-		setBackground(themePalette.getBackground());
-		captureShortcutLabel.setForeground(themePalette.getMutedText());
-		rangeSelectionShortcutLabel.setForeground(themePalette.getMutedText());
+		setBackground(themePalette.getBackgroundColor());
+		captureShortcutLabel.setForeground(themePalette.getMutedTextColor());
+		rangeSelectionShortcutLabel.setForeground(themePalette.getMutedTextColor());
 
-		languageComboBox.setBackground(themePalette.getControlBackground());
-		languageComboBox.setForeground(themePalette.getText());
-		languageComboBox.setBorder(BorderFactory.createLineBorder(themePalette.getBorder()));
+		languageComboBox.setRenderer(renderer);
+		languageComboBox.setBorder(BorderFactory.createLineBorder(themePalette.getBorderColor()));
+		snapAreaComboBox.setRenderer(renderer);
+		snapAreaComboBox.setBorder(BorderFactory.createLineBorder(themePalette.getBorderColor()));
 
 		Border buttonBorder = BorderFactory.createCompoundBorder(
-				BorderFactory.createLineBorder(themePalette.getBorder()),
+				BorderFactory.createLineBorder(themePalette.getBorderColor()),
 				BorderFactory.createEmptyBorder(4, 6, 4, 6));
 		for (JButton button : getActionButtons()) {
 			// OS標準スキンによる色の上書きを避け、テーマ配色を確実に描画する。
 			button.setUI(new BasicButtonUI());
 			button.setOpaque(true);
-			button.setBackground(themePalette.getControlBackground());
-			button.setForeground(themePalette.getText());
+			button.setBackground(themePalette.getControlBackgroundColor());
+			button.setForeground(themePalette.getTextColor());
 			button.setBorder(buttonBorder);
 		}
 	}
@@ -372,20 +522,23 @@ public class MainWindowPanel extends JPanel implements ActionListener {
 	 * @param themePalette デフォルトテーマのSwing配色
 	 */
 	private void applyDefaultTheme(ThemePalette themePalette) {
-		setBackground(themePalette.getBackground());
-		captureShortcutLabel.setForeground(themePalette.getText());
-		rangeSelectionShortcutLabel.setForeground(themePalette.getText());
+		setBackground(themePalette.getBackgroundColor());
+		captureShortcutLabel.setForeground(themePalette.getTextColor());
+		rangeSelectionShortcutLabel.setForeground(themePalette.getTextColor());
 
-		languageComboBox.setBackground(themePalette.getControlBackground());
-		languageComboBox.setForeground(themePalette.getText());
+		languageComboBox.setBackground(themePalette.getControlBackgroundColor());
+		languageComboBox.setForeground(themePalette.getTextColor());
 		languageComboBox.setBorder(UIManager.getBorder("ComboBox.border"));
+		snapAreaComboBox.setBackground(themePalette.getControlBackgroundColor());
+		snapAreaComboBox.setForeground(themePalette.getTextColor());
+		snapAreaComboBox.setBorder(UIManager.getBorder("ComboBox.border"));
 
 		Border buttonBorder = UIManager.getBorder("Button.border");
 		for (JButton button : getActionButtons()) {
 			// カスタムテーマ専用UIを外し、OSに対応したSwing標準UIへ戻す。
 			button.updateUI();
-			button.setBackground(themePalette.getControlBackground());
-			button.setForeground(themePalette.getText());
+			button.setBackground(themePalette.getControlBackgroundColor());
+			button.setForeground(themePalette.getTextColor());
 			button.setBorder(buttonBorder);
 		}
 	}
@@ -414,6 +567,94 @@ public class MainWindowPanel extends JPanel implements ActionListener {
 	}
 
 	/**
+	 * ショートカットの表示文言と、全文を確認するためのツールチップを更新します。
+	 *
+	 * @param label 更新対象のショートカット表示ラベル
+	 * @param shortcutText 表示するショートカット名
+	 */
+	private void updateShortcutLabel(JLabel label, String shortcutText) {
+		label.setText(shortcutText);
+		label.setToolTipText(shortcutText);
+	}
+
+	/**
+	 * 選択言語に対応した撮影範囲の一覧を作り直し、現在値を選択します。
+	 * 一覧の再作成中に発生するActionEventは設定変更として扱いません。
+	 *
+	 * @param selectedType 現在設定されている撮影範囲
+	 */
+	private void refreshSnapAreaOptions(SnapAreaType selectedType) {
+		updatingSnapAreaSelection = true;
+		try {
+			snapAreaComboBox.removeAllItems();
+			SnapAreaOption selectedOption = null;
+			for (SnapAreaType snapAreaType : SnapAreaType.values()) {
+				SnapAreaOption option = new SnapAreaOption(
+						snapAreaType,
+						presenter.resolveSnapAreaDisplayName(snapAreaType));
+				snapAreaComboBox.addItem(option);
+				if (snapAreaType == selectedType) {
+					selectedOption = option;
+				}
+			}
+			if (selectedOption != null) {
+				snapAreaComboBox.setSelectedItem(selectedOption);
+				snapAreaComboBox.setToolTipText(selectedOption.displayName());
+			}
+		} finally {
+			updatingSnapAreaSelection = false;
+		}
+	}
+
+	/**
+	 * 小型操作ボタンへ現在の保存先と通知状態を含むツールチップを設定します。
+	 *
+	 * @param texts 現在の表示言語に対応する文言
+	 * @param savePath 現在設定されている保存先パス
+	 */
+	private void updateQuickSettingToolTips(UiTexts texts, String savePath) {
+		String directoryToolTip = texts.saveDirectoryNotSet();
+		if (saveDirectoryAvailable) {
+			directoryToolTip = texts.openSaveDirectory() + ": " + savePath;
+		}
+		openSaveDirectoryButton.setToolTipText(directoryToolTip);
+
+		String notificationState = texts.disabled();
+		if (notificationButton.isSelected()) {
+			notificationState = texts.enabled();
+		}
+		notificationButton.setToolTipText(texts.notification() + ": " + notificationState);
+	}
+
+	/** 現在のテーマと選択状態を小型操作ボタンへ反映します。 */
+	private void updateQuickSettingButtonColors() {
+		if (currentThemePalette == null) {
+			return;
+		}
+		for (AbstractButton button : getQuickSettingButtons()) {
+			button.setUI(new BasicButtonUI());
+			button.setOpaque(true);
+			button.setForeground(currentThemePalette.getTextColor());
+			button.setBorder(BorderFactory.createLineBorder(currentThemePalette.getBorderColor()));
+			if (button == notificationButton && notificationButton.isSelected()) {
+				button.setBackground(currentThemePalette.getSelectionBackgroundColor());
+			} else {
+				button.setBackground(currentThemePalette.getControlBackgroundColor());
+			}
+			button.repaint();
+		}
+	}
+
+	/**
+	 * 同じテーマを適用する小型操作ボタンを返します。
+	 *
+	 * @return 保存先フォルダと通知表示の小型ボタン
+	 */
+	private AbstractButton[] getQuickSettingButtons() {
+		return new AbstractButton[] { openSaveDirectoryButton, notificationButton };
+	}
+
+	/**
 	 * 言語設定に対応したメインウィンドウ用の短い文言を取得します。
 	 *
 	 * @param language 表示言語。日本語以外は英語を使用
@@ -421,9 +662,13 @@ public class MainWindowPanel extends JPanel implements ActionListener {
 	 */
 	private UiTexts resolveUiTexts(LanguageType language) {
 		if (language == LanguageType.JAPANESE) {
-			return new UiTexts("設定", "撮影", "範囲選択", "未設定");
+			return new UiTexts(
+					"設定", "撮影", "範囲選択", "未設定",
+					"保存先フォルダを開く", "保存先フォルダが設定されていません", "通知", "オン", "オフ");
 		}
-		return new UiTexts("Settings", "Capture", "Select area", "Not set");
+		return new UiTexts(
+				"Settings", "Capture", "Select area", "Not set",
+				"Open save directory", "Save directory is not set", "Notification", "On", "Off");
 	}
 
 	/**
@@ -435,6 +680,8 @@ public class MainWindowPanel extends JPanel implements ActionListener {
 	public void setSettingsEnabled(boolean enabled) {
 		settingsButton.setEnabled(enabled);
 		languageComboBox.setEnabled(enabled);
+		snapAreaComboBox.setEnabled(enabled);
+		notificationButton.setEnabled(enabled);
 	}
 
 	/**
@@ -446,6 +693,7 @@ public class MainWindowPanel extends JPanel implements ActionListener {
 		setSettingsEnabled(enabled);
 		captureButton.setEnabled(enabled);
 		rangeSelectionButton.setEnabled(enabled);
+		openSaveDirectoryButton.setEnabled(enabled && saveDirectoryAvailable);
 	}
 
 	/**
@@ -456,69 +704,28 @@ public class MainWindowPanel extends JPanel implements ActionListener {
 	 * @param rangeSelection 範囲選択ボタン名
 	 * @param notSet ショートカット未設定時の文言
 	 */
-	private record UiTexts(String settings, String capture, String rangeSelection, String notSet) {
+	private record UiTexts(
+			String settings,
+			String capture,
+			String rangeSelection,
+			String notSet,
+			String openSaveDirectory,
+			String saveDirectoryNotSet,
+			String notification,
+			String enabled,
+			String disabled) {
 	}
 
-	/** LanguageTypeを利用者向けの表示名で描画するレンダラーです。 */
-	private static final class LanguageListCellRenderer extends DefaultListCellRenderer {
-
-		/** シリアルバージョンUID */
-		private static final long serialVersionUID = 1L;
-
-		/** 現在のミニウィンドウテーマ */
-		private ThemeType themeType = ThemeType.DEFAULT;
-
-		/** 現在のミニウィンドウ配色 */
-		private ThemePalette themePalette = ThemeType.DEFAULT.getThemePalette();
-
-		/**
-		 * 言語選択欄の描画テーマを切り替えます。
-		 *
-		 * @param themeType 最新のテーマ設定
-		 */
-		private void setTheme(ThemeType themeType) {
-			this.themeType = themeType;
-			this.themePalette = themeType.getThemePalette();
-		}
-
-		/**
-		 * 言語の列挙値を利用者向けの表示名で描画します。
-		 *
-		 * @param list 描画対象の一覧
-		 * @param value 項目の値
-		 * @param index 項目位置。選択欄本体の描画時は-1
-		 * @param isSelected 選択中の場合true
-		 * @param cellHasFocus フォーカスがある場合true
-		 * @return Swing標準の配色に言語名を設定した描画部品
-		 */
+	/**
+	 * 撮影範囲コンボボックスへ表示する値です。
+	 *
+	 * @param snapAreaType 設定へ保存する撮影範囲
+	 * @param displayName 現在の言語に対応した表示名
+	 */
+	private record SnapAreaOption(SnapAreaType snapAreaType, String displayName) {
 		@Override
-		public Component getListCellRendererComponent(
-				JList<?> list,
-				Object value,
-				int index,
-				boolean isSelected,
-				boolean cellHasFocus) {
-			Component component = super.getListCellRendererComponent(
-					list,
-					value,
-					index,
-					isSelected,
-					cellHasFocus);
-			if (value instanceof LanguageType languageType) {
-				setText(languageType.getBaseDisplayName());
-			}
-			if (themeType != ThemeType.DEFAULT) {
-				setForeground(themePalette.getText());
-				setBackground(themePalette.getControlBackground());
-				if (isSelected) {
-					setBackground(themePalette.getSelectionBackground());
-					setForeground(themePalette.getAccentText());
-				}
-				if (!list.isEnabled()) {
-					setForeground(themePalette.getMutedText());
-				}
-			}
-			return component;
+		public String toString() {
+			return displayName;
 		}
 	}
 }

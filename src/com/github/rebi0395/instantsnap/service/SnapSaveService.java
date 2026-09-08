@@ -48,7 +48,7 @@ public class SnapSaveService {
 		try {
 			// 保存先パス取得
 			String fileName = filePathService.createFileName(config); // ファイル名生成
-			Path dir = filePathService.resolveSaveDirectory(config); // ディレクトリ解決
+			Path dir = filePathService.resolveSaveDirectory(config.getSavePath(), config.isTemporarySave()); // ディレクトリ解決
 			Path targetPath = dir.resolve(fileName); // 保存先パス取得
 			targetPath = filePathService.createUniqueFilePath(targetPath); // 重複チェック
 

@@ -22,6 +22,7 @@ import com.github.rebi0395.instantsnap.common.OsUtil;
 import com.github.rebi0395.instantsnap.exception.ServiceException;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.model.enums.LanguageType;
+import com.github.rebi0395.instantsnap.model.enums.SnapAreaType;
 import com.github.rebi0395.instantsnap.repository.PropertiesRepository;
 import com.github.rebi0395.instantsnap.service.SettingsFileWatcher;
 import com.github.rebi0395.instantsnap.service.SettingsFileWatcher.SettingsChangeListener;
@@ -316,6 +317,46 @@ public final class InstantSnapApp implements KeyEventListener, SettingsChangeLis
 			return;
 		}
 		if (!coordinator.updateLanguage(languageType)) {
+			Toolkit.getDefaultToolkit().beep();
+		}
+		mainWindowPresenter.refresh(coordinator.getConfigBean());
+	}
+
+	/**
+	 * EDT上で撮影範囲を保存し、常駐処理と表示へ即時反映します。
+	 *
+	 * @param snapAreaType ミニウィンドウで選択された撮影範囲
+	 */
+	public void changeSnapArea(SnapAreaType snapAreaType) {
+		if (shuttingDown) {
+			return;
+		}
+		if (!coordinator.updateSnapArea(snapAreaType)) {
+			Toolkit.getDefaultToolkit().beep();
+		}
+		mainWindowPresenter.refresh(coordinator.getConfigBean());
+	}
+
+	/**
+	 * 現在設定されている保存先フォルダを開く処理をCoordinatorへ委譲します。
+	 */
+	public void openSaveDirectory() {
+		if (shuttingDown) {
+			return;
+		}
+		coordinator.openSaveDirectory();
+	}
+
+	/**
+	 * EDT上で通知表示の有効・無効を保存し、表示へ即時反映します。
+	 *
+	 * @param enabled 撮影後の通知を表示する場合true
+	 */
+	public void changeNotificationEnabled(boolean enabled) {
+		if (shuttingDown) {
+			return;
+		}
+		if (!coordinator.updateNotificationEnabled(enabled)) {
 			Toolkit.getDefaultToolkit().beep();
 		}
 		mainWindowPresenter.refresh(coordinator.getConfigBean());

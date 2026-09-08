@@ -15,6 +15,7 @@ import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.model.bean.SnapResultBean;
 import com.github.rebi0395.instantsnap.model.enums.AfterSnapActionType;
 import com.github.rebi0395.instantsnap.model.enums.LanguageType;
+import com.github.rebi0395.instantsnap.model.enums.SnapAreaType;
 import com.github.rebi0395.instantsnap.model.enums.ThemeType;
 import com.github.rebi0395.instantsnap.repository.PropertiesRepository;
 import com.github.rebi0395.instantsnap.service.ActiveWindowResolver;
@@ -183,6 +184,82 @@ public class InstantSnapCoordinator implements SelectionListener {
 				// 保存できなかった言語を画面に残さないよう、常駐側の表示言語も戻す。
 				converter.changeLanguage(previousLanguage);
 				log.error("言語設定の更新に失敗しました", e);
+				return false;
+			}
+		}
+	}
+
+	/**
+	 * ミニウィンドウで選択された撮影範囲を保存します。
+	 * 保存に失敗した場合はConfigBeanを変更前の値へ戻します。
+	 *
+	 * @param snapAreaType 新しい撮影範囲。nullの場合は更新しない
+	 * @return 保存に成功した場合、または変更が不要な場合true
+	 */
+	public boolean updateSnapArea(SnapAreaType snapAreaType) {
+		if (snapAreaType == null || closed.get()) {
+			return false;
+		}
+
+		synchronized (configLock) {
+			SnapAreaType previousType = config.getSnapAreaType();
+			if (previousType == snapAreaType) {
+				return true;
+			}
+			try {
+				config.setSnapAreaType(snapAreaType);
+				repository.save(config);
+				return true;
+			} catch (ServiceException e) {
+				config.setSnapAreaType(previousType);
+				log.error("撮影範囲設定の更新に失敗しました", e);
+				return false;
+			}
+		}
+	}
+
+	/**
+	 * 現在設定されている画像保存先フォルダを開きます。
+	 * 未作成の保存先は撮影時と同じ規則で作成してから開きます。
+	 */
+	public void openSaveDirectory() {
+		if (closed.get()) {
+			return;
+		}
+
+		String savePath;
+		boolean isTemporarySave;
+		synchronized (configLock) {
+			savePath = config.getSavePath();
+			isTemporarySave = config.isTemporarySave();
+		}
+		fileOpenService.openDirectory(filePathService.resolveSaveDirectory(savePath, isTemporarySave));
+	}
+
+	/**
+	 * ミニウィンドウで変更された通知表示設定を保存します。
+	 * 保存に失敗した場合はConfigBeanを変更前の値へ戻します。
+	 *
+	 * @param enabled 撮影後の通知を表示する場合true
+	 * @return 保存に成功した場合、または変更が不要な場合true
+	 */
+	public boolean updateNotificationEnabled(boolean enabled) {
+		if (closed.get()) {
+			return false;
+		}
+
+		synchronized (configLock) {
+			boolean previousValue = config.getIsShowNotification();
+			if (previousValue == enabled) {
+				return true;
+			}
+			try {
+				config.setIsShowNotification(enabled);
+				repository.save(config);
+				return true;
+			} catch (ServiceException e) {
+				config.setIsShowNotification(previousValue);
+				log.error("通知表示設定の更新に失敗しました", e);
 				return false;
 			}
 		}

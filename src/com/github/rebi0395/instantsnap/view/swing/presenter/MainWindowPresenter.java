@@ -20,6 +20,7 @@ import com.github.rebi0395.instantsnap.common.MessageKeyConstant;
 import com.github.rebi0395.instantsnap.common.MessageKeyConverter;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.model.enums.LanguageType;
+import com.github.rebi0395.instantsnap.model.enums.SnapAreaType;
 import com.github.rebi0395.instantsnap.service.ScreenCaptureExclusionService;
 import com.github.rebi0395.instantsnap.view.swing.panel.MainWindowPanel;
 
@@ -109,6 +110,41 @@ public final class MainWindowPresenter {
 	 */
 	public void changeLanguage(LanguageType languageType) {
 		app.changeLanguage(languageType);
+	}
+
+	/**
+	 * ミニウィンドウで選択された撮影範囲の保存と反映をAppへ要求します。
+	 *
+	 * @param snapAreaType 選択された撮影範囲
+	 */
+	public void changeSnapArea(SnapAreaType snapAreaType) {
+		app.changeSnapArea(snapAreaType);
+	}
+
+	/**
+	 * 現在設定されている保存先フォルダを開くようAppへ要求します。
+	 */
+	public void openSaveDirectory() {
+		app.openSaveDirectory();
+	}
+
+	/**
+	 * ミニウィンドウで変更された通知表示設定の保存と反映をAppへ要求します。
+	 *
+	 * @param enabled 撮影後の通知表示を有効にする場合true
+	 */
+	public void changeNotificationEnabled(boolean enabled) {
+		app.changeNotificationEnabled(enabled);
+	}
+
+	/**
+	 * 撮影範囲を現在の表示言語へ変換します。
+	 *
+	 * @param snapAreaType 表示する撮影範囲
+	 * @return 現在の言語に対応した表示名
+	 */
+	public String resolveSnapAreaDisplayName(SnapAreaType snapAreaType) {
+		return converter.getMessage(snapAreaType);
 	}
 
 	/**
