@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.rebi0395.instantsnap.service.SettingsService;
+import com.github.rebi0395.instantsnap.service.ScreenCaptureExclusionService;
 import com.github.rebi0395.instantsnap.view.javafx.controller.SettingWindowController;
 import com.github.rebi0395.instantsnap.view.javafx.util.EnterKeyNavigation;
 import com.github.rebi0395.instantsnap.view.javafx.util.StyleSheetUtil;
@@ -36,11 +37,17 @@ public class SettingWindowPresenter {
 	/** 設定値の読込・保存を担当するクラス */
 	private final SettingsService settingsService;
 
+	/** JavaFX設定ウィンドウの撮影対象への表示・非表示を切り替えるサービス */
+	private final ScreenCaptureExclusionService screenCaptureExclusionService;
+
 	/** 設定画面の入力部品と表示内容を管理するコントローラ */
 	private SettingWindowController settingController;
 
 	/** ウィンドウの最大の横幅 */
 	private static final double SCENE_MAX_WIDTH = 680;
+
+	/** Windows APIから設定ウィンドウを特定するときにも使用するタイトル */
+	private static final String WINDOW_TITLE = "InstantSnap Settings";
 
 	/** ウィンドウの最大の高さ */
 	private static final double SCENE_MAX_HEIGHT = 900;
@@ -60,6 +67,7 @@ public class SettingWindowPresenter {
 	public SettingWindowPresenter(Stage stage, SettingsService settingsService) {
 		this.stage = stage;
 		this.settingsService = settingsService;
+		this.screenCaptureExclusionService = new ScreenCaptureExclusionService();
 	}
 
 	/**
@@ -89,9 +97,10 @@ public class SettingWindowPresenter {
 		setIcon();
 
 		// ウィンドウを設定し、表示する
-		stage.setTitle("InstantSnap Settings");
+		stage.setTitle(WINDOW_TITLE);
 		stage.setScene(scene);
 		stage.show();
+		applyScreenCaptureSetting();
 	}
 
 	/**
@@ -104,7 +113,18 @@ public class SettingWindowPresenter {
 		}
 		if (settingsService.reload()) {
 			settingController.reloadSettings();
+			applyScreenCaptureSetting();
 		}
+	}
+
+	/**
+	 * 最新の設定値に従って、JavaFX設定ウィンドウを撮影対象へ含めるか切り替えます。
+	 * JavaFXのStageはAWTコンポーネントではないため、現在の子プロセスが所有する
+	 * ウィンドウをタイトルから特定してWindows APIへ設定します。
+	 */
+	private void applyScreenCaptureSetting() {
+		boolean excluded = !settingsService.getConfigBean().getIsIncludeSettingWindow();
+		screenCaptureExclusionService.setCurrentProcessWindowExcluded(WINDOW_TITLE, excluded);
 	}
 
 	/**

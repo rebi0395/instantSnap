@@ -20,6 +20,7 @@ import com.github.rebi0395.instantsnap.common.MessageKeyConstant;
 import com.github.rebi0395.instantsnap.common.MessageKeyConverter;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.model.enums.LanguageType;
+import com.github.rebi0395.instantsnap.service.ScreenCaptureExclusionService;
 import com.github.rebi0395.instantsnap.view.swing.panel.MainWindowPanel;
 
 /**
@@ -47,6 +48,12 @@ public final class MainWindowPresenter {
 	/** 言語別メッセージを取得するクラス */
 	private final MessageKeyConverter converter;
 
+	/** メインウィンドウの撮影対象への表示・非表示を切り替えるサービス */
+	private final ScreenCaptureExclusionService screenCaptureExclusionService;
+
+	/** InstantSnapのウィンドウを撮影画像へ含める場合true */
+	private boolean includeSettingWindow;
+
 	/**
 	 * 現在の設定値を使ってSwingメインウィンドウを生成します。
 	 *
@@ -60,6 +67,8 @@ public final class MainWindowPresenter {
 			MessageKeyConverter converter) {
 		this.app = app;
 		this.converter = converter;
+		this.screenCaptureExclusionService = new ScreenCaptureExclusionService();
+		this.includeSettingWindow = config.getIsIncludeSettingWindow();
 
 		this.panel = new MainWindowPanel(config, this);
 		this.frame = createFrame();
@@ -70,6 +79,7 @@ public final class MainWindowPresenter {
 	 */
 	public void show() {
 		frame.setVisible(true);
+		applyScreenCaptureSetting();
 	}
 
 	/**
@@ -83,7 +93,7 @@ public final class MainWindowPresenter {
 	 * 撮影ボタンから通常撮影をAppへ要求します。
 	 */
 	public void requestSnap() {
-		app.requestSnap();
+		app.requestSnapFromMainWindow();
 	}
 
 	/**
@@ -109,6 +119,8 @@ public final class MainWindowPresenter {
 	 */
 	public void refresh(ConfigBean config) {
 		panel.refresh(config);
+		this.includeSettingWindow = config.getIsIncludeSettingWindow();
+		applyScreenCaptureSetting();
 	}
 
 	/**
@@ -181,6 +193,7 @@ public final class MainWindowPresenter {
 	 */
 	private JFrame createFrame() {
 		JFrame mainFrame = new JFrame(WINDOW_TITLE);
+		mainFrame.setName("InstantSnapMainWindow");
 		// 閉じる操作だけでは破棄せず、Appで確認と常駐リソースの解放を行う。
 		mainFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		mainFrame.setContentPane(panel);
@@ -202,6 +215,15 @@ public final class MainWindowPresenter {
 			}
 		});
 		return mainFrame;
+	}
+
+	/**
+	 * 最新の設定値に従って、メインウィンドウを撮影対象へ含めるか切り替えます。
+	 * ウィンドウを隠さずに切り替えるため、撮影時のちらつきやフォーカス移動は発生しません。
+	 */
+	private void applyScreenCaptureSetting() {
+		boolean excluded = !includeSettingWindow;
+		screenCaptureExclusionService.setExcluded(frame, excluded);
 	}
 
 	/**
