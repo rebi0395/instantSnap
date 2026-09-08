@@ -5,12 +5,12 @@
  * ========================================================= */
 
 .theme-dark {
-    -dark-window: #1b1f26;
-    -dark-surface: #242a33;
-    -dark-surface-raised: #2c333e;
-    -dark-surface-hover: #353e4b;
-    -dark-border: #46515f;
-    -dark-border-strong: #607084;
+    -dark-window: #0f1115;
+    -dark-surface: #181c22;
+    -dark-surface-raised: #222831;
+    -dark-surface-hover: #3f4d5d;
+    -dark-border: #748397;
+    -dark-border-strong: #9bacc0;
     -dark-text: #edf1f5;
     -dark-text-muted: #b8c1cc;
     -dark-accent: #64a9e8;
@@ -43,12 +43,12 @@
 
 /* タブとスクロール領域 */
 .theme-dark .main-tab-pane .tab-header-background {
-    -fx-background-color: #181c22;
+    -fx-background-color: #0b0d10;
     -fx-border-color: -dark-border;
 }
 
 .theme-dark .main-tab-pane .tab {
-    -fx-background-color: linear-gradient(to bottom, #303743, #262c35);
+    -fx-background-color: linear-gradient(to bottom, #282e38, #1b2027);
     -fx-border-color: -dark-border;
 }
 
@@ -76,32 +76,32 @@
 }
 
 .theme-dark .scroll-bar:vertical {
-    -fx-background-color: #1d2229;
+    -fx-background-color: #111419;
 }
 
 .theme-dark .scroll-bar:vertical .track {
-    -fx-background-color: #1d2229;
+    -fx-background-color: #111419;
     -fx-border-color: transparent;
 }
 
 .theme-dark .scroll-bar:vertical .thumb {
-    -fx-background-color: #596575;
+    -fx-background-color: #657386;
     -fx-background-radius: 5px;
 }
 
 .theme-dark .scroll-bar:vertical .thumb:hover {
-    -fx-background-color: #6b7889;
+    -fx-background-color: #8292a6;
 }
 
 .theme-dark .scroll-bar .increment-button,
 .theme-dark .scroll-bar .decrement-button {
-    -fx-background-color: #1d2229;
+    -fx-background-color: #111419;
 }
 
 /* 設定項目のカード */
 .theme-dark .section-border {
     -fx-background-color: -dark-surface;
-    -fx-border-color: #39434f;
+    -fx-border-color: #667588;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.32), 8, 0.12, 0, 2);
 }
 
@@ -161,7 +161,7 @@
 .theme-dark .text-field,
 .theme-dark .combo-box-base {
     -fx-background-color: -dark-surface-raised;
-    -fx-border-color: -dark-border;
+    -fx-border-color: #8796aa;
     -fx-text-fill: -dark-text;
     -fx-prompt-text-fill: #8f9aa7;
 }
@@ -169,7 +169,7 @@
 .theme-dark .combo-box-base:hover,
 .theme-dark .text-field:hover {
     -fx-background-color: -dark-surface-hover;
-    -fx-border-color: -dark-border-strong;
+    -fx-border-color: #b4c1d0;
 }
 
 .theme-dark .combo-box-base:focused,
@@ -182,8 +182,8 @@
 .theme-dark .text-field:disabled,
 .theme-dark .readonly-text-field {
     -fx-opacity: 1.0;
-    -fx-background-color: #20252c;
-    -fx-border-color: #353d47;
+    -fx-background-color: #171b20;
+    -fx-border-color: #596675;
     -fx-text-fill: #89939f;
     -fx-prompt-text-fill: #6f7984;
 }
@@ -203,22 +203,27 @@
 
 /* ComboBoxの候補一覧は別Popupへ表示されるため、root配下に限定しない。 */
 .combo-box-popup .list-view {
-    -fx-background-color: #242a33;
-    -fx-border-color: #536171;
+    -fx-background-color: #181c22;
+    -fx-border-color: #91a0b2;
 }
 
 .combo-box-popup .list-cell {
-    -fx-background-color: #242a33;
+    -fx-background-color: #181c22;
     -fx-text-fill: #edf1f5;
 }
 
 .combo-box-popup .list-cell:hover {
-    -fx-background-color: #353e4b;
+    -fx-background-color: #52677d;
+    -fx-text-fill: #ffffff;
 }
 
 .combo-box-popup .list-cell:selected {
-    -fx-background-color: #315f88;
+    -fx-background-color: #3b75a5;
     -fx-text-fill: #ffffff;
+}
+
+.combo-box-popup .list-cell:selected:hover {
+    -fx-background-color: #477fae;
 }
 
 /* チェックボックスとラジオボタン */
