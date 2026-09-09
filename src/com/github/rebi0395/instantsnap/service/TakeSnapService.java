@@ -24,6 +24,8 @@ public class TakeSnapService {
 	private SoundPlayer soundPlayer;
 	/** マウスカーソルを書き込むクラス */
 	private MouseCursorService mouseCursorService;
+	/** 撮影ごとのネイティブリソース生成を避けるため再利用するRobot */
+	private Robot robot;
 
 	/**
 	 * コンストラクタ
@@ -62,6 +64,8 @@ public class TakeSnapService {
 		// 結果クラスを作成
 		SnapResultBean resultBean = new SnapResultBean();
 
+		BufferedImage capturedImage = null;
+		BufferedImage snap = null;
 		try {
 			// 撮影種別にかかわらずウィンドウ情報を渡し、範囲解決の入口を統一する。
 			Rectangle snapSize = areaResolver.resolveArea(
@@ -72,8 +76,8 @@ public class TakeSnapService {
 				snapSize = rangeSelection;
 			}
 			// 撮影
-			Robot robot = new Robot();
-			BufferedImage snap = robot.createScreenCapture(snapSize);
+			capturedImage = getOrCreateRobot().createScreenCapture(snapSize);
+			snap = capturedImage;
 
 			// マウスカーソルを画像に含める設定が有効
 			if (config.getIsIncludeCursor() && OsUtil.isWindows()) {
@@ -91,8 +95,29 @@ public class TakeSnapService {
 
 		} catch (AWTException e) {
 			throw new ServiceException("スクリーンショットの撮影に失敗しました", e);
+		} finally {
+			// 保存とクリップボード転送が完了した画像の描画リソースを明示的に解放する。
+			if (snap != null) {
+				snap.flush();
+			}
+			if (capturedImage != null && capturedImage != snap) {
+				capturedImage.flush();
+			}
 		}
 		return resultBean;
+	}
+
+	/**
+	 * 画面撮影に使用するRobotを初回だけ生成し、以降の撮影で再利用します。
+	 *
+	 * @return このサービスが保持するRobot
+	 * @throws AWTException デスクトップの撮影機能を利用できない場合
+	 */
+	private Robot getOrCreateRobot() throws AWTException {
+		if (robot == null) {
+			robot = new Robot();
+		}
+		return robot;
 	}
 
 	/**
