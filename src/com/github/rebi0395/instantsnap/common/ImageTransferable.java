@@ -18,6 +18,15 @@ public class ImageTransferable implements Transferable {
 	}
 
 	/**
+	 * 転送元画像への参照を解放します。
+	 * WindowsではsetContentsの呼び出し中にネイティブクリップボードへ画像が複製されるため、
+	 * 転送完了後に呼び出すことでJavaヒープへ最新画像を保持し続けることを防げます。
+	 */
+	public void releaseImage() {
+		this.image = null;
+	}
+
+	/**
 	 * 転送可能な画像型データフレーバーを取得する
 	 */
 	@Override

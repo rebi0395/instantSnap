@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.rebi0395.instantsnap.common.ImageTransferable;
+import com.github.rebi0395.instantsnap.common.OsUtil;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.model.bean.SnapResultBean;
 
@@ -95,6 +96,11 @@ public class SnapSaveService {
 		for (int retry = 1; retry <= 3; retry++) { // 試行は3回まで
 			try {
 				clipboard.setContents(transferable, null); // ownerは不要のためnull
+				// WindowsはsetContents内で画像をネイティブ側へ同期コピーする。
+				// Java側に4K画像などを保持し続けないよう、転送完了後に参照を解放する。
+				if (OsUtil.isWindows()) {
+					transferable.releaseImage();
+				}
 				// 保存成功時の処理
 				log.info("クリップボードへ画像をコピーしました");
 				result.setIsClipboardCopied(true);

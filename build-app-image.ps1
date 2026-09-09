@@ -44,15 +44,15 @@ try {
         '--dest', $Destination,
         '--icon', 'resources/images/icon/Instantsnap.ico',
         # 512MBはヒープの上限であり、起動時に確保する量でもプロセス全体の上限でもない。
-        '--java-options', '-Xms32m',
+        '--java-options', '-Xms16m',
         '--java-options', '-Xmx512m',
         '--java-options', '-XX:+UseG1GC',
         # 撮影後に割り当てが止まっても、未使用領域を回収・縮小する機会を作る。
         # アプリの撮影処理からSystem.gc()を呼び出すことはしない。
-        '--java-options', '-XX:G1PeriodicGCInterval=10000',
+        '--java-options', '-XX:G1PeriodicGCInterval=5000',
         '--java-options', '-XX:G1PeriodicGCSystemLoadThreshold=0',
-        '--java-options', '-XX:MinHeapFreeRatio=10',
-        '--java-options', '-XX:MaxHeapFreeRatio=40'
+        '--java-options', '-XX:MinHeapFreeRatio=5',
+        '--java-options', '-XX:MaxHeapFreeRatio=15'
     )
     & $jpackageExecutable @packageArguments
     if ($LASTEXITCODE -ne 0) {

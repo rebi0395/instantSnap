@@ -23,16 +23,16 @@ Eclipseから起動する場合も、実行構成の「VM引数」に同じ値�
 Mavenの「ゴール」欄ではありません。
 
 ```text
--Xms32m -Xmx512m -XX:+UseG1GC -XX:G1PeriodicGCInterval=10000 -XX:G1PeriodicGCSystemLoadThreshold=0 -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=40
+-Xms16m -Xmx512m -XX:+UseG1GC -XX:G1PeriodicGCInterval=5000 -XX:G1PeriodicGCSystemLoadThreshold=0 -XX:MinHeapFreeRatio=5 -XX:MaxHeapFreeRatio=15
 ```
 
 従来どおり手動でjpackageを実行する場合は、各オプションを `--java-options "-Xms32m"` のように追加してください。
 JARをビルドし直すだけでは既存exeの起動設定は変わらないため、exeも再生成してください。
 
-- 初期ヒープは32MB、最大ヒープは512MB。画像処理時には必要に応じて拡張します。
-- G1 GCに10秒間隔の回収機会を設け、撮影後の待機中にも未使用ヒープを縮小できるようにします。追加のGC処理は発生します。
+- 初期ヒープは16MB、最大ヒープは512MB。画像処理時には必要に応じて拡張します。
+- G1 GCに5秒間隔の回収機会を設け、撮影後の待機中にも未使用ヒープを縮小できるようにします。追加のGC処理は発生します。
 - 512MBはJavaヒープの上限です。タスクマネージャーのプロセス全体の使用量を512MB以下に保証するものではありません。
-- クリップボードには貼り付け用の最新画像が残ります。4K画像1枚の画素だけでも約32MiBを使い、撮影・画像変換時には作業領域も必要です。
+- Windowsではクリップボードへの同期転送後にJava側の画像参照を解放します。ただし、貼り付け用の最新画像はOS側に残り、4K画像の転送中には画素だけでも約32MiBと変換用の作業領域が必要です。
 - 高解像度や複数画面をまとめて撮影する場合は、512MBでは不足する可能性があります。実際の撮影条件で確認してください。
 
 ### 確認した範囲と再現試験
@@ -43,9 +43,9 @@ JARをビルドし直すだけでは既存exeの起動設定は変わらない�
 ```powershell
 javac -d target tests/MemoryProbe.java
 java -cp target MemoryProbe 3840 2160
-java -Xms32m -Xmx512m -XX:+UseG1GC -XX:G1PeriodicGCInterval=10000 -XX:G1PeriodicGCSystemLoadThreshold=0 -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=40 -cp target MemoryProbe 3840 2160
+java -Xms16m -Xmx512m -XX:+UseG1GC -XX:G1PeriodicGCInterval=5000 -XX:G1PeriodicGCSystemLoadThreshold=0 -XX:MinHeapFreeRatio=5 -XX:MaxHeapFreeRatio=15 -cp target MemoryProbe 3840 2160
 ```
 
-開発環境のJDK 21で、最後の保存から25秒後の確保済みヒープは標準設定250MiBに対して上記設定59MiBでした。
+開発環境のJDK 21で、最後の保存から25秒後の確保済みヒープは標準設定250MiBに対して上記設定42MiBでした。
 これはプロセス全体の使用量ではなく、exeで報告された500MBの再現・解消を保証する結果ではありません。
 再生成したexeで同じ条件の撮影後、30秒ほど待った時点の使用量も確認してください。
