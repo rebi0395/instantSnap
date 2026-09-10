@@ -27,6 +27,9 @@ public class ComboRenderer extends DefaultListCellRenderer {
 		setOpaque(true);
 	}
 
+	/**
+	 * コンボボックスの各項目をテーマに応じた色、表示名で描画するレンダラー
+	 */
 	@Override
 	public Component getListCellRendererComponent(
 			JList<?> list,
@@ -35,10 +38,11 @@ public class ComboRenderer extends DefaultListCellRenderer {
 			boolean isSelected,
 			boolean cellHasFocus) {
 
+		// Swing 標準の描画処理（選択状態・フォーカスなどの基本設定）
 		Component component = super.getListCellRendererComponent(
 				list, value, index, isSelected, cellHasFocus);
 
-		// JLabel として扱う（DefaultListCellRenderer は JLabel を返す）
+		// JLabelとして扱う（DefaultListCellRenderer は JLabel を返す）
 		JLabel label = (JLabel) component;
 
 		// 表示名を設定
@@ -46,9 +50,9 @@ public class ComboRenderer extends DefaultListCellRenderer {
 		case LanguageType languageType -> label.setText(languageType.getBaseDisplayName());
 		default -> label.setText(value == null ? "" : value.toString());
 		}
-		
-		// Windows の閉じた ComboBox は白背景で描画されることがあるため
+
 		if (themeType == ThemeType.DARK) {
+			// ダークモード用の色設定
 			if (isSelected) {
 				label.setBackground(themePalette.getSelectionBackgroundColor());
 				label.setForeground(themePalette.getTextColor());
@@ -60,9 +64,7 @@ public class ComboRenderer extends DefaultListCellRenderer {
 		}
 
 		if (themeType == ThemeType.STORYBOOK) {
-			// STORYBOOK 用の色設定
-			label.setForeground(themePalette.getTextColor());
-			label.setBackground(themePalette.getControlBackgroundColor());
+			// 絵本テーマ用の色設定
 			if (isSelected) {
 				label.setBackground(themePalette.getSelectionBackgroundColor());
 				label.setForeground(themePalette.getTextColor());
@@ -76,7 +78,7 @@ public class ComboRenderer extends DefaultListCellRenderer {
 	}
 	
 	/**
-	 * 言語選択欄の描画テーマを切り替えます。
+	 * 描画テーマを切り替える
 	 *
 	 * @param themeType 最新のテーマ設定
 	 */

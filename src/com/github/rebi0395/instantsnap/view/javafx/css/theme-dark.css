@@ -15,10 +15,13 @@
     -dark-text-muted: #b8c1cc;
     -dark-accent: #64a9e8;
     -dark-accent-strong: #2f80c9;
-    -dark-focus: rgba(100, 169, 232, 0.70);
+    -dark-focus-border: #42a5ff;
+    -dark-focus: rgba(66, 165, 255, 0.86);
 
     -fx-background-color: -dark-window;
     -fx-text-fill: -dark-text;
+    -fx-focus-color: -dark-focus-border;
+    -fx-faint-focus-color: rgba(66, 165, 255, 0.28);
 }
 
 /* 文字と上部ステータス */
@@ -174,7 +177,8 @@
 
 .theme-dark .combo-box-base:focused,
 .theme-dark .text-field:focused {
-    -fx-border-color: -dark-accent;
+    -fx-border-color: -dark-focus-border;
+    -fx-border-width: 2px;
     -fx-effect: dropshadow(gaussian, -dark-focus, 9, 0.30, 0, 0);
 }
 
@@ -269,7 +273,8 @@
 
 .theme-dark .switch-check-box:focused .box,
 .theme-dark .switch-check-box:selected:focused .box {
-    -fx-border-color: -dark-accent;
+    -fx-border-color: -dark-focus-border;
+    -fx-border-width: 2px;
     -fx-effect: dropshadow(gaussian, -dark-focus, 8, 0.25, 0, 0);
 }
 
@@ -352,14 +357,28 @@
     -fx-text-fill: #ffb4ba;
 }
 
+.theme-dark .button:focused {
+    -fx-border-color: -dark-focus-border;
+    -fx-border-width: 2px;
+    -fx-effect: dropshadow(gaussian, -dark-focus, 10, 0.38, 0, 0);
+}
+
+.theme-dark .titled-pane:focused > .title {
+    -fx-border-color: -dark-focus-border;
+    -fx-border-width: 2px;
+    -fx-effect: innershadow(gaussian, -dark-focus, 7, 0.38, 0, 0);
+}
+
 .theme-dark .check-box:focused .box,
 .theme-dark .radio-button:focused .radio {
+    -fx-border-color: -dark-focus-border;
+    -fx-border-width: 2px;
     -fx-effect: dropshadow(gaussian, -dark-focus, 8, 0.35, 0, 0);
 }
 
 .theme-dark .check-box:focused,
 .theme-dark .radio-button:focused {
-    -fx-text-fill: #9dcefa;
+    -fx-text-fill: #9bd3ff;
 }
 
 .tooltip {

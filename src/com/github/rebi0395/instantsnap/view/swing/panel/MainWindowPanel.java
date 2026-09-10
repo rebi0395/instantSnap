@@ -1,5 +1,6 @@
 package com.github.rebi0395.instantsnap.view.swing.panel;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -8,22 +9,30 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.KeyEvent;
 import java.net.URL;
 
-import javax.swing.BorderFactory;
+import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
+import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingConstants;
+import javax.swing.KeyStroke;
 import javax.swing.JToggleButton;
+import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.plaf.basic.BasicButtonUI;
 
+import com.github.rebi0395.instantsnap.common.MessageKeyConstant;
+import com.github.rebi0395.instantsnap.common.MessageKeyConverter;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.model.bean.KeyCombinationBean;
 import com.github.rebi0395.instantsnap.model.enums.LanguageType;
@@ -43,7 +52,7 @@ import com.github.rebi0395.instantsnap.view.swing.util.ThemePalette;
  * 生成と表示内容の変更はSwingイベントディスパッチスレッド（EDT）上で行います。
  * </p>
  */
-public class MainWindowPanel extends JPanel implements ActionListener {
+public class MainWindowPanel extends JPanel implements ActionListener, FocusListener {
 
 	/** シリアルバージョンUID */
 	private static final long serialVersionUID = 1L;
@@ -105,6 +114,9 @@ public class MainWindowPanel extends JPanel implements ActionListener {
 	/** パネル上の操作を受け取るプレゼンター */
 	private final MainWindowPresenter presenter;
 
+	/** 現在の言語に対応した文言を取得するコンバーター */
+	private final MessageKeyConverter converter;
+
 	/** デフォルト・ダークテーマで設定ボタンに表示するアイコン */
 	private final Icon standardSettingsIcon;
 
@@ -135,15 +147,19 @@ public class MainWindowPanel extends JPanel implements ActionListener {
 	/** 現在のテーマで使用する配色 */
 	private ThemePalette currentThemePalette;
 
+	/** 現在メインウィンドウへ適用しているテーマ */
+	private ThemeType currentThemeType;
+
 	/**
-	 * 現在の設定値を使ってパネルを生成します。
+	 * メインウィンドウの部品を生成します。
 	 *
-	 * @param config 現在の設定値
 	 * @param presenter パネル上の操作を受け取るプレゼンター
+	 * @param converter 現在の言語に対応した文言を取得するコンバーター
 	 */
-	public MainWindowPanel(ConfigBean config, MainWindowPresenter presenter) {
+	public MainWindowPanel(MainWindowPresenter presenter, MessageKeyConverter converter) {
 
 		this.presenter = presenter;
+		this.converter = converter;
 		// 部品を先に揃え、設定値の反映は初期表示と再読込で同じ経路にする。
 		this.standardSettingsIcon = new ActionIcon(ActionIcon.Type.SETTINGS);
 		this.standardCaptureIcon = new ActionIcon(ActionIcon.Type.CAPTURE);
@@ -166,7 +182,6 @@ public class MainWindowPanel extends JPanel implements ActionListener {
 		this.notificationButton = createNotificationButton(
 				new QuickSettingIcon(QuickSettingIcon.Type.NOTIFICATION));
 
-		refresh(config);
 		initializeLayout();
 	}
 
@@ -243,7 +258,9 @@ public class MainWindowPanel extends JPanel implements ActionListener {
 		button.setHorizontalTextPosition(SwingConstants.CENTER);
 		button.setVerticalTextPosition(SwingConstants.BOTTOM);
 		button.setIconTextGap(7);
-		button.setFocusPainted(false);
+		button.setFocusable(true);
+		button.setFocusPainted(true);
+		button.addFocusListener(this);
 		button.addActionListener(this);
 		return button;
 	}
@@ -291,8 +308,11 @@ public class MainWindowPanel extends JPanel implements ActionListener {
 		comboBox.setPreferredSize(SHORTCUT_LABEL_SIZE);
 		comboBox.setMinimumSize(SHORTCUT_LABEL_SIZE);
 		comboBox.setRenderer(renderer);
+		comboBox.setFocusable(true);
 		comboBox.setToolTipText("Language / 言語");
+		comboBox.addFocusListener(this);
 		comboBox.addActionListener(this);
+		enableEnterPopupToggle(comboBox);
 		return comboBox;
 	}
 
@@ -307,8 +327,34 @@ public class MainWindowPanel extends JPanel implements ActionListener {
 		comboBox.setPreferredSize(SNAP_AREA_COMBO_SIZE);
 		comboBox.setMinimumSize(SNAP_AREA_COMBO_SIZE);
 		comboBox.setRenderer(renderer);
+		comboBox.setFocusable(true);
+		comboBox.addFocusListener(this);
 		comboBox.addActionListener(this);
+		enableEnterPopupToggle(comboBox);
 		return comboBox;
+	}
+
+	/**
+	 * フォーカス中のコンボボックスをEnterキーで開閉できるようにします。
+	 *
+	 * @param comboBox Enterキー操作を追加するコンボボックス
+	 */
+	private void enableEnterPopupToggle(JComboBox<?> comboBox) {
+		String actionKey = "toggleComboPopup";
+		KeyStroke enterKey = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
+		comboBox.getInputMap(JComponent.WHEN_FOCUSED).put(enterKey, actionKey);
+		comboBox.getActionMap().put(actionKey, new AbstractAction() {
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public void actionPerformed(ActionEvent event) {
+				if (comboBox.isPopupVisible()) {
+					comboBox.hidePopup();
+					return;
+				}
+				comboBox.showPopup();
+			}
+		});
 	}
 
 	/**
@@ -343,8 +389,10 @@ public class MainWindowPanel extends JPanel implements ActionListener {
 	private void applyQuickButtonBaseSetting(AbstractButton button) {
 		button.setPreferredSize(QUICK_SETTING_BUTTON_SIZE);
 		button.setMinimumSize(QUICK_SETTING_BUTTON_SIZE);
-		button.setFocusPainted(false);
+		button.setFocusable(true);
+		button.setFocusPainted(true);
 		button.setMargin(new Insets(2, 2, 2, 2));
+		button.addFocusListener(this);
 		button.addActionListener(this);
 	}
 
@@ -413,13 +461,77 @@ public class MainWindowPanel extends JPanel implements ActionListener {
 	}
 
 	/**
+	 * キーボードフォーカスを受け取った部品の枠線を更新します。
+	 *
+	 * @param event フォーカス取得イベント
+	 */
+	@Override
+	public void focusGained(FocusEvent event) {
+		updateCustomThemeFocusBorder(event.getComponent());
+	}
+
+	/**
+	 * キーボードフォーカスが外れた部品の枠線を元に戻します。
+	 *
+	 * @param event フォーカス解除イベント
+	 */
+	@Override
+	public void focusLost(FocusEvent event) {
+		updateCustomThemeFocusBorder(event.getComponent());
+	}
+
+	/**
+	 * ダーク・絵本テーマ中の操作部品へ、フォーカス状態に応じた枠線を設定します。
+	 * フォーカス中は濃淡の異なる2色を重ね、選択中のボタン上でも見える発光風の枠にします。
+	 *
+	 * @param component フォーカス状態が変わった部品
+	 */
+	private void updateCustomThemeFocusBorder(Component component) {
+		if (currentThemeType == ThemeType.DEFAULT || currentThemePalette == null) {
+			return;
+		}
+
+		Border focusBorder = BorderFactory.createLineBorder(currentThemePalette.getBorderColor());
+		if (component.hasFocus()) {
+			focusBorder = BorderFactory.createCompoundBorder(
+					BorderFactory.createLineBorder(currentThemePalette.getFocusGlowColor()),
+					BorderFactory.createLineBorder(currentThemePalette.getFocusColor(), 2));
+		}
+
+		if (component instanceof JComboBox<?> comboBox) {
+			comboBox.setBorder(focusBorder);
+			return;
+		}
+
+		if (component instanceof AbstractButton button) {
+			if (button == settingsButton || button == captureButton || button == rangeSelectionButton) {
+				int verticalPadding = 4;
+				int horizontalPadding = 6;
+				if (component.hasFocus()) {
+					verticalPadding = 2;
+					horizontalPadding = 4;
+				}
+				button.setBorder(BorderFactory.createCompoundBorder(
+						focusBorder,
+						BorderFactory.createEmptyBorder(
+								verticalPadding,
+								horizontalPadding,
+								verticalPadding,
+								horizontalPadding)));
+				return;
+			}
+			button.setBorder(focusBorder);
+		}
+	}
+
+	/**
 	 * 現在の設定値を文言、ショートカット、言語選択へ反映します。
 	 * EDT上で呼び出します。渡された設定値の保存・変更は行いません。
 	 *
 	 * @param config 表示へ反映する最新の設定値
 	 */
 	public void refresh(ConfigBean config) {
-		UiTexts texts = resolveUiTexts(config.getLanguageType());
+		UiTexts texts = resolveUiTexts();
 		settingsButton.setText(texts.settings());
 		captureButton.setText(texts.capture());
 		rangeSelectionButton.setText(texts.rangeSelection());
@@ -457,6 +569,7 @@ public class MainWindowPanel extends JPanel implements ActionListener {
 		applyActionButtonIcons(themeType);
 		ThemePalette themePalette = themeType.getThemePalette();
 		this.currentThemePalette = themePalette;
+		this.currentThemeType = themeType;
 
 		if (themeType == ThemeType.DEFAULT) {
 			applyDefaultTheme(themePalette);
@@ -467,6 +580,13 @@ public class MainWindowPanel extends JPanel implements ActionListener {
 		languageComboBox.repaint();
 		snapAreaComboBox.repaint();
 		updateQuickSettingButtonColors();
+		updateCustomThemeFocusBorder(languageComboBox);
+		updateCustomThemeFocusBorder(snapAreaComboBox);
+		updateCustomThemeFocusBorder(settingsButton);
+		updateCustomThemeFocusBorder(captureButton);
+		updateCustomThemeFocusBorder(rangeSelectionButton);
+		updateCustomThemeFocusBorder(openSaveDirectoryButton);
+		updateCustomThemeFocusBorder(notificationButton);
 		revalidate();
 		repaint();
 	}
@@ -655,20 +775,21 @@ public class MainWindowPanel extends JPanel implements ActionListener {
 	}
 
 	/**
-	 * 言語設定に対応したメインウィンドウ用の短い文言を取得します。
+	 * 現在の言語に対応したメインウィンドウ用の短い文言を取得します。
 	 *
-	 * @param language 表示言語。日本語以外は英語を使用
 	 * @return ボタン名とショートカット未設定時の文言
 	 */
-	private UiTexts resolveUiTexts(LanguageType language) {
-		if (language == LanguageType.JAPANESE) {
-			return new UiTexts(
-					"設定", "撮影", "範囲選択", "未設定",
-					"保存先フォルダを開く", "保存先フォルダが設定されていません", "通知", "オン", "オフ");
-		}
+	private UiTexts resolveUiTexts() {
 		return new UiTexts(
-				"Settings", "Capture", "Select area", "Not set",
-				"Open save directory", "Save directory is not set", "Notification", "On", "Off");
+				converter.getMessage(MessageKeyConstant.MAIN_WINDOW_SETTINGS),
+				converter.getMessage(MessageKeyConstant.MAIN_WINDOW_CAPTURE),
+				converter.getMessage(MessageKeyConstant.MAIN_WINDOW_SELECT_AREA),
+				converter.getMessage(MessageKeyConstant.MAIN_WINDOW_SHORTCUT_NOT_SET),
+				converter.getMessage(MessageKeyConstant.MAIN_WINDOW_OPEN_SAVE_DIRECTORY),
+				converter.getMessage(MessageKeyConstant.MAIN_WINDOW_SAVE_DIRECTORY_NOT_SET),
+				converter.getMessage(MessageKeyConstant.MAIN_WINDOW_NOTIFICATION),
+				converter.getEnabledMessage(true),
+				converter.getEnabledMessage(false));
 	}
 
 	/**

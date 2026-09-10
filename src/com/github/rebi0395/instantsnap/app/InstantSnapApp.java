@@ -186,7 +186,7 @@ public final class InstantSnapApp {
 			log.error("JavaFX設定画面の起動に失敗しました", e);
 			settingsProcess = null;
 			mainWindowPresenter.setSettingsAvailable(true);
-			mainWindowPresenter.showSettingsStartError(coordinator.getConfigBean().getLanguageType());
+			mainWindowPresenter.showSettingsStartError();
 		}
 	}
 
@@ -263,7 +263,7 @@ public final class InstantSnapApp {
 					log.error("設定プロセスが異常終了しました。終了コード: {}。logs/settings-process.logを確認してください", exitCode);
 					SwingUtilities.invokeLater(() -> {
 						if (!shuttingDown) {
-							mainWindowPresenter.showSettingsStartError(coordinator.getConfigBean().getLanguageType());
+							mainWindowPresenter.showSettingsStartError();
 						}
 					});
 				}

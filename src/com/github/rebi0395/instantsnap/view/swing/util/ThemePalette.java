@@ -30,6 +30,12 @@ public final class ThemePalette {
 	/** タイトルや主要操作に使用するアクセント色 */
 	private final Color accentColor;
 
+	/** キーボードフォーカスを表す枠線色 */
+	private final Color focusColor;
+
+	/** キーボードフォーカスの外側へ表示する発光色 */
+	private final Color focusGlowColor;
+
 	/** アクセント色の上へ表示する文字色 */
 	private final Color accentTextColor;
 
@@ -54,6 +60,8 @@ public final class ThemePalette {
 			Color border,
 			Color selectionBackground,
 			Color accent,
+			Color focus,
+			Color focusGlow,
 			Color accentText,
 			Color notificationBackground,
 			Color notificationBorder,
@@ -65,6 +73,8 @@ public final class ThemePalette {
 		this.borderColor = border;
 		this.selectionBackgroundColor = selectionBackground;
 		this.accentColor = accent;
+		this.focusColor = focus;
+		this.focusGlowColor = focusGlow;
 		this.accentTextColor = accentText;
 		this.notificationBackgroundColor = notificationBackground;
 		this.notificationBorderColor = notificationBorder;
@@ -91,6 +101,8 @@ public final class ThemePalette {
 				border,
 				selectionBackground,
 				new Color(0x09, 0x69, 0xda),
+				getUiColor("Component.focusColor", new Color(25, 118, 210)),
+				new Color(144, 202, 249),
 				Color.WHITE,
 				Color.WHITE,
 				new Color(0xd0, 0xd7, 0xde),
@@ -111,6 +123,8 @@ public final class ThemePalette {
 				new Color(116, 131, 151),
 				new Color(67, 113, 153),
 				new Color(112, 184, 242),
+				new Color(66, 165, 255),
+				new Color(150, 215, 255),
 				new Color(21, 32, 43),
 				new Color(24, 28, 34),
 				new Color(116, 131, 151),
@@ -131,6 +145,8 @@ public final class ThemePalette {
 				new Color(239, 189, 120),
 				new Color(255, 154, 69),
 				new Color(232, 125, 40),
+				new Color(255, 173, 98),
+				new Color(255, 228, 196),
 				Color.WHITE,
 				new Color(255, 253, 248),
 				new Color(239, 189, 120),
@@ -206,6 +222,22 @@ public final class ThemePalette {
 	 */
 	public Color getAccentColor() {
 		return accentColor;
+	}
+
+	/**
+	 * キーボードフォーカスを表す枠線色を取得する
+	 * @return focusColor キーボードフォーカスの枠線色
+	 */
+	public Color getFocusColor() {
+		return focusColor;
+	}
+
+	/**
+	 * キーボードフォーカスの外側へ表示する発光色を取得する
+	 * @return focusGlowColor キーボードフォーカスの発光色
+	 */
+	public Color getFocusGlowColor() {
+		return focusGlowColor;
 	}
 
 	/**

@@ -128,17 +128,17 @@ public class SettingWindowPresenter {
 	}
 
 	/**
-	 * アプリのアイコンを設定する
+	 * 設定ウィンドウ専用のアイコンを設定する
 	 */
 	private void setIcon() {
-		try (InputStream iconStream = getClass().getResourceAsStream(ICON_APP)) {
+		try (InputStream iconStream = getClass().getResourceAsStream(ICON_SETTING_WINDOW)) {
 			if (iconStream != null) {
 				stage.getIcons().add(new Image(iconStream));
 			} else {
-				log.warn("アイコンファイルが見つかりません: {}", ICON_APP);
+				log.warn("アイコンファイルが見つかりません: {}", ICON_SETTING_WINDOW);
 			}
 		} catch (IOException e) {
-			log.warn("アイコンファイルの読み込みに失敗しました: {}", ICON_APP, e);
+			log.warn("アイコンファイルの読み込みに失敗しました: {}", ICON_SETTING_WINDOW, e);
 		}
 	}
 

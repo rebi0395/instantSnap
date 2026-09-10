@@ -123,6 +123,8 @@ public final class AppConstant {
 	public static final String THEME_CSS_PREFIX = "theme-";
 	/** アイコンのpngファイル */
 	public static final String ICON_APP = "/images/icon/InstantSnap.png";
+	/** JavaFX設定ウィンドウの専用アイコン */
+	public static final String ICON_SETTING_WINDOW = "/images/icon/InstantSnap_setting.png";
 
 	/** 一時保存先ディレクトリ */
 	public static final String TMP_SAVE_DIR = "./tmp/";
