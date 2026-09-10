@@ -82,7 +82,8 @@ public final class MainWindowPresenter implements ExitKeyEventListener, Settings
 		this.converter = coordinator.getMessageKeyConverter();
 		this.screenCaptureExclusionService = new ScreenCaptureExclusionService();
 		this.includeSettingWindow = config.getIsIncludeSettingWindow();
-		this.panel = new MainWindowPanel(config, this);
+		this.panel = new MainWindowPanel(this, converter);
+		this.panel.refresh(config);
 		this.frame = createFrame();
 	}
 
@@ -282,15 +283,11 @@ public final class MainWindowPresenter implements ExitKeyEventListener, Settings
 	/**
 	 * JavaFX設定画面を起動できなかった場合の案内を表示します。
 	 *
-	 * @param language 案内の表示言語。日本語以外は英語を使用
 	 */
-	public void showSettingsStartError(LanguageType language) {
-		String message;
-		if (language == LanguageType.JAPANESE) {
-			message = "設定画面を起動できませんでした。ログを確認してください。";
-		} else {
-			message = "Could not open Settings. Check the log for details.";
-		}
+	public void showSettingsStartError() {
+		String message = converter.getMessage(
+				MessageKeyConstant.DIALOG_SETTINGS_START_ERROR,
+				"Could not open Settings. Check the log for details.");
 		JOptionPane.showMessageDialog(frame, message, WINDOW_TITLE, JOptionPane.ERROR_MESSAGE);
 	}
 

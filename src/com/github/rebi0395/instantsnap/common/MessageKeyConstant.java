@@ -12,6 +12,22 @@ public final class MessageKeyConstant {
 	/** 言語別プロパティファイルの格納先 */
 	public static final String BASE_NAME = "i18n.messages";
 
+	// -- ミニウィンドウ --
+	/** ミニウィンドウ：設定ボタン */
+	public static final String MAIN_WINDOW_SETTINGS = "mainWindow.settings";
+	/** ミニウィンドウ：撮影ボタン */
+	public static final String MAIN_WINDOW_CAPTURE = "mainWindow.capture";
+	/** ミニウィンドウ：範囲選択ボタン */
+	public static final String MAIN_WINDOW_SELECT_AREA = "mainWindow.selectArea";
+	/** ミニウィンドウ：ショートカット未設定 */
+	public static final String MAIN_WINDOW_SHORTCUT_NOT_SET = "mainWindow.shortcut.notSet";
+	/** ミニウィンドウ：保存先フォルダを開く */
+	public static final String MAIN_WINDOW_OPEN_SAVE_DIRECTORY = "mainWindow.openSaveDirectory";
+	/** ミニウィンドウ：保存先フォルダ未設定 */
+	public static final String MAIN_WINDOW_SAVE_DIRECTORY_NOT_SET = "mainWindow.saveDirectoryNotSet";
+	/** ミニウィンドウ：通知 */
+	public static final String MAIN_WINDOW_NOTIFICATION = "mainWindow.notification";
+
 	// -- メインウィンドウ固定文言 -- 
 	/** タブ：基本設定 */
 	public static final String TAB_BASIC_SETTINGS = "tab.basicSettings";
@@ -152,6 +168,8 @@ public final class MessageKeyConstant {
 	public static final String DIALOG_SINGLE_INSTANCE_MESSAGE = "dialog.singleInstance.message";
 	/** 起動時エラーメッセージ */
 	public static final String DIALOG_STARTUP_ERROR = "dialog.startupError.message";
+	/** 設定画面の起動失敗メッセージ */
+	public static final String DIALOG_SETTINGS_START_ERROR = "dialog.settingsStartError.message";
 	
 	// -- 範囲選択画面 --
 	/** 操作説明：範囲選択状態の切り替え 待機中*/
