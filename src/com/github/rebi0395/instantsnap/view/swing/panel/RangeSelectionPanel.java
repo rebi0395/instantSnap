@@ -131,7 +131,7 @@ public class RangeSelectionPanel extends JPanel {
 		startPoint = null; // 選択開始位置
 		selectionArea = null; // 選択範囲
 		dragging = false;
-		listener.onUpdatedArea(null); // 通知先の範囲選択をリセットする
+		listener.updateRangeArea(null); // 通知先の範囲選択をリセットする
 		changeSelectionState(SelectionState.WAITING); // 状態を更新
 		repaint(); // 選択範囲と枠線を消し、全面を暗幕で覆う
 	}
@@ -362,7 +362,7 @@ public class RangeSelectionPanel extends JPanel {
 	 */
 	private void startSelection() {
 		// 通知先の範囲選択をリセットする
-		listener.onUpdatedArea(null);
+		listener.updateRangeArea(null);
 		// ドラッグ開始位置を設定する
 		startPoint = clampPoint(currentPoint);
 		// 押下位置から新しい選択範囲を開始する
@@ -401,10 +401,29 @@ public class RangeSelectionPanel extends JPanel {
 
 		// 撮影可能の通知より先に再描画し、撮影画像へ白い枠線が入ることを防ぐ
 		paintImmediately(0, 0, getWidth(), getHeight());
-		listener.onUpdatedArea(selectedScreenArea);
-		// 状態を更新する
-		changeSelectionState(SelectionState.CONFIRMED);
+		listener.updateRangeArea(selectedScreenArea);
+
+		if (config.getIsAutoSnapAfterRangeSelectionEnabled()) {
+			if (!config.getIsCloseRangeSelectionAfterSnapEnabled()) {
+				// 自動撮影後もモードを継続する場合は、次の範囲選択を受け付ける。
+				prepareNextSelection();
+			}
+		} else {
+			// 自動撮影が無効な場合は、従来どおり確定状態で待機する
+			changeSelectionState(SelectionState.CONFIRMED);
+		}
 		repaint();
+	}
+
+	/**
+	 * 撮影後に選択範囲を破棄し、次の範囲選択待ちに戻します。
+	 * 撮影用の範囲は通知先でコピー済みのため、nullの再通知は行いません。
+	 */
+	public void prepareNextSelection() {
+		startPoint = null;
+		selectionArea = null;
+		dragging = false;
+		changeSelectionState(SelectionState.WAITING);
 	}
 
 	/**

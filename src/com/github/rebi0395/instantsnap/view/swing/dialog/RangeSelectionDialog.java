@@ -93,7 +93,7 @@ public class RangeSelectionDialog {
 		 *
 		 * @param selectArea 更新後の撮影範囲
 		 */
-		void onUpdatedArea(Rectangle selectArea);
+		void updateRangeArea(Rectangle selectArea);
 	}
 
 	/**
@@ -137,6 +137,44 @@ public class RangeSelectionDialog {
 		} catch (InvocationTargetException e) {
 			log.warn("範囲選択画面の終了処理に失敗しました", e.getCause());
 		}
+	}
+
+	/**
+	 * 撮影後も範囲撮影モードを継続するため、次の範囲選択待ちに戻します。
+	 * 撮影開始前に選択枠の描画を確実に消すため、Swingスレッドの処理完了を待機します。
+	 */
+	public void prepareNextSelection() {
+		if (EventQueue.isDispatchThread()) {
+			prepareNextSelectionOnEventThread();
+			return;
+		}
+
+		try {
+			EventQueue.invokeAndWait(new Runnable() {
+				@Override
+				public void run() {
+					prepareNextSelectionOnEventThread();
+				}
+			});
+
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			log.warn("次の範囲選択待ちへの更新中に割り込みが発生しました", e);
+
+		} catch (InvocationTargetException e) {
+			log.warn("次の範囲選択待ちへの更新に失敗しました", e.getCause());
+		}
+	}
+
+	/**
+	 * Swingスレッド上で範囲選択パネルを次の選択待ちに戻します。
+	 */
+	private void prepareNextSelectionOnEventThread() {
+		if (!isShowing() || selectionPanel == null) {
+			return;
+		}
+		selectionPanel.prepareNextSelection();
+		selectionPanel.repaint();
 	}
 
 	/**

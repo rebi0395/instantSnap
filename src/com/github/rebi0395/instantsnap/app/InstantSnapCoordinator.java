@@ -16,6 +16,7 @@ import com.github.rebi0395.instantsnap.model.bean.SnapResultBean;
 import com.github.rebi0395.instantsnap.model.enums.AfterSnapActionType;
 import com.github.rebi0395.instantsnap.model.enums.LanguageType;
 import com.github.rebi0395.instantsnap.model.enums.SnapAreaType;
+import com.github.rebi0395.instantsnap.model.enums.SnapRouteType;
 import com.github.rebi0395.instantsnap.model.enums.ThemeType;
 import com.github.rebi0395.instantsnap.repository.PropertiesRepository;
 import com.github.rebi0395.instantsnap.service.ActiveWindowResolver;
@@ -27,6 +28,7 @@ import com.github.rebi0395.instantsnap.service.SnapSaveService;
 import com.github.rebi0395.instantsnap.service.SoundPlayer;
 import com.github.rebi0395.instantsnap.service.TakeSnapService;
 import com.github.rebi0395.instantsnap.service.TmpFolderService;
+import com.github.rebi0395.instantsnap.service.TriggerKeyWatcher.SnapKeyEventListener;
 import com.github.rebi0395.instantsnap.view.swing.dialog.RangeSelectionDialog;
 import com.github.rebi0395.instantsnap.view.swing.dialog.RangeSelectionDialog.SelectionListener;
 import com.github.rebi0395.instantsnap.view.swing.presenter.SnapNotificationPresenter;
@@ -34,7 +36,7 @@ import com.github.rebi0395.instantsnap.view.swing.presenter.SnapNotificationPres
 /**
  * 対応するサービスクラスに処理を振り分ける、司令塔クラス
  */
-public class InstantSnapCoordinator implements SelectionListener {
+public class InstantSnapCoordinator implements SelectionListener, SnapKeyEventListener {
 
 	/** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(InstantSnapCoordinator.class);
@@ -56,9 +58,6 @@ public class InstantSnapCoordinator implements SelectionListener {
 	private final SnapSaveService saveService;
 	/** 全体の撮影処理クラス */
 	private final TakeSnapService takeSnapService;
-	/** 撮影対象となるアクティブウィンドウを特定するクラス */
-	private final ActiveWindowResolver activeWindowResolver;
-
 	/** ファイルを開くクラス */
 	private final FileOpenService fileOpenService;
 	/** 効果音再生クラス */
@@ -93,11 +92,10 @@ public class InstantSnapCoordinator implements SelectionListener {
 		this.repository = new PropertiesRepository();
 		this.tmpFolder = new TmpFolderService();
 		this.filePathService = new FilePathService();
-		this.areaResolver = new SnapAreaResolver();
+		this.areaResolver = new SnapAreaResolver(new ActiveWindowResolver());
 		this.fileOpenService = new FileOpenService();
 		this.soundPlayer = new SoundPlayer();
 		this.mouseCursorService = new MouseCursorService();
-		this.activeWindowResolver = new ActiveWindowResolver();
 
 		// 依存性の注入があるクラス
 		this.converter = new MessageKeyConverter(config.getLanguageType());
@@ -270,7 +268,7 @@ public class InstantSnapCoordinator implements SelectionListener {
 	 * キー監視の停止とプロセスの終了はInstantSnapAppが担当します。
 	 * 複数回呼ばれても解放処理は一度だけ実行します。
 	 */
-	public void exit() {
+	public void requestExit() {
 		if (!closed.compareAndSet(false, true)) {
 			return;
 		}
@@ -282,51 +280,46 @@ public class InstantSnapCoordinator implements SelectionListener {
 	}
 
 	/**
-	 * 撮影トリガーが押されたとき呼ばれ、撮影処理を呼び出す
-	 */
-	public void requestSnap() {
-		long snapTargetWindowHandle = activeWindowResolver.getForegroundWindowHandle(
-				config.getIsIncludeSettingWindow(), false);
-		requestSnap(snapTargetWindowHandle);
-	}
-
-	/**
-	 * メインウィンドウの撮影ボタンから撮影を要求する
-	 * 引数が異なるため、別メソッドに切り出している
-	 */
-	public void requestSnapFromMainWindow() {
-		long snapTargetWindowHandle = activeWindowResolver.getForegroundWindowHandle(
-						config.getIsIncludeSettingWindow(), true);
-		requestSnap(snapTargetWindowHandle);
-	}
-
-	/**
-	 * 解決済みのウィンドウハンドルを使用して撮影処理をキューへ登録します。
+	 * 撮影要求時の範囲選択結果を退避し、撮影処理をキューへ登録します。
 	 *
-	 * @param snapTargetWindowHandle アクティブウィンドウ撮影の対象。未取得の場合は0
+	 * @param snapRoute 撮影要求が発生した経路
 	 */
-	private void requestSnap(long snapTargetWindowHandle) {
+	public void requestSnap(SnapRouteType snapRoute) {
+		if (closed.get()) {
+			return;
+		}
 		if (rangeSelectionModeActive && rangeSelection == null) {
 			// 範囲選択画面が表示中、かつ範囲が未確定
 			return;
+		}
+
+		Rectangle snapRange;
+		if (rangeSelection == null) {
+			snapRange = null;
+		} else {
+			snapRange = new Rectangle(rangeSelection);
+		}
+		// 撮影要求へコピーした範囲を、次の選択や撮影へ持ち越さない。
+		this.rangeSelection = null;
+
+		// 範囲撮影後の画面状態を、自動終了設定に従って更新する。
+		if (snapRange != null) {
+			if (config.getIsCloseRangeSelectionAfterSnapEnabled()) {
+				rangeSelectionDialog.close();
+			} else if (snapRoute != SnapRouteType.RANGE_MODE) {
+				// 手動撮影後もモードを継続する場合は、次の範囲選択待ちに戻す。
+				rangeSelectionDialog.prepareNextSelection();
+			}
 		}
 
 		// 別スレッド立ち上げ
 		executor.submit(() -> {
 			SnapResultBean result;
 			AfterSnapData afterSnapData;
-			Rectangle snapRange = this.rangeSelection;
-			if (snapRange != null) {
-				snapRange = new Rectangle(snapRange); // 範囲をコピーし、参照から外す
-				this.rangeSelectionDialog.close();
-			}
 			synchronized (configLock) { // 排他制御
 				try {
 					// 撮影処理
-					result = takeSnapService.execute(
-							config,
-							snapRange,
-							snapTargetWindowHandle);
+					result = takeSnapService.execute(config, snapRange, snapRoute);
 
 					// ロック中に撮影後処理に使う分の設定値を退避する
 					afterSnapData = new AfterSnapData(
@@ -356,7 +349,7 @@ public class InstantSnapCoordinator implements SelectionListener {
 	 * @param processId 設定プロセスのID
 	 */
 	public void registerSettingsProcess(long processId) {
-		activeWindowResolver.registerSettingsProcess(processId);
+		areaResolver.registerSettingsProcess(processId);
 	}
 
 	/**
@@ -364,14 +357,18 @@ public class InstantSnapCoordinator implements SelectionListener {
 	 *
 	 * @param processId 終了した設定プロセスのID
 	 */
-	public void unregisterSettingsProcess(long processId) {
-		activeWindowResolver.unregisterSettingsProcess(processId);
+	public void releaseSettingsProcess(long processId) {
+		areaResolver.releaseSettingsProcess(processId);
 	}
 
 	/**
 	 * 範囲トリガーが押されたとき呼ばれる。撮影範囲選択モードの無効・有効を切り替える
 	 */
+	@Override
 	public void requestRangeSelection() {
+		if (closed.get()) {
+			return;
+		}
 		GraphicsDevice screenDevice = areaResolver.getGraphicsDeviceAtPointer();
 		rangeSelectionDialog.switchRangeSelectionMode(screenDevice);
 	}
@@ -392,15 +389,20 @@ public class InstantSnapCoordinator implements SelectionListener {
 	}
 
 	/**
-	 * 範囲選択更新後に呼ばれる。選択した範囲を取得する。
+	 * 範囲選択結果を保持し、自動撮影が有効なら直ちに撮影を要求します。
+	 *
+	 * @param selectedArea 確定した撮影範囲。選択解除時はnull
 	 */
 	@Override
-	public void onUpdatedArea(Rectangle selectedArea) {
+	public void updateRangeArea(Rectangle selectedArea) {
 		if (selectedArea == null) {
 			rangeSelection = null;
 			return;
 		}
 		rangeSelection = new Rectangle(selectedArea);
+		if (config.getIsAutoSnapAfterRangeSelectionEnabled()) {
+			requestSnap(SnapRouteType.RANGE_MODE);
+		}
 	}
 
 	/**
@@ -446,7 +448,6 @@ public class InstantSnapCoordinator implements SelectionListener {
 	public MessageKeyConverter getMessageKeyConverter() {
 		return converter;
 	}
-
 	/**
 	 * 撮影後の処理で使う変数をひとまとめにしたレコードクラス
 	 *

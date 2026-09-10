@@ -128,6 +128,12 @@ public class PropertiesRepository {
 					properties.getProperty(PROPERTY_SELECTION_USE_SHIFT),
 					DEFAULT_SELECTION_USE_SHIFT));
 			config.setSelectionKeyBean(selectionKeys);
+			config.setIsAutoSnapAfterRangeSelectionEnabled(readBooleanOrDefault(
+					properties.getProperty(PROPERTY_AUTO_SNAP_AFTER_RANGE_SELECTION_ENABLED),
+					DEFAULT_AUTO_SNAP_AFTER_RANGE_SELECTION_ENABLED));
+			config.setIsCloseRangeSelectionAfterSnapEnabled(readBooleanOrDefault(
+					properties.getProperty(PROPERTY_CLOSE_RANGE_SELECTION_AFTER_SNAP_ENABLED),
+					DEFAULT_CLOSE_RANGE_SELECTION_AFTER_SNAP_ENABLED));
 
 		} catch (IOException ie) {
 			throw new ServiceException("プロパティファイルの読み込みに失敗しました", ie);
@@ -280,6 +286,12 @@ public class PropertiesRepository {
 		updateMap.put(PROPERTY_SELECTION_USE_ALT, String.valueOf(selectionKeys.isUseAlt()));
 		updateMap.put(PROPERTY_SELECTION_USE_CTRL, String.valueOf(selectionKeys.isUseCtrl()));
 		updateMap.put(PROPERTY_SELECTION_USE_SHIFT, String.valueOf(selectionKeys.isUseShift()));
+		updateMap.put(
+				PROPERTY_AUTO_SNAP_AFTER_RANGE_SELECTION_ENABLED,
+				String.valueOf(config.getIsAutoSnapAfterRangeSelectionEnabled()));
+		updateMap.put(
+				PROPERTY_CLOSE_RANGE_SELECTION_AFTER_SNAP_ENABLED,
+				String.valueOf(config.getIsCloseRangeSelectionAfterSnapEnabled()));
 
 		return updateMap;
 	}
@@ -323,6 +335,12 @@ public class PropertiesRepository {
 			selectionIsUseAlt=false
 			selectionIsUseCtrl=false
 			selectionIsUseShift=false
+
+			# 範囲確定後に自動で撮影する
+			autoSnapAfterRangeSelectionEnabled=true
+
+			# 撮影後に範囲撮影モードを自動で終了する
+			closeRangeSelectionAfterSnapEnabled=true
 
 			# 撮影範囲の選択 デフォルトは 1
 			# 1 -> 使用しているウィンドウを撮影, 2 -> カーソルのあるモニターを撮影
@@ -397,6 +415,12 @@ public class PropertiesRepository {
 			selectionIsUseAlt=false
 			selectionIsUseCtrl=false
 			selectionIsUseShift=false
+
+			# Capture automatically after selecting a range
+			autoSnapAfterRangeSelectionEnabled=true
+
+			# Automatically exit range capture mode after capturing
+			closeRangeSelectionAfterSnapEnabled=true
 
 			# Select the capture area
 			# 1 -> Active window (default), 2 -> Active monitor

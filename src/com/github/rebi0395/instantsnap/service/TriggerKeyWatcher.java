@@ -15,18 +15,21 @@ import com.github.rebi0395.instantsnap.common.NativeKeyCodeConverter;
 import com.github.rebi0395.instantsnap.exception.ServiceException;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.model.bean.KeyCombinationBean;
+import com.github.rebi0395.instantsnap.model.enums.SnapRouteType;
 
 /**
  * スクリーンショット撮影のトリガーとなるキーを監視し、
  * 撮影処理を呼び出すクラス
  * JNativeHookライブラリを使用。
  */
-public class TriggerKeyWatcher implements NativeKeyListener {
+public class TriggerKeyWatcher implements NativeKeyListener, AutoCloseable {
 
 	/** ユーザー設定値 */
 	private ConfigBean config;
-	/** キー押下をコントローラーに通知するインターフェース */
-	private KeyEventListener listener;
+	/** 撮影と範囲選択のキー押下を通知するインターフェース */
+	private final SnapKeyEventListener snapKeyEventListener;
+	/** 終了キーの押下を通知するインターフェース */
+	private final ExitKeyEventListener exitKeyEventListener;
 	/** キー監視を行ってるかを判定する変数 trueで監視中 */
 	private boolean keyListenerRunning = false;
 	/** ロガー */
@@ -49,27 +52,40 @@ public class TriggerKeyWatcher implements NativeKeyListener {
 	private boolean canRangeSelection = true;
 
 	/**
-	 * キー押下を通知するインタフェースです
+	 * 撮影と範囲選択のキー押下を通知するインターフェースです。
 	 */
-	public interface KeyEventListener {
+	public interface SnapKeyEventListener {
 
 		/** 撮影キーが押された事を通知する */
-		void requestSnap();
+		void requestSnap(SnapRouteType snapRouteType);
 
 		/** 範囲キーが押された事を通知する */
 		void requestRangeSelection();
 
-		/** アプリの終了を通知する */
+	}
+
+	/**
+	 * 終了キーの押下を通知するインターフェースです。
+	 */
+	public interface ExitKeyEventListener {
+
+		/** アプリの終了要求を通知します。 */
 		void requestExit();
 	}
 
 	/**
 	 * コンストラクタ
-	 * @param listener イベントの通知先
+	 * @param config ユーザーの設定値
+	 * @param snapKeyEventListener 撮影と範囲選択の通知先
+	 * @param exitKeyEventListener 終了要求の通知先
 	 */
-	public TriggerKeyWatcher(ConfigBean config, KeyEventListener listener) {
+	public TriggerKeyWatcher(
+			ConfigBean config,
+			SnapKeyEventListener snapKeyEventListener,
+			ExitKeyEventListener exitKeyEventListener) {
 		this.config = config;
-		this.listener = listener;
+		this.snapKeyEventListener = snapKeyEventListener;
+		this.exitKeyEventListener = exitKeyEventListener;
 	}
 
 	/**
@@ -125,7 +141,7 @@ public class TriggerKeyWatcher implements NativeKeyListener {
 
 		// pauseキー押下時、アプリを終了する
 		if (nativeKeyCode == VC_PAUSE) {
-			listener.requestExit();
+			exitKeyEventListener.requestExit();
 			return;
 		}
 
@@ -142,7 +158,7 @@ public class TriggerKeyWatcher implements NativeKeyListener {
 			// 連写を防ぐため、撮影可能フラグをオフにする
 			canSnap = false;
 			clearKeyStates();
-			listener.requestSnap();
+			snapKeyEventListener.requestSnap(SnapRouteType.SHORTCUT_KEY);
 			return;
 		}
 
@@ -153,7 +169,7 @@ public class TriggerKeyWatcher implements NativeKeyListener {
 		if (canRangeSelection && isShortcutPressed(isRangeSelectionTriggerPressed, selectionKeys)) {
 			canRangeSelection = false; // 二重起動防止のため、フラグをオフにする
 			clearKeyStates();
-			listener.requestRangeSelection();
+			snapKeyEventListener.requestRangeSelection();
 		}
 	}
 
@@ -255,5 +271,20 @@ public class TriggerKeyWatcher implements NativeKeyListener {
 	 */
 	public boolean isKeyListenerRunning() {
 		return keyListenerRunning;
+	}
+
+	/**
+	 * キー監視を停止します。
+	 * 終了処理全体を継続できるよう、停止失敗はログへ記録して呼び出し元へは送出しません。
+	 */
+	@Override
+	public void close() {
+		try {
+			if (isKeyListenerRunning()) {
+				deactivate();
+			}
+		} catch (ServiceException e) {
+			log.error("トリガーキー監視の終了に失敗しました", e);
+		}
 	}
 }

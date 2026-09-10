@@ -10,6 +10,7 @@ import com.github.rebi0395.instantsnap.exception.ServiceException;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.model.bean.SnapResultBean;
 import com.github.rebi0395.instantsnap.model.enums.AfterSnapActionType;
+import com.github.rebi0395.instantsnap.model.enums.SnapRouteType;
 
 /**
  * 画面の撮影処理を行うクラス
@@ -47,14 +48,12 @@ public class TakeSnapService {
 	 *
 	 * @param config ユーザーの設定値
 	 * @param rangeSelection ドラッグ指定の撮影範囲
-	 * @param windowHandle 撮影要求時に取得したウィンドウのネイティブハンドル
+	 * @param snapRoute 撮影要求が発生した経路
 	 * @return 撮影処理結果
 	 * @throws ServiceException 撮影処理に失敗した場合
 	 */
 	public SnapResultBean execute(
-			ConfigBean config,
-			Rectangle rangeSelection,
-			long windowHandle) throws ServiceException {
+			ConfigBean config, Rectangle rangeSelection, SnapRouteType snapRoute) throws ServiceException {
 
 		// 行うべきアクションが設定されていない場合、早期リターン
 		if (!hasResultAction(config)) {
@@ -67,10 +66,11 @@ public class TakeSnapService {
 		BufferedImage capturedImage = null;
 		BufferedImage snap = null;
 		try {
-			// 撮影種別にかかわらずウィンドウ情報を渡し、範囲解決の入口を統一する。
+			// 撮影範囲の種類と要求経路を渡し、範囲解決の入口を統一する。
 			Rectangle snapSize = areaResolver.resolveArea(
 					config.getSnapAreaType(),
-					windowHandle);
+					config.getIsIncludeSettingWindow(),
+					snapRoute);
 			if (rangeSelection != null) {
 				// ドラッグ指定している場合は、撮影範囲をドラッグ範囲で上書きする
 				snapSize = rangeSelection;

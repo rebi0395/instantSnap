@@ -48,6 +48,12 @@ public final class MessageKeyConstant {
 	public static final String CHECK_INCLUDE_CURSOR = "check.includeCursor";
 	/** チェック項目：マウスカーソルを画像に含める */
 	public static final String CHECK_INCLUDE_SETTING_WINDOW = "check.includeSettingWindow";
+	/** チェック項目：範囲確定後に自動撮影する */
+	public static final String CHECK_AUTO_SNAP_AFTER_RANGE_SELECTION =
+			"check.autoSnapAfterRangeSelection";
+	/** チェック項目：撮影後に範囲撮影モードを自動で終了する */
+	public static final String CHECK_CLOSE_RANGE_SELECTION_AFTER_SNAP =
+			"check.closeRangeSelectionAfterSnap";
 	/** チェック項目：画像を保存する */
 	public static final String CHECK_SAVE_IMAGE = "check.saveImage";
 	/** チェック項目：クリップボードにコピーする */

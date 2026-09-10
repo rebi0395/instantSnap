@@ -17,9 +17,8 @@ import com.sun.jna.win32.StdCallLibrary;
 import com.sun.jna.win32.W32APIOptions;
 
 /**
- * InstantSnapが所有するウィンドウの画面キャプチャ可否を切り替えるサービスです。
- * WindowsではSetWindowDisplayAffinityを使用し、画面を隠さずに撮影対象から除外します。
- * Windows以外ではOSの標準動作を維持するため、何も行いません。
+ * InstantSnapが所有するウィンドウの画面キャプチャ可否を切り替えるサービスクラス
+ * Windows以外ではOSの標準動作を維持するため、何も行わない
  */
 public final class ScreenCaptureExclusionService {
 

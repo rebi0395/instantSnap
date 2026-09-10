@@ -22,12 +22,9 @@ import com.github.rebi0395.instantsnap.common.OsUtil;
 import com.github.rebi0395.instantsnap.exception.ServiceException;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.model.enums.LanguageType;
-import com.github.rebi0395.instantsnap.model.enums.SnapAreaType;
 import com.github.rebi0395.instantsnap.repository.PropertiesRepository;
 import com.github.rebi0395.instantsnap.service.SettingsFileWatcher;
-import com.github.rebi0395.instantsnap.service.SettingsFileWatcher.SettingsChangeListener;
 import com.github.rebi0395.instantsnap.service.TriggerKeyWatcher;
-import com.github.rebi0395.instantsnap.service.TriggerKeyWatcher.KeyEventListener;
 import com.github.rebi0395.instantsnap.view.swing.presenter.MainWindowPresenter;
 
 /**
@@ -35,7 +32,7 @@ import com.github.rebi0395.instantsnap.view.swing.presenter.MainWindowPresenter;
  * 撮影などの機能はCoordinatorへ、Swing画面の操作はMainWindowPresenterへ委譲します。
  * JavaFX設定画面は子プロセスで起動し、両プロセスは設定ファイルを介して変更を共有します。
  */
-public final class InstantSnapApp implements KeyEventListener, SettingsChangeListener {
+public final class InstantSnapApp {
 
 	/** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(InstantSnapApp.class);
@@ -120,28 +117,28 @@ public final class InstantSnapApp implements KeyEventListener, SettingsChangeLis
 		this.coordinator = new InstantSnapCoordinator();
 
 		ConfigBean config = coordinator.getConfigBean();
-		this.mainWindowPresenter = new MainWindowPresenter(
-				this,
-				config,
-				coordinator.getMessageKeyConverter());
+		this.mainWindowPresenter = new MainWindowPresenter(this, coordinator);
 
 		SettingsFileWatcher createdSettingsFileWatcher = null;
-		TriggerKeyWatcher createdTriggerKeyWatcher = new TriggerKeyWatcher(config, this);
+		TriggerKeyWatcher createdTriggerKeyWatcher = new TriggerKeyWatcher(
+				config,
+				coordinator,
+				mainWindowPresenter);
 		try {
 			// 設定画面と手動編集のどちらも、設定ファイルの更新として同じ経路で検知する。
 			createdSettingsFileWatcher = new SettingsFileWatcher(
 					PROPERTIES_PATH,
-					this);
-			// キーイベントはAppで受け取り、撮影要求だけをCoordinatorへ委譲する。
+					mainWindowPresenter);
+			// 撮影系のキーイベントはCoordinatorへ、終了要求はPresenterへ直接通知する。
 			createdTriggerKeyWatcher.activate();
 		} catch (IOException | ServiceException e) {
 			// 起動途中で失敗した場合も、ここまでに開始した監視と画面を解放する。
 			if (createdSettingsFileWatcher != null) {
 				createdSettingsFileWatcher.close();
 			}
-			stopTriggerKeyWatcher(createdTriggerKeyWatcher);
+			createdTriggerKeyWatcher.close();
 			mainWindowPresenter.close();
-			coordinator.exit();
+			coordinator.requestExit();
 			throw e;
 		}
 		this.settingsFileWatcher = createdSettingsFileWatcher;
@@ -161,6 +158,9 @@ public final class InstantSnapApp implements KeyEventListener, SettingsChangeLis
 	 * 起動に失敗した場合は操作を再び有効にし、案内を表示します。
 	 */
 	public void openSettings() {
+		if (shuttingDown) {
+			return;
+		}
 		Process currentProcess = settingsProcess;
 		if (currentProcess != null && currentProcess.isAlive()) {
 			Toolkit.getDefaultToolkit().beep();
@@ -271,7 +271,7 @@ public final class InstantSnapApp implements KeyEventListener, SettingsChangeLis
 				Thread.currentThread().interrupt();
 				log.warn("設定プロセスの終了待機が中断されました", e);
 			} finally {
-				coordinator.unregisterSettingsProcess(process.pid());
+				coordinator.releaseSettingsProcess(process.pid());
 				settingsProcess = null;
 				if (!shuttingDown) {
 					SwingUtilities.invokeLater(() -> mainWindowPresenter.setSettingsAvailable(true));
@@ -283,142 +283,15 @@ public final class InstantSnapApp implements KeyEventListener, SettingsChangeLis
 	}
 
 	/**
-	 * ファイル監視スレッドからの変更通知を受け取り、EDTへ再読込を予約します。
-	 * 終了処理中の通知は無視します。
+	 * Coordinatorが実務サービスを停止した後、Appが所有するリソースを終了します。
+	 * 設定プロセス、Swing画面、各監視、二重起動ロックを順に解放します。
 	 */
-	@Override
-	public void onSettingsFileChanged() {
+	public void shutdownApplication() {
 		if (shuttingDown) {
 			return;
 		}
-		SwingUtilities.invokeLater(() -> reloadSettings());
-	}
-
-	/**
-	 * 設定ファイルを再読込し、常駐処理とメインウィンドウへ反映します。
-	 */
-	private void reloadSettings() {
-		if (shuttingDown) {
-			return;
-		}
-		if (coordinator.reloadConfig()) {
-			mainWindowPresenter.refresh(coordinator.getConfigBean());
-		}
-	}
-
-	/**
-	 * EDT上で選択言語を保存し、表示へ即時反映します。
-	 * 保存に失敗した場合は音で知らせ、Coordinatorが戻した元の設定で表示を更新します。
-	 *
-	 * @param languageType ミニウィンドウで選択された言語
-	 */
-	public void changeLanguage(LanguageType languageType) {
-		if (shuttingDown) {
-			return;
-		}
-		if (!coordinator.updateLanguage(languageType)) {
-			Toolkit.getDefaultToolkit().beep();
-		}
-		mainWindowPresenter.refresh(coordinator.getConfigBean());
-	}
-
-	/**
-	 * EDT上で撮影範囲を保存し、常駐処理と表示へ即時反映します。
-	 *
-	 * @param snapAreaType ミニウィンドウで選択された撮影範囲
-	 */
-	public void changeSnapArea(SnapAreaType snapAreaType) {
-		if (shuttingDown) {
-			return;
-		}
-		if (!coordinator.updateSnapArea(snapAreaType)) {
-			Toolkit.getDefaultToolkit().beep();
-		}
-		mainWindowPresenter.refresh(coordinator.getConfigBean());
-	}
-
-	/**
-	 * 現在設定されている保存先フォルダを開く処理をCoordinatorへ委譲します。
-	 */
-	public void openSaveDirectory() {
-		if (shuttingDown) {
-			return;
-		}
-		coordinator.openSaveDirectory();
-	}
-
-	/**
-	 * EDT上で通知表示の有効・無効を保存し、表示へ即時反映します。
-	 *
-	 * @param enabled 撮影後の通知を表示する場合true
-	 */
-	public void changeNotificationEnabled(boolean enabled) {
-		if (shuttingDown) {
-			return;
-		}
-		if (!coordinator.updateNotificationEnabled(enabled)) {
-			Toolkit.getDefaultToolkit().beep();
-		}
-		mainWindowPresenter.refresh(coordinator.getConfigBean());
-	}
-
-	/**
-	 * 撮影要求をCoordinatorへ委譲します。
-	 */
-	@Override
-	public void requestSnap() {
-		if (!shuttingDown) {
-			coordinator.requestSnap();
-		}
-	}
-
-	/**
-	 * ミニウィンドウの撮影ボタンからの要求をCoordinatorへ委譲します。
-	 * ショートカット撮影とは分け、ボタン操作前に前面だった外部ウィンドウを使用します。
-	 */
-	public void requestSnapFromMainWindow() {
-		if (!shuttingDown) {
-			coordinator.requestSnapFromMainWindow();
-		}
-	}
-
-	/**
-	 * 範囲選択要求をCoordinatorへ委譲します。
-	 */
-	@Override
-	public void requestRangeSelection() {
-		if (!shuttingDown) {
-			coordinator.requestRangeSelection();
-		}
-	}
-
-	/**
-	 * 終了要求をSwingイベントスレッドへ集約し、終了確認画面を表示します。
-	 */
-	@Override
-	public void requestExit() {
-		Toolkit.getDefaultToolkit().beep();
-		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater(() -> requestExit());
-			return;
-		}
-		if (shuttingDown) {
-			return;
-		}
-
-		if (mainWindowPresenter.confirmExit()) {
-			shutdown();
-		}
-	}
-
-	/**
-	 * 終了確認で承諾された後、EDT上で常駐プロセスを終了します。
-	 * 子プロセス、監視、撮影用リソース、二重起動ロックを順に解放します。
-	 */
-	private void shutdown() {
-		// 新しい操作や設定の再読込を受け付けない状態にしてから解放する。
+		// 新しい設定画面の起動を受け付けない状態にしてからApp所有のリソースを解放する。
 		shuttingDown = true;
-		mainWindowPresenter.setActionsEnabled(false);
 
 		Process currentProcess = settingsProcess;
 		if (currentProcess != null && currentProcess.isAlive()) {
@@ -427,25 +300,9 @@ public final class InstantSnapApp implements KeyEventListener, SettingsChangeLis
 
 		mainWindowPresenter.close();
 		settingsFileWatcher.close();
-		stopTriggerKeyWatcher(triggerKeyWatcher);
-		coordinator.exit();
+		triggerKeyWatcher.close();
 		instanceManager.close();
 		System.exit(0);
-	}
-
-	/**
-	 * トリガーキー監視を停止し、停止失敗時も残りの終了処理を継続します。
-	 *
-	 * @param targetWatcher 停止するキー監視。開始前または停止済みの場合は何もしない
-	 */
-	private static void stopTriggerKeyWatcher(TriggerKeyWatcher targetWatcher) {
-		try {
-			if (targetWatcher.isKeyListenerRunning()) {
-				targetWatcher.deactivate();
-			}
-		} catch (ServiceException e) {
-			log.error("トリガーキー監視の終了に失敗しました", e);
-		}
 	}
 
 	/**
