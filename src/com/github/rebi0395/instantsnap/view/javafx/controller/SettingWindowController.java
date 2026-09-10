@@ -186,6 +186,14 @@ public class SettingWindowController {
 	@FXML
 	private Label labelIncludeSettingWindow;
 
+	/** 範囲確定後の自動撮影設定の有効/無効を表示するラベル */
+	@FXML
+	private Label labelAutoSnapAfterRangeSelection;
+
+	/** 撮影後の範囲撮影モード自動終了設定の有効/無効を表示するラベル */
+	@FXML
+	private Label labelCloseRangeSelectionAfterSnap;
+
 	/** 画像を保存する設定の有効/無効を表示するラベル */
 	@FXML
 	private Label labelSaveImage;
@@ -245,6 +253,12 @@ public class SettingWindowController {
 	/** 範囲選択キーでShiftを使用するかを選択するチェックボックス */
 	@FXML
 	private CheckBox checkSelectionShift;
+	/** 範囲確定後に自動撮影するかを選択するチェックボックス */
+	@FXML
+	private CheckBox checkAutoSnapAfterRangeSelection;
+	/** 撮影後に範囲撮影モードを自動で終了するかを選択するチェックボックス */
+	@FXML
+	private CheckBox checkCloseRangeSelectionAfterSnap;
 	/** マウスカーソルを画像に含めるかを設定するチェックボックス */
 	@FXML
 	private CheckBox checkIncludeCursor;
@@ -429,6 +443,8 @@ public class SettingWindowController {
 		checkSelectionCtrl.setSelected(selectionKeys.isUseCtrl());
 		checkSelectionAlt.setSelected(selectionKeys.isUseAlt());
 		checkSelectionShift.setSelected(selectionKeys.isUseShift());
+		checkAutoSnapAfterRangeSelection.setSelected(config.getIsAutoSnapAfterRangeSelectionEnabled());
+		checkCloseRangeSelectionAfterSnap.setSelected(config.getIsCloseRangeSelectionAfterSnapEnabled());
 
 		comboSnapArea.setValue(config.getSnapAreaType()); // 撮影範囲
 		checkIncludeCursor.setSelected(config.getIsIncludeCursor()); // マウスカーソル設定
@@ -748,6 +764,8 @@ public class SettingWindowController {
 			applyInvalidStyle(textSelectionInputKey, true); // 範囲キー項目を赤くする
 		}
 		config.setSelectionKeyBean(selectionKeys);
+		config.setIsAutoSnapAfterRangeSelectionEnabled(checkAutoSnapAfterRangeSelection.isSelected());
+		config.setIsCloseRangeSelectionAfterSnapEnabled(checkCloseRangeSelectionAfterSnap.isSelected());
 		// マウスカーソルの有無
 		config.setIsIncludeCursor(checkIncludeCursor.isSelected());
 		// InstantSnapのウィンドウを含めるか
@@ -810,6 +828,8 @@ public class SettingWindowController {
 		checkSelectionCtrl.setSelected(defaultSelectionKeys.isUseCtrl());
 		checkSelectionAlt.setSelected(defaultSelectionKeys.isUseAlt());
 		checkSelectionShift.setSelected(defaultSelectionKeys.isUseShift());
+		checkAutoSnapAfterRangeSelection.setSelected(DEFAULT_AUTO_SNAP_AFTER_RANGE_SELECTION_ENABLED);
+		checkCloseRangeSelectionAfterSnap.setSelected(DEFAULT_CLOSE_RANGE_SELECTION_AFTER_SNAP_ENABLED);
 
 		// -- 出力設定 --
 		checkSaveImage.setSelected(DEFAULT_SAVE_IMAGE_ENABLED); // チェックを入れる
@@ -928,6 +948,10 @@ public class SettingWindowController {
 		labelSnapArea.setText(config.getSnapAreaType().getMessage(converter));
 		labelIncludeCursor.setText(converter.getEnabledMessage(config.getIsIncludeCursor()));
 		labelIncludeSettingWindow.setText(converter.getEnabledMessage(config.getIsIncludeSettingWindow()));
+		labelAutoSnapAfterRangeSelection.setText(
+				converter.getEnabledMessage(config.getIsAutoSnapAfterRangeSelectionEnabled()));
+		labelCloseRangeSelectionAfterSnap.setText(
+				converter.getEnabledMessage(config.getIsCloseRangeSelectionAfterSnapEnabled()));
 
 		// -- 出力設定
 		labelSaveImage.setText(converter.getEnabledMessage(config.getIsSaveImage()));
@@ -982,6 +1006,14 @@ public class SettingWindowController {
 				converter.getMessage(MessageKeyConstant.CHECK_INCLUDE_CURSOR, "Include cursor"));
 		checkIncludeSettingWindow.setText(
 				converter.getMessage(MessageKeyConstant.CHECK_INCLUDE_SETTING_WINDOW, "Include settings window"));
+		checkAutoSnapAfterRangeSelection.setText(
+				converter.getMessage(
+						MessageKeyConstant.CHECK_AUTO_SNAP_AFTER_RANGE_SELECTION,
+						"Auto-capture selected range"));
+		checkCloseRangeSelectionAfterSnap.setText(
+				converter.getMessage(
+						MessageKeyConstant.CHECK_CLOSE_RANGE_SELECTION_AFTER_SNAP,
+						"Exit range mode after capture"));
 		checkSaveImage.setText(converter.getMessage(MessageKeyConstant.CHECK_SAVE_IMAGE, "Save image"));
 		checkClipboard.setText(converter.getMessage(MessageKeyConstant.CHECK_COPY_TO_CLIPBOARD, "Copy to clipboard"));
 		checkNotification

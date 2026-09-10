@@ -37,6 +37,12 @@ public final class AppConstant {
 	public static final String PROPERTY_SELECTION_USE_CTRL = "selectionIsUseCtrl";
 	/** プロパティ 範囲選択キーでShiftキーを使用するか */
 	public static final String PROPERTY_SELECTION_USE_SHIFT = "selectionIsUseShift";
+	/** プロパティ 範囲確定後に自動撮影するか */
+	public static final String PROPERTY_AUTO_SNAP_AFTER_RANGE_SELECTION_ENABLED =
+			"autoSnapAfterRangeSelectionEnabled";
+	/** プロパティ 撮影後に範囲撮影モードを自動で終了するか */
+	public static final String PROPERTY_CLOSE_RANGE_SELECTION_AFTER_SNAP_ENABLED =
+			"closeRangeSelectionAfterSnapEnabled";
 	/** プロパティ 撮影範囲 */
 	public static final String PROPERTY_SNAP_AREA = "snapArea";
 	/** プロパティ マウスカーソルを写すか */
@@ -84,6 +90,10 @@ public final class AppConstant {
 	public static final boolean DEFAULT_SELECTION_USE_ALT = false;
 	/** 範囲選択キーでShiftキーを使用するかどうかのデフォルト値 */
 	public static final boolean DEFAULT_SELECTION_USE_SHIFT = false;
+	/** 範囲確定後に自動撮影するかどうかのデフォルト値 */
+	public static final boolean DEFAULT_AUTO_SNAP_AFTER_RANGE_SELECTION_ENABLED = true;
+	/** 撮影後に範囲撮影モードを自動で終了するかどうかのデフォルト値 */
+	public static final boolean DEFAULT_CLOSE_RANGE_SELECTION_AFTER_SNAP_ENABLED = true;
 	/** 画像にマウスカーソルを含めるかどうかのデフォルト値 */
 	public static final boolean DEFAULT_INCLUDE_CURSOR_ENABLED = false;
 	/** 画像にInstantSnapのウィンドウを含めるかどうかのデフォルト値 */

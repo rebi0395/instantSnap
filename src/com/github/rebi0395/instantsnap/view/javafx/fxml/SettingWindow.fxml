@@ -76,6 +76,22 @@
 										<Label text="+"/>
 										<CheckBox fx:id="checkSelectionShift" text="Shift"/>
 									</HBox>
+									<GridPane hgap="20">
+										<columnConstraints>
+											<ColumnConstraints percentWidth="50"/>
+											<ColumnConstraints percentWidth="50"/>
+										</columnConstraints>
+										<HBox spacing="5" styleClass="output-switch-item" GridPane.columnIndex="0">
+											<CheckBox fx:id="checkAutoSnapAfterRangeSelection" minWidth="0" maxWidth="Infinity"
+												wrapText="true" HBox.hgrow="ALWAYS"/>
+											<Label fx:id="labelAutoSnapAfterRangeSelection" styleClass="current-value"/>
+										</HBox>
+										<HBox spacing="5" styleClass="output-switch-item" GridPane.columnIndex="1">
+											<CheckBox fx:id="checkCloseRangeSelectionAfterSnap" minWidth="0" maxWidth="Infinity"
+												wrapText="true" HBox.hgrow="ALWAYS"/>
+											<Label fx:id="labelCloseRangeSelectionAfterSnap" styleClass="current-value"/>
+										</HBox>
+									</GridPane>
 								</VBox>
 								<VBox spacing="10" styleClass="section-border">
 									<GridPane hgap="20">

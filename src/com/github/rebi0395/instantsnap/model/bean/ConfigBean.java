@@ -24,6 +24,10 @@ public class ConfigBean {
 	private KeyCombinationBean snapKeyBean;
 	/** 範囲選択キーの組み合わせ */
 	private KeyCombinationBean selectionKeyBean;
+	/** 範囲確定後に自動撮影する設定（trueで自動撮影） */
+	private boolean isAutoSnapAfterRangeSelectionEnabled;
+	/** 撮影後に範囲撮影モードを自動で終了する設定 */
+	private boolean isCloseRangeSelectionAfterSnapEnabled;
 	/** 撮影範囲 */
 	private SnapAreaType snapAreaType;
 	/** マウスカーソルを写す (trueで写す) */
@@ -64,6 +68,8 @@ public class ConfigBean {
 		// -- 撮影設定
 		this.snapKeyBean = createDefaultSnapKey();
 		this.selectionKeyBean = createDefaultSelectionKey();
+		this.isAutoSnapAfterRangeSelectionEnabled = DEFAULT_AUTO_SNAP_AFTER_RANGE_SELECTION_ENABLED;
+		this.isCloseRangeSelectionAfterSnapEnabled = DEFAULT_CLOSE_RANGE_SELECTION_AFTER_SNAP_ENABLED;
 		this.snapAreaType = SnapAreaType.ACTIVE_WINDOW;
 		this.isIncludeCursor = DEFAULT_INCLUDE_CURSOR_ENABLED;
 		this.isIncludeSettingWindow = DEFAULT_INCLUDE_SETTING_WINDOW_ENABLED;
@@ -176,6 +182,42 @@ public class ConfigBean {
 		} else {
 			this.selectionKeyBean = selectionKeyBean;
 		}
+	}
+
+	/**
+	 * 範囲確定後に自動撮影するかを取得します。
+	 *
+	 * @return 自動撮影する場合true
+	 */
+	public boolean getIsAutoSnapAfterRangeSelectionEnabled() {
+		return isAutoSnapAfterRangeSelectionEnabled;
+	}
+
+	/**
+	 * 範囲確定後に自動撮影するかを設定します。
+	 *
+	 * @param enabled 自動撮影する場合true
+	 */
+	public void setIsAutoSnapAfterRangeSelectionEnabled(boolean enabled) {
+		this.isAutoSnapAfterRangeSelectionEnabled = enabled;
+	}
+
+	/**
+	 * 撮影後に範囲撮影モードを自動で終了するかを取得します。
+	 *
+	 * @return 自動で終了する場合true
+	 */
+	public boolean getIsCloseRangeSelectionAfterSnapEnabled() {
+		return isCloseRangeSelectionAfterSnapEnabled;
+	}
+
+	/**
+	 * 撮影後に範囲撮影モードを自動で終了するかを設定します。
+	 *
+	 * @param enabled 自動で終了する場合true
+	 */
+	public void setIsCloseRangeSelectionAfterSnapEnabled(boolean enabled) {
+		this.isCloseRangeSelectionAfterSnapEnabled = enabled;
 	}
 
 	/**

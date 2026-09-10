@@ -3,6 +3,7 @@ package com.github.rebi0395.instantsnap.view.swing.presenter;
 import static com.github.rebi0395.instantsnap.common.AppConstant.ICON_APP;
 
 import java.awt.Image;
+import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
@@ -11,25 +12,30 @@ import java.io.InputStream;
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.rebi0395.instantsnap.app.InstantSnapApp;
+import com.github.rebi0395.instantsnap.app.InstantSnapCoordinator;
 import com.github.rebi0395.instantsnap.common.MessageKeyConstant;
 import com.github.rebi0395.instantsnap.common.MessageKeyConverter;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.model.enums.LanguageType;
 import com.github.rebi0395.instantsnap.model.enums.SnapAreaType;
+import com.github.rebi0395.instantsnap.model.enums.SnapRouteType;
 import com.github.rebi0395.instantsnap.service.ScreenCaptureExclusionService;
+import com.github.rebi0395.instantsnap.service.SettingsFileWatcher.SettingsChangeListener;
+import com.github.rebi0395.instantsnap.service.TriggerKeyWatcher.ExitKeyEventListener;
 import com.github.rebi0395.instantsnap.view.swing.panel.MainWindowPanel;
 
 /**
  * Swingメインウィンドウの生成、表示、表示内容の更新を行うプレゼンターです。
- * 利用者の操作を受け取り、InstantSnapAppの対応する処理を呼び出します。
+ * 利用者の操作を受け取り、実務処理をInstantSnapCoordinatorへ振り分けます。
  * 生成・表示・更新はSwingイベントディスパッチスレッド（EDT）上で行います。
  */
-public final class MainWindowPresenter {
+public final class MainWindowPresenter implements ExitKeyEventListener, SettingsChangeListener {
 
 	/** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(MainWindowPresenter.class);
@@ -37,8 +43,11 @@ public final class MainWindowPresenter {
 	/** Swingメインウィンドウのタイトル */
 	private static final String WINDOW_TITLE = "InstantSnap";
 
-	/** メインウィンドウから要求されたアプリ処理の呼び出し先 */
+	/** 設定画面の起動とアプリ固有の終了処理を呼び出すクラス */
 	private final InstantSnapApp app;
+
+	/** 撮影、設定反映、実務サービスの終了を振り分けるクラス */
+	private final InstantSnapCoordinator coordinator;
 
 	/** Swingメインウィンドウ */
 	private final JFrame frame;
@@ -55,19 +64,22 @@ public final class MainWindowPresenter {
 	/** InstantSnapのウィンドウを撮影画像へ含める場合true */
 	private boolean includeSettingWindow;
 
+	/** 終了確認と終了処理の二重実行を防ぐフラグ */
+	private volatile boolean exitInProgress;
+
 	/**
 	 * 現在の設定値を使ってSwingメインウィンドウを生成します。
 	 *
-	 * @param app メインウィンドウからアプリ処理を呼び出すクラス
-	 * @param config 現在の設定値
-	 * @param converter 言語別メッセージの取得クラス
+	 * @param app 設定画面の起動とアプリ固有の終了処理を管理するクラス
+	 * @param coordinator 撮影や設定反映を振り分けるクラス
 	 */
 	public MainWindowPresenter(
 			InstantSnapApp app,
-			ConfigBean config,
-			MessageKeyConverter converter) {
+			InstantSnapCoordinator coordinator) {
 		this.app = app;
-		this.converter = converter;
+		this.coordinator = coordinator;
+		ConfigBean config = coordinator.getConfigBean();
+		this.converter = coordinator.getMessageKeyConverter();
 		this.screenCaptureExclusionService = new ScreenCaptureExclusionService();
 		this.includeSettingWindow = config.getIsIncludeSettingWindow();
 		this.panel = new MainWindowPanel(config, this);
@@ -90,51 +102,120 @@ public final class MainWindowPresenter {
 	}
 
 	/**
-	 * 撮影ボタンから通常撮影をAppへ要求します。
+	 * 撮影ボタンから通常撮影をCoordinatorへ要求します。
 	 */
 	public void requestSnap() {
-		app.requestSnapFromMainWindow();
+		coordinator.requestSnap(SnapRouteType.MAIN_BUTTON);
 	}
 
 	/**
-	 * 範囲選択ボタンから撮影範囲の選択をAppへ要求します。
+	 * 範囲選択ボタンから撮影範囲の選択をCoordinatorへ要求します。
 	 */
 	public void requestRangeSelection() {
-		app.requestRangeSelection();
+		coordinator.requestRangeSelection();
 	}
 
 	/**
-	 * ミニウィンドウで選択された言語の保存と反映をAppへ要求します。
+	 * ミニウィンドウで選択された言語をCoordinatorで保存し、表示へ反映します。
 	 *
 	 * @param languageType 選択された言語
 	 */
 	public void changeLanguage(LanguageType languageType) {
-		app.changeLanguage(languageType);
+		if (!coordinator.updateLanguage(languageType)) {
+			Toolkit.getDefaultToolkit().beep();
+		}
+		refresh(coordinator.getConfigBean());
 	}
 
 	/**
-	 * ミニウィンドウで選択された撮影範囲の保存と反映をAppへ要求します。
+	 * ミニウィンドウで選択された撮影範囲をCoordinatorで保存し、表示へ反映します。
 	 *
 	 * @param snapAreaType 選択された撮影範囲
 	 */
 	public void changeSnapArea(SnapAreaType snapAreaType) {
-		app.changeSnapArea(snapAreaType);
+		if (!coordinator.updateSnapArea(snapAreaType)) {
+			Toolkit.getDefaultToolkit().beep();
+		}
+		refresh(coordinator.getConfigBean());
 	}
 
 	/**
-	 * 現在設定されている保存先フォルダを開くようAppへ要求します。
+	 * 現在設定されている保存先フォルダをCoordinatorへ要求します。
 	 */
 	public void openSaveDirectory() {
-		app.openSaveDirectory();
+		coordinator.openSaveDirectory();
 	}
 
 	/**
-	 * ミニウィンドウで変更された通知表示設定の保存と反映をAppへ要求します。
+	 * ミニウィンドウで変更された通知表示設定をCoordinatorで保存し、表示へ反映します。
 	 *
 	 * @param enabled 撮影後の通知表示を有効にする場合true
 	 */
 	public void changeNotificationEnabled(boolean enabled) {
-		app.changeNotificationEnabled(enabled);
+		if (!coordinator.updateNotificationEnabled(enabled)) {
+			Toolkit.getDefaultToolkit().beep();
+		}
+		refresh(coordinator.getConfigBean());
+	}
+
+	/**
+	 * 設定ファイル監視スレッドからの通知をEDTへ引き継ぎます。
+	 * 終了処理中の更新通知は無視します。
+	 */
+	@Override
+	public void onSettingsFileChanged() {
+		if (exitInProgress) {
+			return;
+		}
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				reloadSettings();
+			}
+		});
+	}
+
+	/**
+	 * 設定ファイルを再読込し、最新の設定をメインウィンドウへ反映します。
+	 */
+	private void reloadSettings() {
+		if (exitInProgress) {
+			return;
+		}
+		if (coordinator.reloadConfig()) {
+			refresh(coordinator.getConfigBean());
+		}
+	}
+
+	/**
+	 * 終了要求をEDTへ集約して確認画面を表示します。
+	 * 承諾後はCoordinatorの実務サービスを先に止め、最後にApp固有の終了処理を呼び出します。
+	 */
+	@Override
+	public void requestExit() {
+		if (!SwingUtilities.isEventDispatchThread()) {
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					requestExit();
+				}
+			});
+			return;
+		}
+		if (exitInProgress) {
+			return;
+		}
+
+		exitInProgress = true;
+		Toolkit.getDefaultToolkit().beep();
+		if (!confirmExit()) {
+			exitInProgress = false;
+			return;
+		}
+
+		setActionsEnabled(false);
+		coordinator.requestExit();
+		app.shutdownApplication();
 	}
 
 	/**
@@ -181,7 +262,7 @@ public final class MainWindowPresenter {
 	 *
 	 * @return 「はい」が選択された場合true。「いいえ」やダイアログを閉じた場合false
 	 */
-	public boolean confirmExit() {
+	private boolean confirmExit() {
 		String message = converter.getMessage(
 				MessageKeyConstant.DIALOG_EXIT_CONFIRM_MESSAGE,
 				"Exit InstantSnap?");
@@ -222,14 +303,14 @@ public final class MainWindowPresenter {
 	}
 
 	/**
-	 * 所有するパネルを配置し、終了要求をAppへ渡すウィンドウを生成します。
+	 * 所有するパネルを配置し、終了要求をこのPresenterで受け取るウィンドウを生成します。
 	 *
 	 * @return 表示前のメインウィンドウ
 	 */
 	private JFrame createFrame() {
 		JFrame mainFrame = new JFrame(WINDOW_TITLE);
 		mainFrame.setName("InstantSnapMainWindow");
-		// 閉じる操作だけでは破棄せず、Appで確認と常駐リソースの解放を行う。
+		// 閉じる操作だけでは破棄せず、Presenterで終了確認を行う。
 		mainFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		mainFrame.setContentPane(panel);
 		mainFrame.setResizable(false);
@@ -240,13 +321,13 @@ public final class MainWindowPresenter {
 
 		mainFrame.addWindowListener(new WindowAdapter() {
 			/**
-			 * ウィンドウの閉じる操作をAppの終了確認へ渡します。
+			 * ウィンドウの閉じる操作をPresenterの終了確認へ渡します。
 			 *
 			 * @param event 閉じる操作のイベント
 			 */
 			@Override
 			public void windowClosing(WindowEvent event) {
-				app.requestExit();
+				requestExit();
 			}
 		});
 		return mainFrame;
