@@ -111,23 +111,23 @@ public class FilePathService {
 	 * 不正であれば、デフォルトのディレクトリパスを返却する
 	 * 画像保存しない場合は、一時保存ファイル用のディレクトリパスを返却する
 	 * 
-	 * @param config ユーザー設定値
+	 * @param savePath 設定されている保存先パス
+	 * @param isTemporary 一時保存であるか
 	 * @return 画像保存先ディレクトリ
-	 * @throws IOException
+	 * @throws RuntimeException デフォルトの保存先ディレクトリの作成に失敗した場合
 	 */
-	public Path resolveSaveDirectory(ConfigBean config) throws IOException {
-		// 一時保存であるかチェック
-		if (config.isTemporarySave()) {
-			// 一時保存ファイルのディレクトリパスを返却する
-			Path tmpDir = toPath(TMP_SAVE_DIR);
-			Files.createDirectories(tmpDir);
-			return tmpDir;
-		}
-
+	public Path resolveSaveDirectory(String savePath, boolean isTemporary) {
 		Path dir;
 		try {
+			// 一時保存であるかチェック
+			if (isTemporary) {
+				// 一時保存ファイルのディレクトリパスを返却する
+				Path tmpDir = toPath(TMP_SAVE_DIR);
+				Files.createDirectories(tmpDir);
+				return tmpDir;
+			}
 			// パスオブジェクトに変換
-			dir = toPath(config.getSavePath());
+			dir = toPath(savePath);
 			
 			// パスに予約名が含まれている場合、デフォルト反映
 			if (containsWindowsReservedName(dir)) {
@@ -142,11 +142,16 @@ public class FilePathService {
 		} catch (IOException | InvalidPathException | SecurityException e) {
 			// ファイル・予約語・権限不足などで使用できない場合は例外になる
 			log.warn("画像保存先フォルダを使用できないため、デフォルトの保存先({})に保存しました: {}",
-					DEFAULT_SAVE_DIR, config.getSavePath());
+					DEFAULT_SAVE_DIR, savePath);
 			log.debug("スタックトレース:", e);
 
 			// デフォルトディレクトリパスに変更し、ディレクトリがなければ作成
-			return createDefaultSaveDirectory();
+			try {
+				return createDefaultSaveDirectory();
+			} catch (IOException e1) {
+				log.error("デフォルトの保存先({})の作成に失敗しました", DEFAULT_SAVE_DIR, e1);
+				throw new RuntimeException("デフォルトの保存先の作成に失敗しました", e1);
+			}
 		}
 		return dir;
 	}

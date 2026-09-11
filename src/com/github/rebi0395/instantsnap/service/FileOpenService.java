@@ -67,7 +67,7 @@ public class FileOpenService {
 	 * 画像の保存先ファイルを、スクリーンショットを選択状態で開きます
 	 * @param targetPath 保存した画像のパス
 	 */
-	public void openDirectory(Path targetPath) {
+	public void openDirectoryAndSelect(Path targetPath) {
 		try {
 			// windowの場合、コマンドを直接叩いて実行する
 			if (OsUtil.isWindows()) {
@@ -80,7 +80,20 @@ public class FileOpenService {
 			}
 		} catch (Exception e) {
 			// ログを出して例外を握りつぶす
-			log.warn("ディレクトリを開くのに失敗しました", e);
+			log.warn("保存先ディレクトリを開くのに失敗しました", e);
+		}
+	}
+
+	/**
+	 * 指定されたディレクトリ自体をファイルマネージャーで開く。
+	 *
+	 * @param directoryPath 開くディレクトリのパス
+	 */
+	public void openDirectory(Path directoryPath) {
+		try {
+			Desktop.getDesktop().open(directoryPath.toAbsolutePath().toFile());
+		} catch (Exception e) {
+			log.warn("保存先ディレクトリを開くのに失敗しました", e);
 		}
 	}
 }

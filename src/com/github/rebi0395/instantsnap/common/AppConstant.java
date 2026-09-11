@@ -37,10 +37,18 @@ public final class AppConstant {
 	public static final String PROPERTY_SELECTION_USE_CTRL = "selectionIsUseCtrl";
 	/** プロパティ 範囲選択キーでShiftキーを使用するか */
 	public static final String PROPERTY_SELECTION_USE_SHIFT = "selectionIsUseShift";
+	/** プロパティ 範囲確定後に自動撮影するか */
+	public static final String PROPERTY_AUTO_SNAP_AFTER_RANGE_SELECTION_ENABLED =
+			"autoSnapAfterRangeSelectionEnabled";
+	/** プロパティ 撮影後に範囲撮影モードを自動で終了するか */
+	public static final String PROPERTY_CLOSE_RANGE_SELECTION_AFTER_SNAP_ENABLED =
+			"closeRangeSelectionAfterSnapEnabled";
 	/** プロパティ 撮影範囲 */
 	public static final String PROPERTY_SNAP_AREA = "snapArea";
 	/** プロパティ マウスカーソルを写すか */
 	public static final String PROPERTY_INCLUDE_CURSOR_ENABLED = "includeCursorEnabled";
+	/** プロパティ InstantSnapのウィンドウを写すか */
+	public static final String PROPERTY_INCLUDE_SETTING_WINDOW_ENABLED = "includeSettingWindowEnabled";
 	/** プロパティ 画像保存をするか */
 	public static final String PROPERTY_SAVE_IMAGE_ENABLED = "saveImageEnabled";
 	/** プロパティ クリップボードコピーをするか */
@@ -82,8 +90,14 @@ public final class AppConstant {
 	public static final boolean DEFAULT_SELECTION_USE_ALT = false;
 	/** 範囲選択キーでShiftキーを使用するかどうかのデフォルト値 */
 	public static final boolean DEFAULT_SELECTION_USE_SHIFT = false;
+	/** 範囲確定後に自動撮影するかどうかのデフォルト値 */
+	public static final boolean DEFAULT_AUTO_SNAP_AFTER_RANGE_SELECTION_ENABLED = true;
+	/** 撮影後に範囲撮影モードを自動で終了するかどうかのデフォルト値 */
+	public static final boolean DEFAULT_CLOSE_RANGE_SELECTION_AFTER_SNAP_ENABLED = true;
 	/** 画像にマウスカーソルを含めるかどうかのデフォルト値 */
 	public static final boolean DEFAULT_INCLUDE_CURSOR_ENABLED = false;
+	/** 画像にInstantSnapのウィンドウを含めるかどうかのデフォルト値 */
+	public static final boolean DEFAULT_INCLUDE_SETTING_WINDOW_ENABLED = false;
 	/** 画像保存を有効にするかどうかのデフォルト値 */
 	public static final boolean DEFAULT_SAVE_IMAGE_ENABLED = true;
 	/** クリップボード保存を有効にするかどうかのデフォルト値 */
@@ -96,36 +110,23 @@ public final class AppConstant {
 	public static final boolean DEFAULT_SOUND_NOTIFICATION_ENABLED = true;
 
 	// -- 外部ファイル --
-	/** メインウィンドウのFXMLファイル */
-	public static final String FXML_MAIN_WINDOW = "/com/github/rebi0395/instantsnap/view/fxml/MainWindow.fxml";
-	/** 終了ダイアログのFXMLファイル */
-	public static final String FXML_EXIT_DIALOG = "/com/github/rebi0395/instantsnap/view/fxml/ExitDialog.fxml";
-	/** 通知画面のFXMLファイル */
-	public static final String FXML_NOTIFICATION = "/com/github/rebi0395/instantsnap/view/fxml/SnapNotification.fxml";
+	/** JavaFX設定ウィンドウのFXMLファイル */
+	public static final String FXML_SETTING_WINDOW = "/com/github/rebi0395/instantsnap/view/javafx/fxml/SettingWindow.fxml";
 
-	/** メインウィンドウのCSSファイル */
-	public static final String CSS_MAIN_WINDOW = "/com/github/rebi0395/instantsnap/view/css/main-window.css";
-	/** メインウィンドウのテーマCSS：絵本 */
-	public static final String CSS_MAIN_THEME_STORYBOOK = "/com/github/rebi0395/instantsnap/view/css/theme-storybook.css";
+	/** JavaFX設定ウィンドウのCSSファイル */
+	public static final String CSS_SETTING_WINDOW = "/com/github/rebi0395/instantsnap/view/javafx/css/setting-window.css";
+	/** JavaFX設定ウィンドウのテーマCSS：絵本 */
+	public static final String CSS_SETTING_THEME_STORYBOOK = "/com/github/rebi0395/instantsnap/view/javafx/css/theme-storybook.css";
+	/** JavaFX設定ウィンドウのテーマCSS：ダーク */
+	public static final String CSS_SETTING_THEME_DARK = "/com/github/rebi0395/instantsnap/view/javafx/css/theme-dark.css";
 	/** テーマCSSファイル名とテーマstyleClassの接頭辞 */
 	public static final String THEME_CSS_PREFIX = "theme-";
-	/** 通知画面のCSSファイル */
-	public static final String CSS_NOTIFICATION = "/com/github/rebi0395/instantsnap/view/css/notification.css";
-
 	/** アイコンのpngファイル */
 	public static final String ICON_APP = "/images/icon/InstantSnap.png";
+	/** JavaFX設定ウィンドウの専用アイコン */
+	public static final String ICON_SETTING_WINDOW = "/images/icon/InstantSnap_setting.png";
 
 	/** 一時保存先ディレクトリ */
 	public static final String TMP_SAVE_DIR = "./tmp/";
-
-	// -- OS名
-	/** OS名：Windows */
-	public static final String OS_NAME_WINDOWS = "Windows";
-	/** OS名：macOS */
-	public static final String OS_NAME_MAC = "macOS";
-	/** OS名：Linux */
-	public static final String OS_NAME_LINUX = "Linux";
-	/** OS名：その他 */
-	public static final String OS_NAME_OTHER = "Other";
 
 }

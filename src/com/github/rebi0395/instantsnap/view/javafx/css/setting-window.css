@@ -1,0 +1,623 @@
+
+/** 画面全体 */
+.setting-window-root {
+    /* 主操作ボタンはテーマを問わず同じ緑色を使用する */
+    -primary-action-top: #62c873;
+    -primary-action-bottom: #329b5c;
+    -primary-action-hover-top: #72d583;
+    -primary-action-hover-bottom: #3bad68;
+    -primary-action-border: #287b49;
+    -primary-action-pressed: #287f4b;
+    -primary-action-focus: rgba(47, 158, 91, 0.72);
+
+    -fx-background-color: #f8fafc;
+    -fx-font-family: "Yu Gothic UI", "Meiryo", sans-serif;
+    -fx-font-size: 12px;
+}
+
+/** 画面上部バー全体 */
+.top-bar {
+    -fx-alignment: center-left;
+    -fx-spacing: 12px;
+    -fx-padding: 8px 15px 6px 3px;
+
+    -fx-min-height: 58px;
+    -fx-pref-height: 58px;
+    -fx-max-height: 58px;
+}
+
+/** ステータスメッセージの表示領域。長い文言を2行表示できる高さを確保する */
+.status-area {
+    -fx-alignment: center;
+    -fx-min-height: 46px;
+    -fx-pref-height: 46px;
+    -fx-max-height: 46px;
+
+    -fx-padding: 4px 10px;
+
+    -fx-background-color: #ffffff;
+    -fx-border-color: #2f80c9 #d8e2ec #d8e2ec #2f80c9;
+    -fx-border-width: 1px 1px 1px 5px;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+}
+
+/** ステータスメッセージ */
+.status-label {
+	-fx-min-height: 36px;
+	-fx-pref-height: 36px;
+	-fx-max-height: 36px;
+
+    -fx-wrap-text: true;
+    -fx-text-alignment: center;
+    -fx-alignment: center;
+    -fx-max-width: 360px;
+    -fx-text-fill: #263238;
+    -fx-font-weight: bold;
+	-fx-text-overrun: ellipsis;
+}
+
+/** 上部設定項目のグリッド */
+.top-setting-grid {
+    -fx-alignment: center-right;
+}
+
+/** 上部設定項目のラベル */
+.top-setting-label {
+    -fx-font-size: 11px;
+    -fx-min-width: 100px;
+    -fx-pref-width: 100px;
+}
+
+/** 項目のメインタイトル文字のサイズ指定、太字にする */
+.section-main-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+}
+
+/** 項目のタイトル文字をサイズ指定、太字にする */
+.section-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+/** テキストフィールド、コンボボックス、ボタン横幅統一 */
+.text-field, .combo-box, .button {
+    -fx-pref-width: 210px;
+}
+
+/** ボタン高さ統一 */
+.button {
+    -fx-min-height: 34px;
+    -fx-pref-height: 34px;
+    -fx-max-height: 34px;
+}
+
+/** テキストフィールド、コンボボックス共通 */
+.text-field,
+.combo-box-base {
+    -fx-pref-width: 210px;
+
+    -fx-pref-height: 34px;
+    -fx-min-height: 34px;
+    -fx-max-height: 34px;
+
+    -fx-padding: 0 10 0 10;
+
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 3;
+    -fx-background-insets: 0;
+
+    -fx-border-color: #aeb8c2;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3;
+    -fx-text-fill: #263238;
+}
+
+/** コンボボックスの矢印ボタン */
+.combo-box-base .arrow-button {
+    -fx-background-color: transparent;
+}
+
+/** コンボボックスの矢印 */
+.combo-box-base .arrow {
+    -fx-background-color: #52616f;
+}
+
+/** テキストフィールド、コンボボックスのホバー */
+.text-field:hover,
+.combo-box-base:hover {
+    -fx-border-color: #7e95aa;
+    -fx-background-color: #f9fbfd;
+}
+
+/** 上部設定項目のコンボボックス。通常コンボボックスより小さく固定する */
+.theme-combo,
+.language-combo {
+    -fx-pref-width: 120px;
+    -fx-min-width: 120px;
+    -fx-max-width: 120px;
+    -fx-min-height: 34px;
+    -fx-pref-height: 34px;
+    -fx-max-height: 34px;
+    -fx-font-size: 11px;
+}
+
+/** 非活性のテキストフィールド */
+.text-field:disabled {
+    -fx-opacity: 1.0;
+    -fx-background-color: #e0e0e0;
+    -fx-border-color: #bdbdbd;
+    -fx-text-fill: #666666;
+    -fx-prompt-text-fill: #8a8a8a;
+}
+
+/** 編集不可の表示専用テキストフィールド */
+.readonly-text-field {
+	-fx-background-color: #f3f3f3;
+	-fx-border-color: #cccccc;
+	-fx-text-fill: #333333;
+}
+
+/** タブ幅固定 */
+.main-tab-pane {
+	-fx-background-color: transparent;
+	-fx-tab-min-width: 120px;
+	-fx-tab-max-width: 160px;
+	-fx-tab-min-height: 15px;
+}
+
+/** タブヘッダーの背景 */
+.main-tab-pane .tab-header-background {
+	-fx-background-color: linear-gradient(to bottom, #fbfcfe, #edf2f7);
+	-fx-border-color: #b8c0c8;
+	-fx-border-width: 1px 0 1px 0;
+}
+
+/** タブヘッダーの余白 */
+.main-tab-pane .tab-header-area {
+	-fx-padding: 3px 10px 0px;
+}
+
+/** タブ真ん中 */
+.main-tab-pane .tab {
+	-fx-alignment: CENTER;
+	-fx-background-color: linear-gradient(to bottom, #f9fafb, #dfe4e8);
+	-fx-background-radius: 3px 3px 0 0;
+	-fx-border-color: #aeb8c2;
+	-fx-border-radius: 3px 3px 0 0;
+	-fx-border-width: 1px 1px 0 1px;
+	-fx-padding: 3px 22px 3px 22px;
+}
+
+/** 選択中のタブ */
+.main-tab-pane .tab:selected {
+	-fx-background-color: #ffffff;
+	-fx-border-color: #607d9b;
+}
+
+/** タブのラベル固定 */
+.main-tab-pane .tab-label {
+	-fx-min-width: 110px;
+	-fx-pref-width: 110px;
+	-fx-max-width: 110px;
+	-fx-alignment: CENTER;
+	-fx-text-alignment: CENTER;
+	-fx-text-fill: #263238;
+	-fx-font-weight: bold;
+}
+
+/** テーマ切り替え時にスクロール領域の配置がずれないように余白を固定する */
+.scroll-pane,
+.scroll-pane > .viewport {
+    -fx-padding: 0;
+}
+
+/** 小項目の区切り */
+.section-border {
+    -fx-background-color: #ffffff;
+    -fx-padding: 15;
+    -fx-border-color: #dbe3ea;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+    -fx-effect: dropshadow(gaussian, rgba(35, 47, 58, 0.08), 8, 0.12, 0, 2);
+}
+
+/** 項目のヘッダーを整形する */
+.setting-header {
+	-fx-spacing: 9px;
+	-fx-alignment: center-left;
+}
+
+/** 現在の設定値をラベル表示する。透明枠を含めた外寸をテーマ間で統一する */
+.current-value {
+    -fx-background-color: #e8f0fe;
+    -fx-background-radius: 12px;
+    -fx-border-color: transparent;
+    -fx-border-width: 1px;
+    -fx-border-radius: 12px;
+    -fx-padding: 1px 9px 1px 9px;
+
+    -fx-text-fill: #1565c0;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+/** 出力設定のスイッチを配置する行 */
+.output-switch-row {
+    -fx-spacing: 90px;
+    -fx-alignment: center-left;
+}
+
+/** チェック項目と現在値ラベルを横並びにする行 */
+.output-switch-item {
+    -fx-spacing: 10px;
+    -fx-alignment: center-left;
+}
+
+/** 不正値の場合に赤くする */
+.invalid-value {
+	-fx-border-color: #d32f2f;
+	-fx-background-color: #fff5f5;
+}
+
+/* 不正値のテキストフィールド */
+.text-field.invalid-value {
+	-fx-text-fill: #b71c1c;
+}
+
+/* =========================================================
+ * 主操作ボタン
+ * 設定を反映ボタンなど
+ * ========================================================= */
+
+.primary-action {
+    -fx-background-color: linear-gradient(to bottom, -primary-action-top, -primary-action-bottom);
+    -fx-background-radius: 3px;
+    -fx-background-insets: 0;
+
+    -fx-border-color: -primary-action-border;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.primary-action:hover {
+    -fx-background-color: linear-gradient(to bottom, -primary-action-hover-top, -primary-action-hover-bottom);
+}
+
+.primary-action:pressed {
+    -fx-background-color: -primary-action-pressed;
+}
+
+.primary-action:disabled {
+    -fx-opacity: 0.65;
+}
+
+/* =========================================================
+ * 副操作ボタン
+ * 入力値を初期化
+ * ========================================================= */
+
+.secondary-action {
+    -fx-background-color: linear-gradient(to bottom, #ffffff, #e9e9e9);
+    -fx-background-radius: 3px;
+    -fx-background-insets: 0;
+
+    -fx-border-color: #bdbdbd;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+
+    -fx-text-fill: #333333;
+    -fx-font-weight: bold;
+}
+
+.secondary-action:hover {
+    -fx-background-color: linear-gradient(to bottom, #ffffff, #f2f2f2);
+    -fx-border-color: #9e9e9e;
+}
+
+.secondary-action:pressed {
+    -fx-background-color: #dcdcdc;
+}
+
+.secondary-action:disabled {
+    -fx-opacity: 0.65;
+}
+
+/* =========================================================
+ * フォルダ選択ボタン
+ * デフォルトテーマの補助操作として、主操作より控えめな青で表示する
+ * ========================================================= */
+.folder-select-button {
+    -fx-background-color: linear-gradient(to bottom, #f8fbfe, #dceaf4);
+    -fx-background-radius: 3px;
+    -fx-background-insets: 0;
+    -fx-border-color: #8fb3ca;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-text-fill: #285a78;
+    -fx-font-weight: bold;
+}
+
+.folder-select-button:hover {
+    -fx-background-color: linear-gradient(to bottom, #ffffff, #e3f1fa);
+    -fx-border-color: #5f9bc1;
+}
+
+.folder-select-button:pressed {
+    -fx-background-color: #c9deec;
+    -fx-border-color: #4f88aa;
+}
+
+/* =========================================================
+ * セクション見出しの横に置くアイコン
+ * ========================================================= */
+
+.section-icon {
+    -fx-min-width: 26px;
+    -fx-min-height: 26px;
+    -fx-pref-width: 26px;
+    -fx-pref-height: 26px;
+    -fx-max-width: 26px;
+    -fx-max-height: 26px;
+
+    -fx-background-size: contain;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+}
+
+/* ショートカットキー選択 */
+.icon-shortcut {
+    -fx-background-image: url("/images/theme/default/icon-shortcut-32.png");
+}
+
+/* 撮影範囲 */
+.icon-snap-area {
+    -fx-background-image: url("/images/theme/default/icon-snap-area-32.png");
+}
+
+/* 撮影オプション */
+.icon-snap-option {
+    -fx-background-image: url("/images/theme/default/icon-snap-option-32.png");
+}
+
+/* 保存方法 */
+.icon-save-method {
+    -fx-background-image: url("/images/theme/default/icon-save-method-32.png");
+}
+
+/* 撮影後の動作 */
+.icon-after-snap {
+    -fx-background-image: url("/images/theme/default/icon-after-snap-32.png");
+}
+
+/* 通知表示 */
+.icon-notification {
+    -fx-background-image: url("/images/theme/default/icon-notification-32.png");
+}
+
+/* サウンド設定 */
+.icon-sound {
+    -fx-background-image: url("/images/theme/default/icon-sound-32.png");
+}
+
+/* =========================================================
+ * CheckBox
+ * テーマを切り替えても配置が変わらないように大きさを固定する
+ * ========================================================= */
+.check-box .box {
+    -fx-min-width: 18px;
+    -fx-pref-width: 18px;
+    -fx-max-width: 18px;
+    -fx-min-height: 18px;
+    -fx-pref-height: 18px;
+    -fx-max-height: 18px;
+    -fx-background-color: #ffffff;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-border-color: #aeb8c2;
+    -fx-border-width: 1px;
+    -fx-border-radius: 0;
+}
+
+.check-box:selected .box {
+    -fx-background-color: #2f80c9;
+    -fx-border-color: #276fae;
+}
+
+.check-box:selected .mark {
+    -fx-background-color: #ffffff;
+}
+
+/* =========================================================
+ * RadioButton
+ * テーマを切り替えても選択肢の行高が変わらないように大きさを固定する
+ * ========================================================= */
+.radio-button .radio {
+    -fx-min-width: 18px;
+    -fx-pref-width: 18px;
+    -fx-max-width: 18px;
+    -fx-min-height: 18px;
+    -fx-pref-height: 18px;
+    -fx-max-height: 18px;
+}
+
+/* =========================================================
+ * TitledPane / Accordion
+ * 絵本テーマと寸法を合わせ、デフォルトは角丸を付けずに表示する
+ * ========================================================= */
+.titled-pane {
+    -fx-text-fill: #263238;
+}
+
+.titled-pane > .title {
+    -fx-background-color: linear-gradient(to bottom, #f8fafc, #e7edf2);
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-border-color: #b8c4ce;
+    -fx-border-width: 1px;
+    -fx-border-radius: 0;
+    -fx-padding: 6px 10px 6px 10px;
+}
+
+.titled-pane > .title > .text {
+    -fx-fill: #263238;
+    -fx-font-weight: bold;
+}
+
+.titled-pane > .content {
+    -fx-background-color: #ffffff;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-border-color: #b8c4ce;
+    -fx-border-width: 1px;
+    -fx-border-radius: 0;
+    -fx-padding: 10px;
+}
+
+/* =========================
+   Switch style CheckBox
+   ========================= */
+
+.switch-check-box {
+    -fx-padding: 4 0 4 0;
+    -fx-label-padding: 0 0 0 6px;
+
+    /* 標準フォーカス枠は消して、自前で出す */
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+/* スイッチ本体 */
+.switch-check-box .box {
+    -fx-pref-width: 48px;
+    -fx-pref-height: 24px;
+    -fx-min-width: 48px;
+    -fx-min-height: 24px;
+    -fx-max-width: 48px;
+    -fx-max-height: 24px;
+
+    -fx-background-color: #eeeeee;
+    -fx-background-insets: 0;
+    -fx-background-radius: 12px;
+
+    -fx-border-color: #c7c7c7;
+    -fx-border-width: 1px;
+    -fx-border-radius: 12px;
+
+    -fx-padding: 2px 3px 2px 3px;
+    -fx-alignment: center-left;
+}
+
+/* フォーカス時：Tab操作で分かるように強調 */
+.switch-check-box:focused .box {
+    -fx-border-color: #1976d2;
+    -fx-border-width: 2px;
+
+    -fx-effect: dropshadow(gaussian, rgba(25,118,210,0.45), 8, 0.25, 0, 0);
+}
+
+/* 丸いつまみ */
+.switch-check-box .mark,
+.switch-check-box:focused .mark,
+.switch-check-box:selected .mark,
+.switch-check-box:selected:focused .mark {
+    -fx-shape: null;
+
+    -fx-pref-width: 18px;
+    -fx-pref-height: 18px;
+    -fx-min-width: 18px;
+    -fx-min-height: 18px;
+    -fx-max-width: 18px;
+    -fx-max-height: 18px;
+
+    -fx-background-color: white;
+    -fx-background-insets: 0;
+    -fx-background-radius: 9px;
+
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+
+    -fx-translate-x: 0;
+
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.22), 3, 0.2, 0, 1);
+}
+
+/* ON時のスイッチ本体 */
+.switch-check-box:selected .box {
+    -fx-background-color: #2196f3;
+    -fx-background-insets: 0;
+    -fx-background-radius: 12px;
+
+    -fx-border-color: #1e88e5;
+    -fx-border-width: 1px;
+    -fx-border-radius: 12px;
+}
+
+/* ON + フォーカス時 */
+.switch-check-box:selected:focused .box {
+    -fx-background-color: #2196f3;
+    -fx-background-insets: 0;
+    -fx-background-radius: 12px;
+
+    -fx-border-color: #0d47a1;
+    -fx-border-width: 1px;
+    -fx-border-radius: 12px;
+
+    -fx-effect: dropshadow(gaussian, rgba(25,118,210,0.65), 8, 0.25, 0, 0);
+}
+
+/* ON時のつまみ位置 */
+.switch-check-box:selected .mark,
+.switch-check-box:selected:focused .mark {
+    -fx-translate-x: 24px;
+}
+
+/* =========================================================
+ * Focus Ring
+ * Tabキー操作時にフォーカス位置を分かりやすくする
+ * border-widthは変えず、effectで表示するためレイアウトは崩れない
+ * ========================================================= */
+
+.button:focused,
+.combo-box-base:focused,
+.text-field:focused {
+    -fx-effect: dropshadow(gaussian, rgba(33, 150, 243, 0.55), 9, 0.35, 0, 0);
+}
+
+.titled-pane:focused > .title {
+    -fx-effect: innershadow(gaussian, rgba(33, 150, 243, 0.60), 6, 0.35, 0, 0);
+}
+
+/* 主操作ボタン */
+.primary-action:focused {
+    -fx-effect: dropshadow(gaussian, -primary-action-focus, 10, 0.35, 0, 0);
+}
+
+/* 副操作ボタン */
+.secondary-action:focused {
+    -fx-effect: dropshadow(gaussian, rgba(33, 150, 243, 0.55), 9, 0.35, 0, 0);
+}
+
+/* CheckBox */
+.check-box:focused .box {
+    -fx-effect: dropshadow(gaussian, rgba(33, 150, 243, 0.65), 8, 0.4, 0, 0);
+}
+
+/* RadioButton */
+.radio-button:focused .radio {
+    -fx-effect: dropshadow(gaussian, rgba(33, 150, 243, 0.65), 8, 0.4, 0, 0);
+}
+
+/* 通常チェックボックスのON/OFFも少し見やすく */
+.check-box:focused {
+    -fx-text-fill: #0d47a1;
+}
+
+.radio-button:focused {
+    -fx-text-fill: #0d47a1;
+}

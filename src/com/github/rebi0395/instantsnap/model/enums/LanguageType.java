@@ -14,7 +14,21 @@ public enum LanguageType implements BaseEnum {
 	/** 英語 */
 	ENGLISH("en", "English", Locale.ENGLISH),
 	/** 日本語 */
-	JAPANESE("ja", "日本語", Locale.JAPANESE);
+	JAPANESE("ja", "日本語", Locale.JAPANESE),
+	/** 中国語（簡体字） */
+	SIMPLIFIED_CHINESE("zh-CN", "简体中文", Locale.SIMPLIFIED_CHINESE),
+	/** 韓国語 */
+	KOREAN("ko", "한국어", Locale.KOREAN),
+	/** フランス語 */
+	FRENCH("fr", "Français", Locale.FRENCH),
+	/** スペイン語 */
+	SPANISH("es", "Español", Locale.forLanguageTag("es")),
+	/** ロシア語 */
+	RUSSIAN("ru", "Русский", Locale.forLanguageTag("ru")),
+	/** ドイツ語 */
+	GERMAN("de", "Deutsch", Locale.GERMAN),
+	/** ポルトガル語（ブラジル） */
+	BRAZILIAN_PORTUGUESE("pt-BR", "Português", Locale.forLanguageTag("pt-BR"));
 
 	/** プロパティファイルと紐つく値 */
 	private final String value;

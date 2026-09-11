@@ -12,11 +12,25 @@ public final class MessageKeyConstant {
 	/** 言語別プロパティファイルの格納先 */
 	public static final String BASE_NAME = "i18n.messages";
 
+	// -- ミニウィンドウ --
+	/** ミニウィンドウ：設定ボタン */
+	public static final String MAIN_WINDOW_SETTINGS = "mainWindow.settings";
+	/** ミニウィンドウ：撮影ボタン */
+	public static final String MAIN_WINDOW_CAPTURE = "mainWindow.capture";
+	/** ミニウィンドウ：範囲選択ボタン */
+	public static final String MAIN_WINDOW_SELECT_AREA = "mainWindow.selectArea";
+	/** ミニウィンドウ：ショートカット未設定 */
+	public static final String MAIN_WINDOW_SHORTCUT_NOT_SET = "mainWindow.shortcut.notSet";
+	/** ミニウィンドウ：保存先フォルダを開く */
+	public static final String MAIN_WINDOW_OPEN_SAVE_DIRECTORY = "mainWindow.openSaveDirectory";
+	/** ミニウィンドウ：保存先フォルダ未設定 */
+	public static final String MAIN_WINDOW_SAVE_DIRECTORY_NOT_SET = "mainWindow.saveDirectoryNotSet";
+	/** ミニウィンドウ：通知 */
+	public static final String MAIN_WINDOW_NOTIFICATION = "mainWindow.notification";
+
 	// -- メインウィンドウ固定文言 -- 
 	/** タブ：基本設定 */
 	public static final String TAB_BASIC_SETTINGS = "tab.basicSettings";
-	/** タブ：その他設定 */
-	public static final String TAB_OTHER_SETTINGS = "tab.otherSettings";
 
 	/** キャプション：出力 */
 	public static final String CAPTION_OUTPUT = "caption.output";
@@ -46,6 +60,14 @@ public final class MessageKeyConstant {
 
 	/** チェック項目：マウスカーソルを画像に含める */
 	public static final String CHECK_INCLUDE_CURSOR = "check.includeCursor";
+	/** チェック項目：マウスカーソルを画像に含める */
+	public static final String CHECK_INCLUDE_SETTING_WINDOW = "check.includeSettingWindow";
+	/** チェック項目：範囲確定後に自動撮影する */
+	public static final String CHECK_AUTO_SNAP_AFTER_RANGE_SELECTION =
+			"check.autoSnapAfterRangeSelection";
+	/** チェック項目：撮影後に範囲撮影モードを自動で終了する */
+	public static final String CHECK_CLOSE_RANGE_SELECTION_AFTER_SNAP =
+			"check.closeRangeSelectionAfterSnap";
 	/** チェック項目：画像を保存する */
 	public static final String CHECK_SAVE_IMAGE = "check.saveImage";
 	/** チェック項目：クリップボードにコピーする */
@@ -90,6 +112,8 @@ public final class MessageKeyConstant {
 	public static final String THEME_DEFAULT = "theme.default";
 	/** テーマ：絵本 */
 	public static final String THEME_STORYBOOK = "theme.storybook";
+	/** テーマ：ダーク */
+	public static final String THEME_DARK = "theme.dark";
 
 	// -- SnapAreaType --
 	/** 撮影範囲：使用しているウィンドウのみ撮影 */
@@ -142,12 +166,16 @@ public final class MessageKeyConstant {
 	public static final String DIALOG_SINGLE_INSTANCE_MESSAGE = "dialog.singleInstance.message";
 	/** 起動時エラーメッセージ */
 	public static final String DIALOG_STARTUP_ERROR = "dialog.startupError.message";
+	/** 設定画面の起動失敗メッセージ */
+	public static final String DIALOG_SETTINGS_START_ERROR = "dialog.settingsStartError.message";
 	
 	// -- 範囲選択画面 --
 	/** 操作説明：範囲選択状態の切り替え 待機中*/
 	public static final String RANGE_SELECTION_GUIDE_WAITING = "rangeSelection.guide.waiting";
-	/** 操作説明：範囲選択状態の切り替え 範囲選択中*/
+	/** 操作説明：範囲選択状態の切り替え 範囲選択中(範囲確定時、自動撮影OFF)*/
 	public static final String RANGE_SELECTION_GUIDE_SELECTING = "rangeSelection.guide.selecting";
+	/** 操作説明：範囲選択状態の切り替え 範囲選択中(範囲確定時、自動撮影ON)*/
+	public static final String RANGE_SELECTION_GUIDE_SELECTING_AUTOSNAP = "rangeSelection.guide.selecting.autoSnap";
 	/** 操作説明：範囲選択状態の切り替え 範囲確定済*/
 	public static final String RANGE_SELECTION_GUIDE_CONFIRMED = "rangeSelection.guide.confirmed";
 	/** 操作説明：撮影 */

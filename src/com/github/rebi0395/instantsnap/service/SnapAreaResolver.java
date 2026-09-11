@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import com.github.rebi0395.instantsnap.common.OsUtil;
 import com.github.rebi0395.instantsnap.model.enums.SnapAreaType;
+import com.github.rebi0395.instantsnap.model.enums.SnapRouteType;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.User32;
@@ -31,15 +32,31 @@ public class SnapAreaResolver {
 	/** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(SnapAreaResolver.class);
 
+	/** 撮影対象となる前面ウィンドウを解決するクラス */
+	private final ActiveWindowResolver activeWindowResolver;
+
 	/**
-	 * 列挙型に対応する撮影範囲の座標を返却する
+	 * 撮影範囲解決クラスを生成します。
+	 *
+	 * @param activeWindowResolver 前面ウィンドウの解決クラス
+	 */
+	public SnapAreaResolver(ActiveWindowResolver activeWindowResolver) {
+		this.activeWindowResolver = activeWindowResolver;
+	}
+
+	/**
+	 * 列挙型に対応する撮影範囲の座標を返却します。
+	 * アクティブウィンドウ撮影の場合だけ、撮影経路に応じたウィンドウを取得します。
+	 *
 	 * @param snapAreaType 撮影範囲の種別
+	 * @param includeInstantSnapWindow InstantSnapのウィンドウを撮影対象に含める場合true
+	 * @param snapRoute 撮影要求が発生した経路
 	 * @return 撮影範囲の座標
 	 */
-	public Rectangle resolveArea(SnapAreaType snapAreaType) {
+	public Rectangle resolveArea(SnapAreaType snapAreaType, boolean includeInstantSnapWindow, SnapRouteType snapRoute) {
 		switch (snapAreaType) {
 		case ACTIVE_WINDOW:
-			return getActiveWindowArea();
+			return getActiveWindowArea(includeInstantSnapWindow, snapRoute);
 
 		case ACTIVE_SCREEN:
 			return getActiveScreenArea();
@@ -56,22 +73,57 @@ public class SnapAreaResolver {
 	}
 
 	/**
-	 * 影を除外したアクティブウィンドウの撮影範囲を取得する
+	 * JavaFX設定プロセスをInstantSnap内部のウィンドウとして登録します。
+	 *
+	 * @param processId 起動した設定プロセスのID
+	 */
+	public void registerSettingsProcess(long processId) {
+		activeWindowResolver.registerSettingsProcess(processId);
+	}
+
+	/**
+	 * 終了したJavaFX設定プロセスの登録を解除します。
+	 *
+	 * @param processId 終了した設定プロセスのID
+	 */
+	public void releaseSettingsProcess(long processId) {
+		activeWindowResolver.unregisterSettingsProcess(processId);
+	}
+
+	/**
+	 * 指定されたウィンドウについて、影を除外した撮影範囲を取得します。
 	 * (OSがwindowsのみ対応)
+	 *
+	 * @param includeInstantSnapWindow InstantSnapのウィンドウを撮影対象に含める場合true
+	 * @param snapRoute 撮影要求が発生した経路
 	 * @return Rectangle 影を除外したアクティブウィンドウの範囲
 	 */
-	public Rectangle getActiveWindowArea() {
+	private Rectangle getActiveWindowArea(boolean includeInstantSnapWindow, SnapRouteType snapRoute) {
 		// Windows以外はデフォルト挙動を行う
 		if (!OsUtil.isWindows()) {
 			log.info("osがwindowsではありません");
 			return getDefaultScreenArea();
 		}
 
+		// メインボタン経由の場合は、前面に移ったメインウィンドウを撮影対象から除外する。
+		long windowHandleValue = activeWindowResolver.getForegroundWindowHandle(
+				includeInstantSnapWindow,
+				snapRoute.isFromMainWindow());
+		if (windowHandleValue == 0L) {
+			log.warn("撮影対象ウィンドウを取得できないため、アクティブモニターを撮影します");
+			return getDefaultScreenArea();
+		}
+
 		try {
-			return WindowsActiveWindowResolver.resolve(this);
+			HWND windowHandle = new HWND(new Pointer(windowHandleValue));
+			if (!User32.INSTANCE.IsWindow(windowHandle)) {
+				log.warn("撮影対象ウィンドウが既に閉じられているため、アクティブモニターを撮影します");
+				return getDefaultScreenArea();
+			}
+			return WindowsActiveWindowResolver.resolveActiveWindow(this, windowHandle);
 
 		} catch (Throwable t) {
-			log.warn("アクティブウィンドウの撮影範囲取得に失敗しました。デフォルト撮影範囲へフォールバックします", t);
+			log.warn("撮影対象ウィンドウの範囲取得に失敗したため、アクティブモニターを撮影します", t);
 			return getDefaultScreenArea();
 		}
 	}
@@ -165,11 +217,6 @@ public class SnapAreaResolver {
 
 	/**
 	 * Windows専用のアクティブウィンドウ撮影範囲解決クラス
-	 * <p>
-	 * User32 や DWM API は Windows 専用のため、この内側クラスに閉じ込める。
-	 * 外側クラスの初期化時には触らず、Windows 判定後にだけ参照することで、
-	 * Windows 以外の環境で JNA の Windows API ロードが走ることを避ける。
-	 * </p>
 	 */
 	private static class WindowsActiveWindowResolver {
 
@@ -202,17 +249,13 @@ public class SnapAreaResolver {
 		}
 
 		/**
-		 * アクティブウィンドウの撮影範囲を解決する
+		 * 指定したWindowsウィンドウの撮影範囲を解決します。
+		 *
 		 * @param parent 外側の撮影範囲解決クラス
-		 * @return アクティブウィンドウの撮影範囲
+		 * @param hwnd 撮影対象のウィンドウハンドル
+		 * @return 指定ウィンドウの撮影範囲
 		 */
-		private static Rectangle resolve(SnapAreaResolver parent) {
-			// アクティブウィンドウの識別番号を取得する
-			HWND hwnd = USER32.GetForegroundWindow();
-			if (hwnd == null) {
-				log.warn("アクティブウィンドウの識別番号の取得に失敗しました");
-				return parent.getDefaultScreenArea();
-			}
+		private static Rectangle resolveActiveWindow(SnapAreaResolver parent, HWND hwnd) {
 
 			// Windowsから影を除外した物理座標を取得する
 			Rectangle physRect = getPhysicalWindowRect(hwnd);

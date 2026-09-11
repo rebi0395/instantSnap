@@ -1,7 +1,5 @@
 package com.github.rebi0395.instantsnap.common;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
@@ -82,21 +80,6 @@ public class MessageKeyConverter {
 			log.warn("メッセージのリソースが見つかりません" ,e);
 			return messageEnum.getBaseDisplayName();
 		}
-	}
-
-	/**
-	 * メッセージキーリストから、言語翻訳したメッセージリストを取得する
-	 * @param messageKeyList メッセージキーリスト
-	 * @return 翻訳済のメッセージリスト
-	 */
-	public List<String> getMessageList(List<String> messageKeyList) {
-		List <String> messageList = new ArrayList<String>();
-		// メッセージキーリストの件数分、ループで翻訳する
-		for (String messagekey : messageKeyList) {
-			String message = getMessage(messagekey);
-			messageList.add(message);
-		}
-		return messageKeyList;
 	}
 
 	/**

@@ -24,10 +24,16 @@ public class ConfigBean {
 	private KeyCombinationBean snapKeyBean;
 	/** 範囲選択キーの組み合わせ */
 	private KeyCombinationBean selectionKeyBean;
+	/** 範囲確定後に自動撮影する設定（trueで自動撮影） */
+	private boolean isAutoSnapAfterRangeSelectionEnabled;
+	/** 撮影後に範囲撮影モードを自動で終了する設定 */
+	private boolean isCloseRangeSelectionAfterSnapEnabled;
 	/** 撮影範囲 */
 	private SnapAreaType snapAreaType;
 	/** マウスカーソルを写す (trueで写す) */
 	private boolean isIncludeCursor;
+	/** InstantSnapのWindowを写す (trueで写す) */
+	private boolean isIncludeSettingWindow;
 	/** 画像を保存する (trueで保存する) */
 	private boolean isSaveImage;
 	/** クリップボードに画像に保存する (trueで保存する) */
@@ -57,13 +63,16 @@ public class ConfigBean {
 		// -- 言語設定
 		this.languageType = LanguageType.ENGLISH;
 		// -- テーマ設定
-		this.themeType = ThemeType.STORYBOOK;
+		this.themeType = ThemeType.DEFAULT;
 
 		// -- 撮影設定
 		this.snapKeyBean = createDefaultSnapKey();
 		this.selectionKeyBean = createDefaultSelectionKey();
+		this.isAutoSnapAfterRangeSelectionEnabled = DEFAULT_AUTO_SNAP_AFTER_RANGE_SELECTION_ENABLED;
+		this.isCloseRangeSelectionAfterSnapEnabled = DEFAULT_CLOSE_RANGE_SELECTION_AFTER_SNAP_ENABLED;
 		this.snapAreaType = SnapAreaType.ACTIVE_WINDOW;
 		this.isIncludeCursor = DEFAULT_INCLUDE_CURSOR_ENABLED;
+		this.isIncludeSettingWindow = DEFAULT_INCLUDE_SETTING_WINDOW_ENABLED;
 
 		// -- 出力設定
 		this.isSaveImage = DEFAULT_SAVE_IMAGE_ENABLED;
@@ -176,6 +185,42 @@ public class ConfigBean {
 	}
 
 	/**
+	 * 範囲確定後に自動撮影するかを取得します。
+	 *
+	 * @return 自動撮影する場合true
+	 */
+	public boolean getIsAutoSnapAfterRangeSelectionEnabled() {
+		return isAutoSnapAfterRangeSelectionEnabled;
+	}
+
+	/**
+	 * 範囲確定後に自動撮影するかを設定します。
+	 *
+	 * @param enabled 自動撮影する場合true
+	 */
+	public void setIsAutoSnapAfterRangeSelectionEnabled(boolean enabled) {
+		this.isAutoSnapAfterRangeSelectionEnabled = enabled;
+	}
+
+	/**
+	 * 撮影後に範囲撮影モードを自動で終了するかを取得します。
+	 *
+	 * @return 自動で終了する場合true
+	 */
+	public boolean getIsCloseRangeSelectionAfterSnapEnabled() {
+		return isCloseRangeSelectionAfterSnapEnabled;
+	}
+
+	/**
+	 * 撮影後に範囲撮影モードを自動で終了するかを設定します。
+	 *
+	 * @param enabled 自動で終了する場合true
+	 */
+	public void setIsCloseRangeSelectionAfterSnapEnabled(boolean enabled) {
+		this.isCloseRangeSelectionAfterSnapEnabled = enabled;
+	}
+
+	/**
 	 * 撮影キーのデフォルト設定を作成する
 	 * @return Shift + Print Screenのキー設定
 	 */
@@ -229,6 +274,22 @@ public class ConfigBean {
 	 */
 	public void setIsIncludeCursor(boolean isIncludeCursor) {
 		this.isIncludeCursor = isIncludeCursor;
+	}
+
+	/**
+	 * 画像にInstantSnapのウィンドウを含めるかの設定を返します
+	 * @return isIncludeCursor
+	 */
+	public boolean getIsIncludeSettingWindow() {
+		return isIncludeSettingWindow;
+	}
+
+	/**
+	 * 画像にInstantSnapのウィンドウを含めるかの設定をセットします
+	 * @param isIncludeSettingWindow セットする
+	 */
+	public void setIsIncludeSettingWindow(boolean isIncludeSettingWindow) {
+		this.isIncludeSettingWindow = isIncludeSettingWindow;
 	}
 
 	/**

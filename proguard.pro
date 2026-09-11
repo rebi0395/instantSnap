@@ -10,7 +10,10 @@
 -keep class com.github.rebi0395.instantsnap.app.Main {
     public static void main(java.lang.String[]);
 }
--keep class com.github.rebi0395.instantsnap.app.InstantSnapApp { *; }
+-keep class com.github.rebi0395.instantsnap.app.SettingsLauncher {
+    public static void main(java.lang.String[]);
+}
+-keep class com.github.rebi0395.instantsnap.app.SettingWindowApp { *; }
 
 # FXMLLoader injects and invokes these members by their original names.
 -keepclassmembers class * {
