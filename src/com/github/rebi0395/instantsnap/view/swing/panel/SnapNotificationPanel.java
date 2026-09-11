@@ -26,6 +26,7 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 
+import com.github.rebi0395.instantsnap.model.enums.LanguageType;
 import com.github.rebi0395.instantsnap.model.enums.ThemeType;
 import com.github.rebi0395.instantsnap.view.swing.presenter.SnapNotificationPresenter;
 import com.github.rebi0395.instantsnap.view.swing.util.ThemePalette;
@@ -50,6 +51,12 @@ public final class SnapNotificationPanel extends JPanel implements ActionListene
 
 	/** JavaFXの日本語Systemフォントに近いWindows標準フォント */
 	private static final String NOTIFICATION_FONT_FAMILY = "Yu Gothic UI";
+
+	/** 簡体字中国語を自然に表示できるWindows標準UIフォント */
+	private static final String CHINESE_NOTIFICATION_FONT_FAMILY = "Microsoft YaHei UI";
+
+	/** 韓国語を自然に表示できるWindows標準UIフォント */
+	private static final String KOREAN_NOTIFICATION_FONT_FAMILY = "Malgun Gothic";
 
 	/** 現在の通知へ適用する配色 */
 	private ThemePalette themePalette = ThemeType.DEFAULT.getThemePalette();
@@ -109,19 +116,26 @@ public final class SnapNotificationPanel extends JPanel implements ActionListene
 	 * @param messageList 表示するメッセージリスト
 	 * @param openMessage クリック時にフォルダを開けることを通知するメッセージ
 	 * @param openDirectoryAvailable 保存先を開ける場合true
+	 * @param languageType 通知へ適用する言語
 	 */
 	public void setup(
 			List<String> messageList,
 			String openMessage,
-			boolean openDirectoryAvailable) {
+			boolean openDirectoryAvailable,
+			LanguageType languageType) {
 
 		// メッセージを設定する。
 		labelTitle.setText("InstantSnap");
 		textAreaMessage.setText(String.join(System.lineSeparator(), messageList));
+		labelOpenFolder.setText(null);
+		if (openDirectoryAvailable) {
+			labelOpenFolder.setText(openMessage);
+		}
+		// フォント変更後の文字幅で保存先ラベルを計測できるよう、文言設定直後に反映する。
+		applyNotificationFonts(languageType);
 
 		// 画像保存があり、フォルダを開く処理を搭載する場合だけボタンを表示する。
 		if (openDirectoryAvailable) {
-			labelOpenFolder.setText(openMessage);
 			// FlowLayoutとBoxLayoutの丸めで末尾が省略されないよう、計測幅へ余裕を持たせる。
 			labelOpenFolder.setPreferredSize(null);
 			Dimension openFolderSize = labelOpenFolder.getPreferredSize();
@@ -132,7 +146,6 @@ public final class SnapNotificationPanel extends JPanel implements ActionListene
 			textAreaMessage.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		} else {
 			panelOpenFolder.setVisible(false);
-			labelOpenFolder.setText(null);
 			textAreaMessage.setCursor(Cursor.getDefaultCursor());
 		}
 	}
@@ -336,6 +349,38 @@ public final class SnapNotificationPanel extends JPanel implements ActionListene
 
 		Font fallbackFont = UIManager.getFont("Label.font");
 		return fallbackFont.deriveFont(style, size);
+	}
+
+	/**
+	 * 通知文を自然に表示できるフォントを言語ごとに選択し、各部品へ適用します。
+	 * 通常は従来のYu Gothic UIを維持し、中国語と韓国語だけ対応するWindows標準UIフォントを使用します。
+	 *
+	 * @param languageType 通知へ適用する言語
+	 */
+	private void applyNotificationFonts(LanguageType languageType) {
+
+		String fontFamily = NOTIFICATION_FONT_FAMILY;
+		if (languageType == LanguageType.SIMPLIFIED_CHINESE) {
+			fontFamily = CHINESE_NOTIFICATION_FONT_FAMILY;
+		} else if (languageType == LanguageType.KOREAN) {
+			fontFamily = KOREAN_NOTIFICATION_FONT_FAMILY;
+		}
+
+		String displayText = textAreaMessage.getText();
+		if (labelOpenFolder.getText() != null) {
+			displayText += " " + labelOpenFolder.getText();
+		}
+		Font notificationFont = new Font(fontFamily, Font.PLAIN, 13);
+		if (!fontFamily.equalsIgnoreCase(notificationFont.getFamily())
+				|| notificationFont.canDisplayUpTo(displayText) >= 0) {
+			// OS側の言語用フォントがない場合は、複数言語を補完するJava論理フォントを使用する。
+			notificationFont = new Font(Font.DIALOG, Font.PLAIN, 13);
+		}
+
+		labelTitle.setFont(notificationFont.deriveFont(Font.BOLD, 17.0f));
+		buttonClose.setFont(notificationFont.deriveFont(Font.BOLD, 20.0f));
+		textAreaMessage.setFont(notificationFont.deriveFont(Font.PLAIN, 13.0f));
+		labelOpenFolder.setFont(notificationFont.deriveFont(Font.BOLD, 12.0f));
 	}
 
 	/**

@@ -329,7 +329,8 @@ public class InstantSnapCoordinator implements RangeSelectionListener, SnapKeyEv
 							config.getIsShowNotification(),
 							config.getIsNotificationSoundEnabled(),
 							config.getAfterSnapActionType(),
-							config.getThemeType());
+							config.getThemeType(),
+							config.getLanguageType());
 
 				} catch (Exception e) {
 					log.error("スクリーンショットの撮影または保存に失敗しました", e);
@@ -425,7 +426,10 @@ public class InstantSnapCoordinator implements RangeSelectionListener, SnapKeyEv
 
 			// 通知表示が有効な場合
 			if (afterSnapData.showNotification()) {
-				notificationPresenter.show(afterSnapData.result(), afterSnapData.themeType());
+				notificationPresenter.show(
+						afterSnapData.result(),
+						afterSnapData.themeType(),
+						afterSnapData.languageType());
 			}
 
 			// 撮影後アクションを実行
@@ -461,12 +465,14 @@ public class InstantSnapCoordinator implements RangeSelectionListener, SnapKeyEv
 	 * @param soundNotificationEnabled 通知音の有無（撮影音とは別の設定）
 	 * @param afterSnapActionType 撮影後動作
 	 * @param themeType 撮影時点で選択されているテーマ
+	 * @param languageType 撮影時点で選択されている言語
 	 */
 	private record AfterSnapData(
 			SnapResultBean result,
 			boolean showNotification,
 			boolean soundNotificationEnabled,
 			AfterSnapActionType afterSnapActionType,
-			ThemeType themeType) {
+			ThemeType themeType,
+			LanguageType languageType) {
 	}
 }
