@@ -183,7 +183,7 @@ public final class MainWindowPresenter implements ExitKeyEventListener, Settings
 		if (exitInProgress) {
 			return;
 		}
-		if (coordinator.reloadConfig()) {
+		if (coordinator.reload()) {
 			refresh(coordinator.getConfigBean());
 		}
 	}

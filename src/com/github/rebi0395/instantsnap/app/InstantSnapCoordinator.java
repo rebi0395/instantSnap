@@ -136,7 +136,7 @@ public class InstantSnapCoordinator implements RangeSelectionListener, SnapKeyEv
 	 *
 	 * @return 再読込に成功した場合true。終了処理中または読込に失敗した場合false
 	 */
-	public boolean reloadConfig() {
+	public boolean reload() {
 		if (closed.get()) {
 			return false;
 		}

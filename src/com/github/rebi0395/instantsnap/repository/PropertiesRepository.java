@@ -67,7 +67,8 @@ public class PropertiesRepository {
 			config.setIsIncludeCursor(readBooleanOrDefault(
 					properties.getProperty(PROPERTY_INCLUDE_CURSOR_ENABLED), DEFAULT_INCLUDE_CURSOR_ENABLED));
 			config.setIsIncludeSettingWindow(readBooleanOrDefault(
-					properties.getProperty(PROPERTY_INCLUDE_SETTING_WINDOW_ENABLED), DEFAULT_INCLUDE_SETTING_WINDOW_ENABLED));
+					properties.getProperty(PROPERTY_INCLUDE_SETTING_WINDOW_ENABLED),
+					DEFAULT_INCLUDE_SETTING_WINDOW_ENABLED));
 
 			// 出力設定
 			config.setIsSaveImage(readBooleanOrDefault(
@@ -128,8 +129,25 @@ public class PropertiesRepository {
 					properties.getProperty(PROPERTY_CLOSE_RANGE_SELECTION_AFTER_SNAP_ENABLED),
 					DEFAULT_CLOSE_RANGE_SELECTION_AFTER_SNAP_ENABLED));
 
+			// 不正な組み合わせがあれば修正
+			fallbackInvalidSettingCombination(config);
+
 		} catch (IOException ie) {
 			throw new ServiceException("プロパティファイルの読み込みに失敗しました", ie);
+		}
+	}
+
+	/**
+	 * 不正な設定値の組み合わせがあれば、強制的に修正する
+	 * @param config ユーザー設定値
+	 */
+	private void fallbackInvalidSettingCombination(ConfigBean config) {
+		// 画像保存、クリップボード保存、一時保存がすべて無効の場合、画像保存を有効化
+		if (!config.getIsSaveImage() &&
+				!config.getIsCopyToClipboard() &&
+				config.getAfterSnapActionType() == AfterSnapActionType.NONE) {
+
+			config.setIsSaveImage(true);
 		}
 	}
 
