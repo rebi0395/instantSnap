@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 
 import com.github.rebi0395.instantsnap.common.MessageKeyConverter;
 import com.github.rebi0395.instantsnap.exception.ServiceException;
+import com.github.rebi0395.instantsnap.listener.RangeSelectionListener;
+import com.github.rebi0395.instantsnap.listener.SnapKeyEventListener;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.model.bean.SnapResultBean;
 import com.github.rebi0395.instantsnap.model.enums.AfterSnapActionType;
@@ -28,15 +30,13 @@ import com.github.rebi0395.instantsnap.service.SnapSaveService;
 import com.github.rebi0395.instantsnap.service.SoundPlayer;
 import com.github.rebi0395.instantsnap.service.TakeSnapService;
 import com.github.rebi0395.instantsnap.service.TmpFolderService;
-import com.github.rebi0395.instantsnap.service.TriggerKeyWatcher.SnapKeyEventListener;
 import com.github.rebi0395.instantsnap.view.swing.dialog.RangeSelectionDialog;
-import com.github.rebi0395.instantsnap.view.swing.dialog.RangeSelectionDialog.SelectionListener;
 import com.github.rebi0395.instantsnap.view.swing.presenter.SnapNotificationPresenter;
 
 /**
  * 対応するサービスクラスに処理を振り分ける、司令塔クラス
  */
-public class InstantSnapCoordinator implements SelectionListener, SnapKeyEventListener {
+public class InstantSnapCoordinator implements RangeSelectionListener, SnapKeyEventListener, AutoCloseable {
 
 	/** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(InstantSnapCoordinator.class);
@@ -268,7 +268,8 @@ public class InstantSnapCoordinator implements SelectionListener, SnapKeyEventLi
 	 * キー監視の停止とプロセスの終了はInstantSnapAppが担当します。
 	 * 複数回呼ばれても解放処理は一度だけ実行します。
 	 */
-	public void requestExit() {
+	@Override
+	public void close() {
 		if (!closed.compareAndSet(false, true)) {
 			return;
 		}
@@ -284,6 +285,7 @@ public class InstantSnapCoordinator implements SelectionListener, SnapKeyEventLi
 	 *
 	 * @param snapRoute 撮影要求が発生した経路
 	 */
+	@Override
 	public void requestSnap(SnapRouteType snapRoute) {
 		if (closed.get()) {
 			return;
@@ -342,25 +344,7 @@ public class InstantSnapCoordinator implements SelectionListener, SnapKeyEventLi
 
 		});
 	}
-
-	/**
-	 * 起動したJavaFX設定プロセスを内部ウィンドウとして外部撮影対象から除外します。
-	 *
-	 * @param processId 設定プロセスのID
-	 */
-	public void registerSettingsProcess(long processId) {
-		areaResolver.registerSettingsProcess(processId);
-	}
-
-	/**
-	 * 終了したJavaFX設定プロセスを内部ウィンドウの一覧から解除します。
-	 *
-	 * @param processId 終了した設定プロセスのID
-	 */
-	public void releaseSettingsProcess(long processId) {
-		areaResolver.releaseSettingsProcess(processId);
-	}
-
+	
 	/**
 	 * 範囲トリガーが押されたとき呼ばれる。撮影範囲選択モードの無効・有効を切り替える
 	 */
@@ -373,6 +357,9 @@ public class InstantSnapCoordinator implements SelectionListener, SnapKeyEventLi
 		rangeSelectionDialog.switchRangeSelectionMode(screenDevice);
 	}
 
+	/**
+	 * 範囲選択画面が開かれた場合に呼ばれる。選択範囲を破棄し、選択範囲表示フラグをonにする
+	 */
 	@Override
 	public void onShown() {
 		rangeSelection = null;
@@ -380,7 +367,7 @@ public class InstantSnapCoordinator implements SelectionListener, SnapKeyEventLi
 	}
 
 	/**
-	 * 範囲選択画面が閉じられた場合に呼ばれる。選択範囲を破棄する
+	 * 範囲選択画面が閉じられた場合に呼ばれる。選択範囲を破棄し、選択範囲表示フラグをoffにする
 	 */
 	@Override
 	public void onClosed() {
@@ -403,6 +390,24 @@ public class InstantSnapCoordinator implements SelectionListener, SnapKeyEventLi
 		if (config.getIsAutoSnapAfterRangeSelectionEnabled()) {
 			requestSnap(SnapRouteType.RANGE_MODE);
 		}
+	}
+
+	/**
+	 * 起動したJavaFX設定プロセスを内部ウィンドウとして外部撮影対象から除外します。
+	 *
+	 * @param processId 設定プロセスのID
+	 */
+	public void registerSettingsProcess(long processId) {
+		areaResolver.registerSettingsProcess(processId);
+	}
+
+	/**
+	 * 終了したJavaFX設定プロセスを内部ウィンドウの一覧から解除します。
+	 *
+	 * @param processId 終了した設定プロセスのID
+	 */
+	public void releaseSettingsProcess(long processId) {
+		areaResolver.releaseSettingsProcess(processId);
 	}
 
 	/**

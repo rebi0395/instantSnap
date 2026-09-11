@@ -106,7 +106,7 @@ public final class InstantSnapApp {
 	}
 
 	/**
-	 * 常駐処理、Swingメインウィンドウ、設定ファイル監視を生成して結線します。
+	 * 常駐処理、Swingメインウィンドウ、設定ファイル監視クラスを生成する。
 	 *
 	 * @param instanceManager 起動時にロックを取得済みの管理クラス
 	 * @throws IOException 設定ファイルの監視を開始できない場合
@@ -126,9 +126,7 @@ public final class InstantSnapApp {
 				mainWindowPresenter);
 		try {
 			// 設定画面と手動編集のどちらも、設定ファイルの更新として同じ経路で検知する。
-			createdSettingsFileWatcher = new SettingsFileWatcher(
-					PROPERTIES_PATH,
-					mainWindowPresenter);
+			createdSettingsFileWatcher = new SettingsFileWatcher(PROPERTIES_PATH, mainWindowPresenter);
 			// 撮影系のキーイベントはCoordinatorへ、終了要求はPresenterへ直接通知する。
 			createdTriggerKeyWatcher.activate();
 		} catch (IOException | ServiceException e) {
@@ -138,7 +136,7 @@ public final class InstantSnapApp {
 			}
 			createdTriggerKeyWatcher.close();
 			mainWindowPresenter.close();
-			coordinator.requestExit();
+			coordinator.close();
 			throw e;
 		}
 		this.settingsFileWatcher = createdSettingsFileWatcher;

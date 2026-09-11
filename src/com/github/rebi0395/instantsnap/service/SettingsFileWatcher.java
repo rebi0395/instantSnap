@@ -16,6 +16,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.rebi0395.instantsnap.listener.SettingsChangeListener;
+
 /**
  * 設定ファイルの作成・更新をOSの通知で待ち、変更を通知するクラスです。
  * 常駐プロセスとJavaFX設定プロセスで、それぞれ監視インスタンスを所有します。
@@ -26,17 +28,6 @@ import org.slf4j.LoggerFactory;
  * </p>
  */
 public final class SettingsFileWatcher implements AutoCloseable {
-
-	/** 設定ファイルの変更を受け取るクラスが実装するインターフェースです。 */
-	public interface SettingsChangeListener {
-
-		/**
-		 * 設定ファイルの変更を監視スレッド上で通知します。
-		 * OSから同じ保存に複数の通知が届く場合があります。
-		 * 画面更新は受信側でSwingまたはJavaFXのUIスレッドへ引き継ぎます。
-		 */
-		void onSettingsFileChanged();
-	}
 
 	/** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(SettingsFileWatcher.class);

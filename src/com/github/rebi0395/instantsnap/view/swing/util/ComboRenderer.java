@@ -1,6 +1,7 @@
 package com.github.rebi0395.instantsnap.view.swing.util;
 
 import java.awt.Component;
+import java.awt.Font;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JLabel;
@@ -47,8 +48,20 @@ public class ComboRenderer extends DefaultListCellRenderer {
 
 		// 表示名を設定
 		switch (value) {
-		case LanguageType languageType -> label.setText(languageType.getBaseDisplayName());
-		default -> label.setText(value == null ? "" : value.toString());
+		case LanguageType languageType -> {
+			String displayName = languageType.getBaseDisplayName();
+			label.setText(displayName);
+
+			Font currentFont = label.getFont();
+			if (currentFont != null && currentFont.canDisplayUpTo(displayName) >= 0) {
+				// Segoe UIにない日中韓の文字は、複数言語を扱える論理フォントで描画する。
+				Font fallbackFont = new Font(Font.DIALOG, currentFont.getStyle(), currentFont.getSize());
+				label.setFont(fallbackFont);
+			}
+		}
+		default -> {
+
+		}
 		}
 
 		if (themeType == ThemeType.DARK) {

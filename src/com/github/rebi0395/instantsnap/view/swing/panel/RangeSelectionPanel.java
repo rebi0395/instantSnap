@@ -24,8 +24,8 @@ import javax.swing.SwingUtilities;
 import com.github.rebi0395.instantsnap.common.AppLogger;
 import com.github.rebi0395.instantsnap.common.MessageKeyConstant;
 import com.github.rebi0395.instantsnap.common.MessageKeyConverter;
+import com.github.rebi0395.instantsnap.listener.RangeSelectionListener;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
-import com.github.rebi0395.instantsnap.view.swing.dialog.RangeSelectionDialog.SelectionListener;
 
 /**
  * 範囲選択画面を表示するパネルを作成するクラス
@@ -69,7 +69,7 @@ public class RangeSelectionPanel extends JPanel {
 	private static final int DRAG_START_MOVING = 3;
 
 	/** 範囲選択結果の通知先 */
-	private final SelectionListener listener;
+	private final RangeSelectionListener listener;
 
 	/** パネルを表示しているモニターのAWT座標 */
 	private final Rectangle screenArea;
@@ -101,7 +101,7 @@ public class RangeSelectionPanel extends JPanel {
 	 * @param listener 範囲選択結果の通知先
 	 */
 	public RangeSelectionPanel(Rectangle screenArea, ConfigBean config,
-			MessageKeyConverter converter, SelectionListener listener) {
+			MessageKeyConverter converter, RangeSelectionListener listener) {
 		this.screenArea = new Rectangle(screenArea);
 		this.config = config;
 		this.converter = converter;
