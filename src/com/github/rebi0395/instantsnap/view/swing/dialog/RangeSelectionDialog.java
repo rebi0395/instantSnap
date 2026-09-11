@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.rebi0395.instantsnap.common.MessageKeyConverter;
+import com.github.rebi0395.instantsnap.listener.RangeSelectionListener;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.service.ScreenCaptureExclusionService;
 import com.github.rebi0395.instantsnap.view.swing.panel.RangeSelectionPanel;
@@ -43,7 +44,7 @@ public class RangeSelectionDialog {
 	private MessageKeyConverter converter;
 
 	/** 範囲決定通知リスナー */
-	private final SelectionListener listener;
+	private final RangeSelectionListener listener;
 
 	/** 範囲選択画面を撮影対象から除外するサービス */
 	private final ScreenCaptureExclusionService screenCaptureExclusionService;
@@ -66,34 +67,11 @@ public class RangeSelectionDialog {
 	 * @param converter メッセージ変換クラス
 	 * @param listener 範囲選択結果の通知先
 	 */
-	public RangeSelectionDialog(ConfigBean config, MessageKeyConverter converter, SelectionListener listener) {
+	public RangeSelectionDialog(ConfigBean config, MessageKeyConverter converter, RangeSelectionListener listener) {
 		this.config = config;
 		this.converter = converter;
 		this.listener = listener;
 		this.screenCaptureExclusionService = new ScreenCaptureExclusionService();
-	}
-
-	/**
-	 * 撮影選択完了時の通知インターフェース
-	 */
-	public interface SelectionListener {
-
-		/**
-		 * 範囲選択画面表示時に呼ばれるリスナー
-		 */
-		void onShown();
-
-		/**
-		 * 範囲選択解除後に呼ばれるリスナー
-		 */
-		void onClosed();
-
-		/**
-		 * 撮影範囲更新後に呼び出されるリスナー
-		 *
-		 * @param selectArea 更新後の撮影範囲
-		 */
-		void updateRangeArea(Rectangle selectArea);
 	}
 
 	/**

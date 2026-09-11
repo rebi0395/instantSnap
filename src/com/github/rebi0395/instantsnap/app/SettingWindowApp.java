@@ -5,8 +5,8 @@ import static com.github.rebi0395.instantsnap.common.AppConstant.PROPERTIES_PATH
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.rebi0395.instantsnap.listener.SettingsChangeListener;
 import com.github.rebi0395.instantsnap.service.SettingsFileWatcher;
-import com.github.rebi0395.instantsnap.service.SettingsFileWatcher.SettingsChangeListener;
 import com.github.rebi0395.instantsnap.service.SettingsService;
 import com.github.rebi0395.instantsnap.view.javafx.presenter.SettingWindowPresenter;
 

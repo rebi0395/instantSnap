@@ -35,7 +35,7 @@ public class TakeSnapService {
 	 * @param soundPlayer 音声を再生するインスタンス
 	 * @param mouseCursorService マウスカーソルを書き込むインスタンス
 	 */
-	public TakeSnapService(SnapAreaResolver areaResolver, SnapSaveService saveService, 
+	public TakeSnapService(SnapAreaResolver areaResolver, SnapSaveService saveService,
 			SoundPlayer soundPlayer, MouseCursorService mouseCursorService) {
 		this.areaResolver = areaResolver;
 		this.saveService = saveService;
@@ -62,22 +62,20 @@ public class TakeSnapService {
 
 		// 結果クラスを作成
 		SnapResultBean resultBean = new SnapResultBean();
-
-		BufferedImage capturedImage = null;
 		BufferedImage snap = null;
+
 		try {
-			// 撮影範囲の種類と要求経路を渡し、範囲解決の入口を統一する。
-			Rectangle snapSize = areaResolver.resolveArea(
-					config.getSnapAreaType(),
-					config.getIsIncludeSettingWindow(),
-					snapRoute);
+			Rectangle snapSize;
 			if (rangeSelection != null) {
-				// ドラッグ指定している場合は、撮影範囲をドラッグ範囲で上書きする
+				// ドラッグ指定している場合は、撮影範囲をドラッグ範囲とする
 				snapSize = rangeSelection;
+			} else {
+				// 撮影範囲の種類と要求経路を渡し、撮影範囲を決定する
+				snapSize = areaResolver.resolveArea(
+						config.getSnapAreaType(), config.getIsIncludeSettingWindow(), snapRoute);
 			}
 			// 撮影
-			capturedImage = getOrCreateRobot().createScreenCapture(snapSize);
-			snap = capturedImage;
+			snap = getOrCreateRobot().createScreenCapture(snapSize);
 
 			// マウスカーソルを画像に含める設定が有効
 			if (config.getIsIncludeCursor() && OsUtil.isWindows()) {
@@ -99,9 +97,6 @@ public class TakeSnapService {
 			// 保存とクリップボード転送が完了した画像の描画リソースを明示的に解放する。
 			if (snap != null) {
 				snap.flush();
-			}
-			if (capturedImage != null && capturedImage != snap) {
-				capturedImage.flush();
 			}
 		}
 		return resultBean;

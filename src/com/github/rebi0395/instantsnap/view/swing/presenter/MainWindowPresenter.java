@@ -21,13 +21,13 @@ import com.github.rebi0395.instantsnap.app.InstantSnapApp;
 import com.github.rebi0395.instantsnap.app.InstantSnapCoordinator;
 import com.github.rebi0395.instantsnap.common.MessageKeyConstant;
 import com.github.rebi0395.instantsnap.common.MessageKeyConverter;
+import com.github.rebi0395.instantsnap.listener.ExitKeyEventListener;
+import com.github.rebi0395.instantsnap.listener.SettingsChangeListener;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.model.enums.LanguageType;
 import com.github.rebi0395.instantsnap.model.enums.SnapAreaType;
 import com.github.rebi0395.instantsnap.model.enums.SnapRouteType;
 import com.github.rebi0395.instantsnap.service.ScreenCaptureExclusionService;
-import com.github.rebi0395.instantsnap.service.SettingsFileWatcher.SettingsChangeListener;
-import com.github.rebi0395.instantsnap.service.TriggerKeyWatcher.ExitKeyEventListener;
 import com.github.rebi0395.instantsnap.view.swing.panel.MainWindowPanel;
 
 /**
@@ -215,7 +215,7 @@ public final class MainWindowPresenter implements ExitKeyEventListener, Settings
 		}
 
 		setActionsEnabled(false);
-		coordinator.requestExit();
+		coordinator.close();
 		app.shutdownApplication();
 	}
 

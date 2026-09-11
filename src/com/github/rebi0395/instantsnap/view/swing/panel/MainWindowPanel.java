@@ -1,6 +1,5 @@
 package com.github.rebi0395.instantsnap.view.swing.panel;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -65,6 +64,9 @@ public class MainWindowPanel extends JPanel implements ActionListener, FocusList
 
 	/** ショートカット表示に使用するフォントサイズ */
 	private static final float SHORTCUT_FONT_SIZE = 12.0f;
+
+	/** ロシア語を横に広がりすぎず表示するWindows標準フォント */
+	private static final String RUSSIAN_FONT_FAMILY = "Segoe UI";
 
 	/** 下段に表示する撮影範囲選択欄のサイズ */
 	private static final Dimension SNAP_AREA_COMBO_SIZE = new Dimension(238, 30);
@@ -556,6 +558,45 @@ public class MainWindowPanel extends JPanel implements ActionListener, FocusList
 		}
 
 		applyTheme(config.getThemeType());
+		applyLanguageFont(config.getLanguageType());
+	}
+
+	/**
+	 * ミニウィンドウ内の表示言語に適したフォントを設定します。
+	 * ロシア語以外へ切り替えた場合はSwing標準フォントへ戻します。
+	 *
+	 * @param languageType 現在選択されている表示言語
+	 */
+	private void applyLanguageFont(LanguageType languageType) {
+		Font buttonFont = UIManager.getFont("Button.font");
+		Font comboBoxFont = UIManager.getFont("ComboBox.font");
+		Font labelFont = UIManager.getFont("Label.font");
+
+		if (languageType == LanguageType.RUSSIAN) {
+			if (buttonFont != null) {
+				buttonFont = new Font(RUSSIAN_FONT_FAMILY, buttonFont.getStyle(), buttonFont.getSize());
+			}
+			if (comboBoxFont != null) {
+				comboBoxFont = new Font(RUSSIAN_FONT_FAMILY, comboBoxFont.getStyle(), comboBoxFont.getSize());
+			}
+			if (labelFont != null) {
+				labelFont = new Font(RUSSIAN_FONT_FAMILY, labelFont.getStyle(), labelFont.getSize());
+			}
+		}
+
+		if (buttonFont != null) {
+			settingsButton.setFont(buttonFont);
+			captureButton.setFont(buttonFont);
+			rangeSelectionButton.setFont(buttonFont);
+		}
+		if (comboBoxFont != null) {
+			languageComboBox.setFont(comboBoxFont);
+			snapAreaComboBox.setFont(comboBoxFont);
+		}
+		if (labelFont != null) {
+			captureShortcutLabel.setFont(labelFont.deriveFont(SHORTCUT_FONT_SIZE));
+			rangeSelectionShortcutLabel.setFont(labelFont.deriveFont(SHORTCUT_FONT_SIZE));
+		}
 	}
 
 	/**

@@ -13,6 +13,8 @@ import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
 import com.github.rebi0395.instantsnap.common.AppLogger;
 import com.github.rebi0395.instantsnap.common.NativeKeyCodeConverter;
 import com.github.rebi0395.instantsnap.exception.ServiceException;
+import com.github.rebi0395.instantsnap.listener.ExitKeyEventListener;
+import com.github.rebi0395.instantsnap.listener.SnapKeyEventListener;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.model.bean.KeyCombinationBean;
 import com.github.rebi0395.instantsnap.model.enums.SnapRouteType;
@@ -50,28 +52,6 @@ public class TriggerKeyWatcher implements NativeKeyListener, AutoCloseable {
 	private boolean canSnap = true;
 	/** 範囲選択画面表示フラグ trueで範囲選択画面が表示可能 */
 	private boolean canRangeSelection = true;
-
-	/**
-	 * 撮影と範囲選択のキー押下を通知するインターフェースです。
-	 */
-	public interface SnapKeyEventListener {
-
-		/** 撮影キーが押された事を通知する */
-		void requestSnap(SnapRouteType snapRouteType);
-
-		/** 範囲キーが押された事を通知する */
-		void requestRangeSelection();
-
-	}
-
-	/**
-	 * 終了キーの押下を通知するインターフェースです。
-	 */
-	public interface ExitKeyEventListener {
-
-		/** アプリの終了要求を通知します。 */
-		void requestExit();
-	}
 
 	/**
 	 * コンストラクタ
