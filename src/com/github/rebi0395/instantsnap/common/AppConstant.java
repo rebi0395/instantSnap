@@ -129,14 +129,4 @@ public final class AppConstant {
 	/** 一時保存先ディレクトリ */
 	public static final String TMP_SAVE_DIR = "./tmp/";
 
-	// -- OS名
-	/** OS名：Windows */
-	public static final String OS_NAME_WINDOWS = "Windows";
-	/** OS名：macOS */
-	public static final String OS_NAME_MAC = "macOS";
-	/** OS名：Linux */
-	public static final String OS_NAME_LINUX = "Linux";
-	/** OS名：その他 */
-	public static final String OS_NAME_OTHER = "Other";
-
 }

@@ -31,8 +31,6 @@ public final class MessageKeyConstant {
 	// -- メインウィンドウ固定文言 -- 
 	/** タブ：基本設定 */
 	public static final String TAB_BASIC_SETTINGS = "tab.basicSettings";
-	/** タブ：その他設定 */
-	public static final String TAB_OTHER_SETTINGS = "tab.otherSettings";
 
 	/** キャプション：出力 */
 	public static final String CAPTION_OUTPUT = "caption.output";

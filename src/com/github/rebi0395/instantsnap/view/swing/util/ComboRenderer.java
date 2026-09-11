@@ -1,7 +1,6 @@
 package com.github.rebi0395.instantsnap.view.swing.util;
 
 import java.awt.Component;
-import java.awt.Font;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JLabel;
@@ -14,6 +13,7 @@ import com.github.rebi0395.instantsnap.model.enums.ThemeType;
  * コンボボックスを制御するレンダラー
  */
 public class ComboRenderer extends DefaultListCellRenderer {
+
 	private ThemeType themeType;
 	private ThemePalette themePalette;
 
@@ -46,22 +46,9 @@ public class ComboRenderer extends DefaultListCellRenderer {
 		// JLabelとして扱う（DefaultListCellRenderer は JLabel を返す）
 		JLabel label = (JLabel) component;
 
-		// 表示名を設定
-		switch (value) {
-		case LanguageType languageType -> {
-			String displayName = languageType.getBaseDisplayName();
-			label.setText(displayName);
-
-			Font currentFont = label.getFont();
-			if (currentFont != null && currentFont.canDisplayUpTo(displayName) >= 0) {
-				// Segoe UIにない日中韓の文字は、複数言語を扱える論理フォントで描画する。
-				Font fallbackFont = new Font(Font.DIALOG, currentFont.getStyle(), currentFont.getSize());
-				label.setFont(fallbackFont);
-			}
-		}
-		default -> {
-
-		}
+		// 言語Enumだけは、プロパティ値ではなく各言語自身の表示名を使用する。
+		if (value instanceof LanguageType languageType) {
+			label.setText(languageType.getBaseDisplayName());
 		}
 
 		if (themeType == ThemeType.DARK) {

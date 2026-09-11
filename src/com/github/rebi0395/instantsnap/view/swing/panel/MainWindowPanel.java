@@ -65,9 +65,6 @@ public class MainWindowPanel extends JPanel implements ActionListener, FocusList
 	/** ショートカット表示に使用するフォントサイズ */
 	private static final float SHORTCUT_FONT_SIZE = 12.0f;
 
-	/** ロシア語を横に広がりすぎず表示するWindows標準フォント */
-	private static final String RUSSIAN_FONT_FAMILY = "Segoe UI";
-
 	/** 下段に表示する撮影範囲選択欄のサイズ */
 	private static final Dimension SNAP_AREA_COMBO_SIZE = new Dimension(238, 30);
 
@@ -184,6 +181,7 @@ public class MainWindowPanel extends JPanel implements ActionListener, FocusList
 		this.notificationButton = createNotificationButton(
 				new QuickSettingIcon(QuickSettingIcon.Type.NOTIFICATION));
 
+		applyMultilingualFont();
 		initializeLayout();
 	}
 
@@ -558,42 +556,30 @@ public class MainWindowPanel extends JPanel implements ActionListener, FocusList
 		}
 
 		applyTheme(config.getThemeType());
-		applyLanguageFont(config.getLanguageType());
 	}
 
 	/**
-	 * ミニウィンドウ内の表示言語に適したフォントを設定します。
-	 * ロシア語以外へ切り替えた場合はSwing標準フォントへ戻します。
-	 *
-	 * @param languageType 現在選択されている表示言語
+	 * ミニウィンドウ内の文字へ、多言語の代替表示に対応するJava論理フォントを設定します。
+	 * 言語変更のたびに切り替える必要がないため、パネル生成時に一度だけ呼び出します。
 	 */
-	private void applyLanguageFont(LanguageType languageType) {
+	private void applyMultilingualFont() {
 		Font buttonFont = UIManager.getFont("Button.font");
 		Font comboBoxFont = UIManager.getFont("ComboBox.font");
 		Font labelFont = UIManager.getFont("Label.font");
 
-		if (languageType == LanguageType.RUSSIAN) {
-			if (buttonFont != null) {
-				buttonFont = new Font(RUSSIAN_FONT_FAMILY, buttonFont.getStyle(), buttonFont.getSize());
-			}
-			if (comboBoxFont != null) {
-				comboBoxFont = new Font(RUSSIAN_FONT_FAMILY, comboBoxFont.getStyle(), comboBoxFont.getSize());
-			}
-			if (labelFont != null) {
-				labelFont = new Font(RUSSIAN_FONT_FAMILY, labelFont.getStyle(), labelFont.getSize());
-			}
-		}
-
 		if (buttonFont != null) {
+			buttonFont = new Font(Font.DIALOG, buttonFont.getStyle(), buttonFont.getSize());
 			settingsButton.setFont(buttonFont);
 			captureButton.setFont(buttonFont);
 			rangeSelectionButton.setFont(buttonFont);
 		}
 		if (comboBoxFont != null) {
+			comboBoxFont = new Font(Font.DIALOG, comboBoxFont.getStyle(), comboBoxFont.getSize());
 			languageComboBox.setFont(comboBoxFont);
 			snapAreaComboBox.setFont(comboBoxFont);
 		}
 		if (labelFont != null) {
+			labelFont = new Font(Font.DIALOG, labelFont.getStyle(), labelFont.getSize());
 			captureShortcutLabel.setFont(labelFont.deriveFont(SHORTCUT_FONT_SIZE));
 			rangeSelectionShortcutLabel.setFont(labelFont.deriveFont(SHORTCUT_FONT_SIZE));
 		}

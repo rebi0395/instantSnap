@@ -85,11 +85,6 @@ public class SettingWindowController {
 	/** 基本設定タブ */
 	@FXML
 	private Tab tabBasicSettings;
-
-//TODO	/** その他設定タブ */
-//	@FXML
-//	private Tab tabOtherSettings;
-
 	// -- 折りたたみ項目 --
 	/** 画像保存先設定の折りたたみ項目 */
 	@FXML
@@ -980,7 +975,6 @@ public class SettingWindowController {
 	private void updateFixedTexts() {
 		// タブ
 		tabBasicSettings.setText(converter.getMessage(MessageKeyConstant.TAB_BASIC_SETTINGS, "Basic settings"));
-//TODO		tabOtherSettings.setText(converter.getMessage(MessageKeyConstant.TAB_OTHER_SETTINGS, "Other settings"));
 
 		// セクション
 		sectionTheme.setText(converter.getMessage(MessageKeyConstant.SECTION_THEME, "Theme"));

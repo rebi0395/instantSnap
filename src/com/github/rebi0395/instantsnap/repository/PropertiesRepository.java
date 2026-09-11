@@ -38,14 +38,6 @@ public class PropertiesRepository {
 	private static final Logger log = LoggerFactory.getLogger(PropertiesRepository.class);
 
 	/**
-	 * コンストラクタ
-	 */
-	public PropertiesRepository() {
-	}
-
-	//TODO 不足キー追加処理
-
-	/**
 	 * プロパティファイルの読み取りを行います
 	 * @param config 設定保持クラス
 	 * @throws ServiceException 

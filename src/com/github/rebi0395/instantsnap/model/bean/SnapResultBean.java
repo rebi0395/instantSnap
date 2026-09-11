@@ -1,11 +1,9 @@
 package com.github.rebi0395.instantsnap.model.bean;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
- * 撮影結果と、撮影結果のメッセージキーを保持するクラス
+ * 撮影結果を保持するクラス
  */
 public class SnapResultBean {
 
@@ -21,9 +19,6 @@ public class SnapResultBean {
 	/** クリップボード保存に成功したかの結果を保持 trueで成功 */
 	private boolean isClipboardCopied = false;
 
-	/** メイン画面に表示するメッセージキーを確認するリスト */
-	List<String> messageKeyList = new ArrayList<>();
-
 	/** 引数なしコンストラクタ */
 	public SnapResultBean() {
 	}
@@ -38,7 +33,6 @@ public class SnapResultBean {
 		this.isImageSaved = source.isImageSaved;
 		this.isTmpSaved = source.isTmpSaved;
 		this.isClipboardCopied = source.isClipboardCopied;
-		this.messageKeyList = new ArrayList<>(source.messageKeyList);
 	}
 
 	/**
@@ -119,22 +113,6 @@ public class SnapResultBean {
 	 */
 	public void setIsTmpSaved(boolean isTmpSaved) {
 		this.isTmpSaved = isTmpSaved;
-	}
-
-	/**
-	 * messageKeyList を取得する
-	 * @return messageKeyList
-	 */
-	public List<String> getMessageKeyList() {
-		return messageKeyList;
-	}
-
-	/**
-	 * messageKeyList をセットする
-	 * @param messageKeyList
-	 */
-	public void setMessageKeyList(List<String> messageKeyList) {
-		this.messageKeyList = messageKeyList;
 	}
 
 }

@@ -122,18 +122,24 @@ public class RangeSelectionDialog {
 	 * 撮影開始前に選択枠の描画を確実に消すため、Swingスレッドの処理完了を待機します。
 	 */
 	public void prepareNextSelection() {
+		Runnable prepareSelection = new Runnable() {
+			@Override
+			public void run() {
+				if (!isShowing() || selectionPanel == null) {
+					return;
+				}
+				selectionPanel.prepareNextSelection();
+				selectionPanel.repaint();
+			}
+		};
+
 		if (EventQueue.isDispatchThread()) {
-			prepareNextSelectionOnEventThread();
+			prepareSelection.run();
 			return;
 		}
 
 		try {
-			EventQueue.invokeAndWait(new Runnable() {
-				@Override
-				public void run() {
-					prepareNextSelectionOnEventThread();
-				}
-			});
+			EventQueue.invokeAndWait(prepareSelection);
 
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
@@ -142,17 +148,6 @@ public class RangeSelectionDialog {
 		} catch (InvocationTargetException e) {
 			log.warn("次の範囲選択待ちへの更新に失敗しました", e.getCause());
 		}
-	}
-
-	/**
-	 * Swingスレッド上で範囲選択パネルを次の選択待ちに戻します。
-	 */
-	private void prepareNextSelectionOnEventThread() {
-		if (!isShowing() || selectionPanel == null) {
-			return;
-		}
-		selectionPanel.prepareNextSelection();
-		selectionPanel.repaint();
 	}
 
 	/**
