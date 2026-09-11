@@ -634,8 +634,12 @@ public class RangeSelectionPanel extends JPanel {
 			break;
 		}
 		case SELECTING: {
-			// クリック説明			
-			texts.add(converter.getMessage(MessageKeyConstant.RANGE_SELECTION_GUIDE_SELECTING));
+			// クリック説明	
+			if (config.getIsAutoSnapAfterRangeSelectionEnabled()) {
+				texts.add(converter.getMessage(MessageKeyConstant.RANGE_SELECTION_GUIDE_SELECTING_AUTOSNAP));
+			} else {
+				texts.add(converter.getMessage(MessageKeyConstant.RANGE_SELECTION_GUIDE_SELECTING));
+			}
 			// マウス操作、矢印キーで範囲動かせる説明
 			texts.add(converter.getMessage(MessageKeyConstant.RANGE_SELECTION_GUIDE_MOVE_POINTER));
 			// Ctrl + 矢印キーで枠全体を動かせる説明

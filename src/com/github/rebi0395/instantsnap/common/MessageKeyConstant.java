@@ -174,8 +174,10 @@ public final class MessageKeyConstant {
 	// -- 範囲選択画面 --
 	/** 操作説明：範囲選択状態の切り替え 待機中*/
 	public static final String RANGE_SELECTION_GUIDE_WAITING = "rangeSelection.guide.waiting";
-	/** 操作説明：範囲選択状態の切り替え 範囲選択中*/
+	/** 操作説明：範囲選択状態の切り替え 範囲選択中(範囲確定時、自動撮影OFF)*/
 	public static final String RANGE_SELECTION_GUIDE_SELECTING = "rangeSelection.guide.selecting";
+	/** 操作説明：範囲選択状態の切り替え 範囲選択中(範囲確定時、自動撮影ON)*/
+	public static final String RANGE_SELECTION_GUIDE_SELECTING_AUTOSNAP = "rangeSelection.guide.selecting.autoSnap";
 	/** 操作説明：範囲選択状態の切り替え 範囲確定済*/
 	public static final String RANGE_SELECTION_GUIDE_CONFIRMED = "rangeSelection.guide.confirmed";
 	/** 操作説明：撮影 */
