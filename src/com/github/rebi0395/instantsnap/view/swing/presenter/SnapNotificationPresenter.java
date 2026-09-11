@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import com.github.rebi0395.instantsnap.common.MessageKeyConstant;
 import com.github.rebi0395.instantsnap.common.MessageKeyConverter;
 import com.github.rebi0395.instantsnap.model.bean.SnapResultBean;
+import com.github.rebi0395.instantsnap.model.enums.LanguageType;
 import com.github.rebi0395.instantsnap.model.enums.ThemeType;
 import com.github.rebi0395.instantsnap.service.FileOpenService;
 import com.github.rebi0395.instantsnap.view.swing.panel.SnapNotificationPanel;
@@ -119,15 +120,16 @@ public final class SnapNotificationPresenter {
 	 *
 	 * @param result 撮影結果。nullまたは保存・コピー結果がない場合は表示しない
 	 * @param themeType 撮影時点で選択されているテーマ
+	 * @param languageType 撮影時点で選択されている言語
 	 */
-	public void show(SnapResultBean result, ThemeType themeType) {
+	public void show(SnapResultBean result, ThemeType themeType, LanguageType languageType) {
 		if (result == null || !result.hasResult()) {
 			// 通知の表示が不要な場合、早期リターン
 			return;
 		}
 
 		// 撮影スレッドのBeanをSwingスレッドへ持ち込まないよう、表示に必要な値だけコピーする。
-		NotificationRequest notificationRequest = createNotificationData(result, themeType);
+		NotificationRequest notificationRequest = createNotificationData(result, themeType, languageType);
 
 		boolean scheduleNotificationUpdate = false;
 		synchronized (notificationRequestLock) {
@@ -177,9 +179,13 @@ public final class SnapNotificationPresenter {
 	 *
 	 * @param result 撮影結果クラス
 	 * @param themeType 撮影時点で選択されているテーマ
+	 * @param languageType 撮影時点で選択されている言語
 	 * @return 画像本体を保持しない、文言と保存先だけの通知情報
 	 */
-	private NotificationRequest createNotificationData(SnapResultBean result, ThemeType themeType) {
+	private NotificationRequest createNotificationData(
+			SnapResultBean result,
+			ThemeType themeType,
+			LanguageType languageType) {
 
 		// 通知に表示するメッセージリストを作成する。
 		List<String> noticeMessageList = new ArrayList<String>();
@@ -216,7 +222,8 @@ public final class SnapNotificationPresenter {
 				result.getTargetPath(),
 				result.isOpenActionAvailable(),
 				result.getIsTmpSaved(),
-				themeType);
+				themeType,
+				languageType);
 	}
 
 	/**
@@ -248,7 +255,8 @@ public final class SnapNotificationPresenter {
 		notificationPanel.setup(
 				notificationRequest.messageList(),
 				notificationRequest.openMessage(),
-				openDirectoryAvailable);
+				openDirectoryAvailable,
+				notificationRequest.languageType());
 
 		window.pack();
 
@@ -577,6 +585,7 @@ public final class SnapNotificationPresenter {
 	 * @param openDirectoryAvailable 通知クリックで保存先を開ける場合true
 	 * @param isTmpSaved 一時保存の場合true
 	 * @param themeType 通知へ適用するテーマ
+	 * @param languageType 通知へ適用する言語
 	 */
 	private record NotificationRequest(
 			List<String> messageList,
@@ -584,6 +593,7 @@ public final class SnapNotificationPresenter {
 			Path targetPath,
 			boolean openDirectoryAvailable,
 			boolean isTmpSaved,
-			ThemeType themeType) {
+			ThemeType themeType,
+			LanguageType languageType) {
 	}
 }
