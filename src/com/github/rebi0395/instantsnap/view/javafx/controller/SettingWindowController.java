@@ -371,6 +371,9 @@ public class SettingWindowController {
 		// 不正値項目のスタイル反映
 		updateInvalidStyle(config);
 
+		// 不正パターンを防ぐ活性／非活性制御を実施
+		updateSnapOutputControlState();
+
 		// ステータス値を撮影可能にする
 		updateStatus(StatusType.READY);
 	}
@@ -500,6 +503,8 @@ public class SettingWindowController {
 		registerTextFieldFocusOutListener();
 		// 言語切り替え時の処理を設定
 		registerLanguageChangeListener();
+		// 画像保存off、クリップボードoff、撮影後何もしないの組み合わせを禁じる制御
+		registerUpdateSnapOutputControlState();
 		// テーマ切り替え時の処理を設定
 		registerThemeChangeListener();
 	}
@@ -684,6 +689,41 @@ public class SettingWindowController {
 			boolean invalid = filePathService.isInvalidSaveDirectoryPath(inputText);
 			applyInvalidStyle(textFilePath, invalid);
 		});
+	}
+
+	/**
+	 * 画像保存、クリップボード保存、撮影後の動作「何もしない」が、
+	 * すべて選択されないように完全に制御する処理を登録する
+	 */
+	private void registerUpdateSnapOutputControlState() {
+
+		checkSaveImage.selectedProperty().addListener((obs, oldVal, newVal) -> {
+			updateSnapOutputControlState();
+		});
+
+		checkClipboard.selectedProperty().addListener((obs, oldVal, newVal) -> {
+			updateSnapOutputControlState();
+		});
+
+		radioSnapAfterNothing.selectedProperty().addListener((obs, oldVal, newVal) -> {
+			updateSnapOutputControlState();
+		});
+	}
+
+	/**
+	 * 出力方法なし、保存先の組み合わせがUIから選択できないように、活性／非活性の制御を行う
+	 */
+	private void updateSnapOutputControlState() {
+		boolean saveImage = checkSaveImage.isSelected();
+		boolean copyToClipboard = checkClipboard.isSelected();
+		boolean doNothing = radioSnapAfterNothing.isSelected();
+
+		// 残っている唯一の出力方法は解除できないようにする。
+		checkSaveImage.setDisable(!copyToClipboard && doNothing);
+		checkClipboard.setDisable(!saveImage && doNothing);
+
+		// 保存先が一つもなければ「何もしない」は選択できない。
+		radioSnapAfterNothing.setDisable(!saveImage && !copyToClipboard);
 	}
 
 	/**
