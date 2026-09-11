@@ -1,7 +1,5 @@
 package com.github.rebi0395.instantsnap.common;
 
-import static com.github.rebi0395.instantsnap.common.AppConstant.*;
-
 /**
  * OS判定を行うユーティリティクラス
  */
@@ -14,26 +12,6 @@ public final class OsUtil {
 	 * インスタンス化防止
 	 */
 	private OsUtil() {
-	}
-
-	/**
-	 * OS名を取得する
-	 * @return OS名
-	 */
-	public static String getOsName() {
-		if (isWindows()) {
-			return OS_NAME_WINDOWS;
-		}
-
-		if (isMac()) {
-			return OS_NAME_MAC;
-		}
-
-		if (isLinux()) {
-			return OS_NAME_LINUX;
-		}
-
-		return OS_NAME_OTHER;
 	}
 
 	/**
