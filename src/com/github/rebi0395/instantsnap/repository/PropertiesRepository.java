@@ -23,6 +23,7 @@ import com.github.rebi0395.instantsnap.model.enums.AfterSnapActionType;
 import com.github.rebi0395.instantsnap.model.enums.FileNameDateFormatType;
 import com.github.rebi0395.instantsnap.model.enums.SnapAreaType;
 import com.github.rebi0395.instantsnap.model.enums.ThemeType;
+import com.github.rebi0395.instantsnap.repository.template.PropertyFileTemplate;
 
 import static com.github.rebi0395.instantsnap.common.NativeKeyCodeConverter.*;
 import static com.github.rebi0395.instantsnap.common.AppConstant.*;
@@ -36,14 +37,6 @@ public class PropertiesRepository {
 
 	/** ロガー */
 	private static final Logger log = LoggerFactory.getLogger(PropertiesRepository.class);
-
-	/**
-	 * コンストラクタ
-	 */
-	public PropertiesRepository() {
-	}
-
-	//TODO 不足キー追加処理
 
 	/**
 	 * プロパティファイルの読み取りを行います
@@ -73,6 +66,9 @@ public class PropertiesRepository {
 					properties.getProperty(PROPERTY_SNAP_AREA)));
 			config.setIsIncludeCursor(readBooleanOrDefault(
 					properties.getProperty(PROPERTY_INCLUDE_CURSOR_ENABLED), DEFAULT_INCLUDE_CURSOR_ENABLED));
+			config.setIsIncludeSettingWindow(readBooleanOrDefault(
+					properties.getProperty(PROPERTY_INCLUDE_SETTING_WINDOW_ENABLED),
+					DEFAULT_INCLUDE_SETTING_WINDOW_ENABLED));
 
 			// 出力設定
 			config.setIsSaveImage(readBooleanOrDefault(
@@ -126,9 +122,32 @@ public class PropertiesRepository {
 					properties.getProperty(PROPERTY_SELECTION_USE_SHIFT),
 					DEFAULT_SELECTION_USE_SHIFT));
 			config.setSelectionKeyBean(selectionKeys);
+			config.setIsAutoSnapAfterRangeSelectionEnabled(readBooleanOrDefault(
+					properties.getProperty(PROPERTY_AUTO_SNAP_AFTER_RANGE_SELECTION_ENABLED),
+					DEFAULT_AUTO_SNAP_AFTER_RANGE_SELECTION_ENABLED));
+			config.setIsCloseRangeSelectionAfterSnapEnabled(readBooleanOrDefault(
+					properties.getProperty(PROPERTY_CLOSE_RANGE_SELECTION_AFTER_SNAP_ENABLED),
+					DEFAULT_CLOSE_RANGE_SELECTION_AFTER_SNAP_ENABLED));
+
+			// 不正な組み合わせがあれば修正
+			fallbackInvalidSettingCombination(config);
 
 		} catch (IOException ie) {
 			throw new ServiceException("プロパティファイルの読み込みに失敗しました", ie);
+		}
+	}
+
+	/**
+	 * 不正な設定値の組み合わせがあれば、強制的に修正する
+	 * @param config ユーザー設定値
+	 */
+	private void fallbackInvalidSettingCombination(ConfigBean config) {
+		// 画像保存、クリップボード保存、一時保存がすべて無効の場合、画像保存を有効化
+		if (!config.getIsSaveImage() &&
+				!config.getIsCopyToClipboard() &&
+				config.getAfterSnapActionType() == AfterSnapActionType.NONE) {
+
+			config.setIsSaveImage(true);
 		}
 	}
 
@@ -140,7 +159,7 @@ public class PropertiesRepository {
 	public void save(ConfigBean config) throws ServiceException {
 
 		// 言語に応じたプロパティテンプレート取得
-		String template = resolvePropertyTemplate(config.getLanguageType());
+		String template = PropertyFileTemplate.resolve(config.getLanguageType());
 		// 更新するプロパティキーと値をセットしたマップを作成
 		Map<String, String> updateMap = createUpdateMap(config);
 
@@ -191,7 +210,10 @@ public class PropertiesRepository {
 	public synchronized void reset() throws ServiceException {
 		try {
 			// プロパティファイルがなければ作成、あれば文章を上書きする (追記しない)
-			Files.writeString(PROPERTIES_PATH, PROPERTY_TEMPLATE_EN, StandardCharsets.UTF_8);
+			Files.writeString(
+					PROPERTIES_PATH,
+					PropertyFileTemplate.resolve(LanguageType.ENGLISH),
+					StandardCharsets.UTF_8);
 			log.info("プロパティファイルを初期化しました");
 
 		} catch (IOException ie) {
@@ -250,6 +272,7 @@ public class PropertiesRepository {
 		// 撮影設定
 		updateMap.put(PROPERTY_SNAP_AREA, config.getSnapAreaType().getValue());
 		updateMap.put(PROPERTY_INCLUDE_CURSOR_ENABLED, String.valueOf(config.getIsIncludeCursor()));
+		updateMap.put(PROPERTY_INCLUDE_SETTING_WINDOW_ENABLED, String.valueOf(config.getIsIncludeSettingWindow()));
 
 		// 出力設定
 		updateMap.put(PROPERTY_SAVE_IMAGE_ENABLED, String.valueOf(config.getIsSaveImage()));
@@ -277,166 +300,14 @@ public class PropertiesRepository {
 		updateMap.put(PROPERTY_SELECTION_USE_ALT, String.valueOf(selectionKeys.isUseAlt()));
 		updateMap.put(PROPERTY_SELECTION_USE_CTRL, String.valueOf(selectionKeys.isUseCtrl()));
 		updateMap.put(PROPERTY_SELECTION_USE_SHIFT, String.valueOf(selectionKeys.isUseShift()));
+		updateMap.put(
+				PROPERTY_AUTO_SNAP_AFTER_RANGE_SELECTION_ENABLED,
+				String.valueOf(config.getIsAutoSnapAfterRangeSelectionEnabled()));
+		updateMap.put(
+				PROPERTY_CLOSE_RANGE_SELECTION_AFTER_SNAP_ENABLED,
+				String.valueOf(config.getIsCloseRangeSelectionAfterSnapEnabled()));
 
 		return updateMap;
 	}
-
-	/**
-	 * 言語設定に対応したプロパティテンプレートを解決する
-	 * @param languageType 言語設定(デフォルトは英語)
-	 * @return プロパティファイルのテンプレート
-	 */
-	private String resolvePropertyTemplate(LanguageType languageType) {
-		switch (languageType) {
-		case JAPANESE:
-			return PROPERTY_TEMPLATE_JA;
-
-		case ENGLISH:
-		default:
-			return PROPERTY_TEMPLATE_EN;
-		}
-	}
-
-	/** 初期化時の文章をソース側で保持 改行コードはosごとに最適化（日本語） */
-	private static final String PROPERTY_TEMPLATE_JA = """
-			# InstantSnap Settings
-
-			# 言語を指定してください
-			language=ja
-
-			# テーマを指定してください
-			# 0 -> デフォルト, 1 -> 絵本
-			theme=1
-
-			# ～～ 撮影設定 ～～
-			# 撮影ショートカットキー
-			snapKey=3639
-			snapIsUseAlt=false
-			snapIsUseCtrl=false
-			snapIsUseShift=true
-
-			# 範囲選択ショートカットキー
-			selectionKey=68
-			selectionIsUseAlt=false
-			selectionIsUseCtrl=false
-			selectionIsUseShift=false
-
-			# 撮影範囲の選択 デフォルトは 1
-			# 1 -> 使用しているウィンドウを撮影, 2 -> カーソルのあるモニターを撮影
-			# 3 -> メインモニターを撮影, 4 -> 全てのモニターを撮影
-			snapArea=1
-
-			# マウスカーソルを画像に含める
-			includeCursorEnabled=false
-
-			# ～～ 出力設定 ～～
-			# 画像を保存する（有効にする場合は"true"と記載してください）
-			saveImageEnabled=true
-
-			# クリップボードにコピーする（有効にする場合は"true"と記載してください）
-			clipboardEnabled=true
-
-			# 保存先パスを指定してください
-			savePath=./screenshots/
-
-			# ファイル名の先頭文字
-			fileNamePrefix=
-
-			# ファイル名につける日時フォーマット デフォルトは1
-			# 1 -> yyyyMMdd.HHmmss.SSS, 2 -> yyyyMMdd.HHmmss
-			# 3 -> yyyyMMdd_HHmmss_SSS, 4 -> yyyyMMdd_HHmmss
-			fileNameDateFormat=1
-
-			# ファイルの拡張子の選択 png、jpg、bmp、gifのいずれかを記載してください(デフォルト：png)
-			format=png
-
-			# ～～ 撮影後設定 ～～
-			# 撮影後に行う処理を選択
-			# 1 -> 画像ファイルを表示する, 2 -> ペイントを開く,
-			# 3 -> 一時保存ファイルに保存する, 0, 未記入等 -> 何もしない(デフォルト)
-			afterSnapAction=0
-
-			# 撮影時、通知を表示する（有効にする場合は"true"と記載してください）
-			notificationEnabled=true
-
-			# ～～ サウンド設定 ～～#
-			# 通知音を有効にする（有効にする場合は"true"と記載してください）
-			soundNotificationEnabled=true
-
-			# 撮影音を鳴らして撮影する（有効にする場合は"true"と記載してください）
-			soundSnapEnabled=true
-
-			""".replace("\r\n", "\n").replace("\n", System.lineSeparator());
-
-	/** 初期化時の文章をソース側で保持 改行コードはosごとに最適化（英語） */
-	private static final String PROPERTY_TEMPLATE_EN = """
-			# InstantSnap Settings
-
-			# Please specify the language
-			language=en
-
-			# Please specify the theme
-			# 0 -> Default, 1 -> Storybook
-			theme=1
-
-			# ~~ Capture Settings ~~
-			# Capture shortcut key
-			snapKey=3639
-			snapIsUseAlt=false
-			snapIsUseCtrl=false
-			snapIsUseShift=true
-
-			# Range selection shortcut key
-			selectionKey=68
-			selectionIsUseAlt=false
-			selectionIsUseCtrl=false
-			selectionIsUseShift=false
-
-			# Select the capture area
-			# 1 -> Active window (default), 2 -> Active monitor
-			# 3 -> Main monitor, 4 -> All monitors
-			snapArea=1
-
-			# Include the mouse cursor in the image
-			includeCursorEnabled=false
-
-			# ~~ Output Settings ~~
-			# Save the image (set to "true" to enable)
-			saveImageEnabled=true
-
-			# Copy to clipboard (set to "true" to enable)
-			clipboardEnabled=true
-
-			# Please specify the save path
-			savePath=./screenshots/
-
-			# Prefix added to the beginning of the file name
-			fileNamePrefix=
-
-			# Date/time format added to the file name. Default is 1.
-			# 1 -> yyyyMMdd.HHmmss.SSS, 2 -> yyyyMMdd.HHmmss
-			# 3 -> yyyyMMdd_HHmmss_SSS, 4 -> yyyyMMdd_HHmmss
-			fileNameDateFormat=1
-
-			# Select the file extension. Specify one of png, jpg, bmp, or gif. (default: png)
-			format=png
-
-			# ~~ Post-Capture Settings ~~
-			# Select the action to perform after capturing
-			# 1 -> Open the image file, 2 -> Open Paint,
-			# 3 -> Save to a temporary file, 0, blank, etc. -> Do nothing (default)
-			afterSnapAction=0
-
-			# Show a notification when capturing (set to "true" to enable)
-			notificationEnabled=true
-
-			# ~~ Sound Settings ~~
-			# Enable notification sound (set to "true" to enable)
-			soundNotificationEnabled=true
-
-			# Play a shutter sound when capturing (set to "true" to enable)
-			soundSnapEnabled=true
-
-			""".replace("\r\n", "\n").replace("\n", System.lineSeparator());
 
 }

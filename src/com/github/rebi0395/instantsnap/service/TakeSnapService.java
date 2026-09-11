@@ -10,6 +10,7 @@ import com.github.rebi0395.instantsnap.exception.ServiceException;
 import com.github.rebi0395.instantsnap.model.bean.ConfigBean;
 import com.github.rebi0395.instantsnap.model.bean.SnapResultBean;
 import com.github.rebi0395.instantsnap.model.enums.AfterSnapActionType;
+import com.github.rebi0395.instantsnap.model.enums.SnapRouteType;
 
 /**
  * 画面の撮影処理を行うクラス
@@ -24,6 +25,8 @@ public class TakeSnapService {
 	private SoundPlayer soundPlayer;
 	/** マウスカーソルを書き込むクラス */
 	private MouseCursorService mouseCursorService;
+	/** 撮影ごとのネイティブリソース生成を避けるため再利用するRobot */
+	private Robot robot;
 
 	/**
 	 * コンストラクタ
@@ -32,7 +35,7 @@ public class TakeSnapService {
 	 * @param soundPlayer 音声を再生するインスタンス
 	 * @param mouseCursorService マウスカーソルを書き込むインスタンス
 	 */
-	public TakeSnapService(SnapAreaResolver areaResolver, SnapSaveService saveService, 
+	public TakeSnapService(SnapAreaResolver areaResolver, SnapSaveService saveService,
 			SoundPlayer soundPlayer, MouseCursorService mouseCursorService) {
 		this.areaResolver = areaResolver;
 		this.saveService = saveService;
@@ -45,10 +48,12 @@ public class TakeSnapService {
 	 *
 	 * @param config ユーザーの設定値
 	 * @param rangeSelection ドラッグ指定の撮影範囲
+	 * @param snapRoute 撮影要求が発生した経路
 	 * @return 撮影処理結果
-	 * @throws ServiceException
+	 * @throws ServiceException 撮影処理に失敗した場合
 	 */
-	public SnapResultBean execute(ConfigBean config, Rectangle rangeSelection) throws ServiceException {
+	public SnapResultBean execute(
+			ConfigBean config, Rectangle rangeSelection, SnapRouteType snapRoute) throws ServiceException {
 
 		// 行うべきアクションが設定されていない場合、早期リターン
 		if (!hasResultAction(config)) {
@@ -57,17 +62,20 @@ public class TakeSnapService {
 
 		// 結果クラスを作成
 		SnapResultBean resultBean = new SnapResultBean();
+		BufferedImage snap = null;
 
 		try {
-			// 画面サイズを取得
-			Rectangle snapSize = areaResolver.resolveArea(config.getSnapAreaType());
+			Rectangle snapSize;
 			if (rangeSelection != null) {
-				// ドラッグ指定している場合は、撮影範囲をドラッグ範囲で上書きする
+				// ドラッグ指定している場合は、撮影範囲をドラッグ範囲とする
 				snapSize = rangeSelection;
+			} else {
+				// 撮影範囲の種類と要求経路を渡し、撮影範囲を決定する
+				snapSize = areaResolver.resolveArea(
+						config.getSnapAreaType(), config.getIsIncludeSettingWindow(), snapRoute);
 			}
 			// 撮影
-			Robot robot = new Robot();
-			BufferedImage snap = robot.createScreenCapture(snapSize);
+			snap = getOrCreateRobot().createScreenCapture(snapSize);
 
 			// マウスカーソルを画像に含める設定が有効
 			if (config.getIsIncludeCursor() && OsUtil.isWindows()) {
@@ -85,8 +93,26 @@ public class TakeSnapService {
 
 		} catch (AWTException e) {
 			throw new ServiceException("スクリーンショットの撮影に失敗しました", e);
+		} finally {
+			// 保存とクリップボード転送が完了した画像の描画リソースを明示的に解放する。
+			if (snap != null) {
+				snap.flush();
+			}
 		}
 		return resultBean;
+	}
+
+	/**
+	 * 画面撮影に使用するRobotを初回だけ生成し、以降の撮影で再利用します。
+	 *
+	 * @return このサービスが保持するRobot
+	 * @throws AWTException デスクトップの撮影機能を利用できない場合
+	 */
+	private Robot getOrCreateRobot() throws AWTException {
+		if (robot == null) {
+			robot = new Robot();
+		}
+		return robot;
 	}
 
 	/**

@@ -176,15 +176,6 @@ public class NativeKeyCodeConverter {
 	}
 
 	/**
-	 * NativeキーからJavaFXキーを返却する
-	 * @param code nativeのキーコード
-	 * @return 引数に対応するJavaFXのKeyCode
-	 */
-	public static KeyCode toFXKeyCode(int nativeCode) {
-		return NATIVE_MAP.get(nativeCode);
-	}
-	
-	/**
 	 * nativeキーコードから、JavaFxのキーの名前に変換する
 	 * @param code nativeのキーコード
 	 * @return 引数に対応するJavaFXのKeyName
