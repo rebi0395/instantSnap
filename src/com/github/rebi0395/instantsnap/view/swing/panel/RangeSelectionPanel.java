@@ -238,6 +238,14 @@ public class RangeSelectionPanel extends JPanel {
 	}
 
 	/**
+	 * 範囲選択状態が待機中であるかを取得する
+	 * @return 待機中であればtrue
+	 */
+	public boolean isWaiting() {
+		return state == SelectionState.WAITING;
+	}
+
+	/**
 	 * 範囲選択画面の状態を変更し、表示する操作説明を更新する
 	 *
 	 * @param newState 変更後の状態

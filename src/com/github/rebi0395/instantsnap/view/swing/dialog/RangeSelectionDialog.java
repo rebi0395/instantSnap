@@ -19,6 +19,7 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JRootPane;
 import javax.swing.KeyStroke;
+import javax.swing.Timer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,11 +56,20 @@ public class RangeSelectionDialog {
 	/** 範囲選択の描画とマウス操作を行うパネル */
 	private RangeSelectionPanel selectionPanel;
 
+	/** 範囲選択の現在の表示モニター */
+	private GraphicsDevice screenDevice;
+
+	/** 範囲選択モニターの切り替え監視タイマー */
+	private Timer screenMonitorTimer;
+
 	/** マウスの通常移動量 */
 	private static final int NORMAL_MOVE = 1;
 
 	/** マウスの高速移動量 */
 	private static final int FAST_MOVE = 20;
+
+	/** マウスポインターの所属モニターのチェックの監視間隔(ms) */
+	private static final int MONITOR_TIMER = 50;
 
 	/**
 	 * コンストラクタ
@@ -156,40 +166,59 @@ public class RangeSelectionDialog {
 	 * @param screenDevice 表示対象のモニター
 	 */
 	private void showRangeSelectionDialog(GraphicsDevice screenDevice) {
+		try {
+			// 画面作成はモニター切り替え時と共通化し、モード開始の通知はここだけで行う。
+			SelectionWindow createdWindow = createSelectionWindow(screenDevice);
+			this.dialog = createdWindow.dialog();
+			this.selectionPanel = createdWindow.panel();
+			this.screenDevice = screenDevice;
+
+			listener.onShown();
+			startScreenMonitor();
+
+		} catch (Exception e) {
+			stopScreenMonitor();
+			if (dialog != null) {
+				dialog.dispose();
+			}
+			this.dialog = null;
+			this.selectionPanel = null;
+			this.screenDevice = null;
+			log.error("範囲選択画面の表示に失敗しました", e);
+		}
+	}
+
+	/**
+	 * 指定モニター用の範囲選択画面を作成して表示する。
+	 * モードの開始・終了通知と監視タイマーの操作は呼び出し元で行う。
+	 *
+	 * @param targetDevice 表示対象のモニター
+	 * @return 作成したダイアログと範囲選択パネル
+	 */
+	private SelectionWindow createSelectionWindow(GraphicsDevice targetDevice) {
 		JDialog createdDialog = null;
 
 		try {
-			// 表示対象モニターの設定と画面領域を取得する
-			GraphicsConfiguration configuration = screenDevice.getDefaultConfiguration();
+			// モニターごとの位置・解像度・表示倍率に対応する描画設定を使用する。
+			GraphicsConfiguration configuration = targetDevice.getDefaultConfiguration();
 			Rectangle screenArea = configuration.getBounds();
-
-			// モニターと同じAWT座標系を使用する範囲選択パネルを作成する
 			RangeSelectionPanel createdPanel = new RangeSelectionPanel(screenArea, config, converter, listener);
 
-			// ダイアログの生成
 			createdDialog = new JDialog(
 					(Dialog) null, // ownerなし
 					null, // タイトルなし
 					false, // モーダルにしない
-					configuration); // モニターの描画範囲
+					configuration);
 
-			// ダイアログの設定
 			createdDialog.setUndecorated(true); // ダイアログ枠を消す
-			createdDialog.setBackground(new Color(0, 0, 0, 0)); // ダイアログ自体の背景を透明にする
-			createdDialog.setAlwaysOnTop(true); // ダイアログを最前面に表示し続ける設定
-			createdDialog.setContentPane(createdPanel); // 範囲選択パネルをダイアログに設定する
-			createdDialog.setBounds(screenArea); // ダイアログの描画範囲を対象モニターと同じ位置、大きさにする
-			createdDialog.setVisible(true); // 範囲選択画面を表示する
-			createdDialog.toFront(); // ダイアログを最前面へ移動する
-			createdDialog.requestFocus(); // フォーカスを要求する
+			createdDialog.setBackground(new Color(0, 0, 0, 0)); // 背景を透明にする
+			createdDialog.setAlwaysOnTop(true); // 範囲選択画面を最前面に維持する
+			createdDialog.setContentPane(createdPanel);
 
-			// 範囲選択パネルのマウス位置を初期化する
-			createdPanel.initializeCurrentPoint();
-
-			// キーボードによる範囲選択処理を登録する
+			// 表示前に操作を登録し、初回表示でも切り替え後でも同じキー操作を受け付ける。
 			JRootPane root = createdDialog.getRootPane();
-			registerEscapeAction(root); // ESCキー
-			registerEnterKeyAction(root); // エンターキー
+			registerEscapeAction(root);
+			registerEnterKeyAction(root);
 
 			// 方向キーの登録
 			registerArrowKeyAction(root, KeyEvent.VK_LEFT, false, new Point(-NORMAL_MOVE, 0));
@@ -202,23 +231,58 @@ public class RangeSelectionDialog {
 			registerArrowKeyAction(root, KeyEvent.VK_UP, true, new Point(0, -FAST_MOVE));
 			registerArrowKeyAction(root, KeyEvent.VK_DOWN, true, new Point(0, FAST_MOVE));
 
-			// close処理から現在のダイアログとパネルを参照できるように保持する
-			this.dialog = createdDialog;
-			this.selectionPanel = createdPanel;
-
-			// 範囲選択画面はユーザー設定にかかわらず、常に撮影対象から除外する。
+			// ネイティブウィンドウを生成し、画面に表示する前に撮影除外を設定する。
+			createdDialog.pack();
+			createdDialog.setBounds(screenArea);
 			screenCaptureExclusionService.setExcluded(createdDialog, true);
 
-			listener.onShown(); // 画面表示を通知
+			createdDialog.setVisible(true);
+			createdDialog.toFront();
+			createdDialog.requestFocus();
 
-		} catch (Exception e) {
+			// 新しいパネルの座標系でポインター位置を初期化し、十字ガイドを描き直す。
+			createdPanel.initializeCurrentPoint();
+			createdPanel.repaint();
+			return new SelectionWindow(createdDialog, createdPanel);
+
+		} catch (RuntimeException e) {
+			// 作成途中の画面だけを破棄し、切り替え元の画面は呼び出し元で維持する。
 			if (createdDialog != null) {
 				createdDialog.dispose();
 			}
-			this.dialog = null;
-			this.selectionPanel = null;
-			log.error("範囲選択画面の表示に失敗しました", e);
+			throw e;
 		}
+	}
+
+	/**
+	 * 待機中の範囲選択画面を別モニターへ切り替える。
+	 * Swingのイベントディスパッチスレッド上で呼び出す。
+	 *
+	 * @param nextDevice 切り替え先のモニター
+	 */
+	private void changeSelectionScreen(GraphicsDevice nextDevice) {
+		if (!isShowing() || selectionPanel == null || !selectionPanel.isWaiting()
+				|| nextDevice == null || nextDevice.equals(screenDevice)) {
+			return;
+		}
+
+		SelectionWindow nextWindow;
+		try {
+			// 新しい画面の表示が成功するまで、現在の画面と参照を保持する。
+			nextWindow = createSelectionWindow(nextDevice);
+		} catch (RuntimeException e) {
+			log.warn("範囲選択画面のモニター切り替えに失敗しました", e);
+			return;
+		}
+
+		JDialog previousDialog = dialog;
+		this.dialog = nextWindow.dialog();
+		this.selectionPanel = nextWindow.panel();
+		this.screenDevice = nextDevice;
+
+		// モードと監視タイマーを継続したまま、古い画面だけを破棄する。
+		// onClosed/onShownやresetSelectionは呼ばず、通知先の撮影範囲を維持する。
+		previousDialog.dispose();
 	}
 
 	/**
@@ -308,6 +372,8 @@ public class RangeSelectionDialog {
 	 * 撮影範囲選択を受け付ける画面を閉じる。
 	 */
 	private void closeRangeSelectionDialog() {
+		// 画面の有無にかかわらず停止し、閉じた後に監視処理を残さない。
+		stopScreenMonitor();
 		if (!isShowing()) {
 			return;
 		}
@@ -319,6 +385,7 @@ public class RangeSelectionDialog {
 		JDialog closingDialog = dialog;
 		this.dialog = null;
 		this.selectionPanel = null;
+		this.screenDevice = null;
 
 		closingDialog.setVisible(false); // 画面を非表示にする
 		closingDialog.dispose(); // Swingのダイアログリソースを破棄する
@@ -332,6 +399,56 @@ public class RangeSelectionDialog {
 	 */
 	private boolean isShowing() {
 		return dialog != null && dialog.isShowing();
+	}
+
+	/**
+	 * マウスポインター所属モニターの監視を開始する
+	 */
+	private void startScreenMonitor() {
+		// 再開時もタイマーを一つに保ち、開閉による監視の重複を防ぐ。
+		stopScreenMonitor();
+		screenMonitorTimer = new Timer(MONITOR_TIMER, event -> {
+			checkScreenChanged();
+		});
+		screenMonitorTimer.start();
+	}
+
+	/**
+	 * マウスポインター所属モニターの監視を停止する
+	 */
+	private void stopScreenMonitor() {
+		if (screenMonitorTimer == null) {
+			return;
+		}
+
+		screenMonitorTimer.stop();
+		screenMonitorTimer = null;
+	}
+
+	/**
+	 * 範囲選択モニターの対象が切り替わったかを確認する
+	 */
+	private void checkScreenChanged() {
+		if (!isShowing() || selectionPanel == null || screenDevice == null || !selectionPanel.isWaiting()) {
+			return;
+		}
+		PointerInfo pointerInfo = MouseInfo.getPointerInfo();
+		if (pointerInfo == null) {
+			return;
+		}
+		GraphicsDevice nowScreenDevice = pointerInfo.getDevice();
+		if (nowScreenDevice == null || nowScreenDevice.equals(screenDevice)) {
+			return;
+		}
+
+		// TimerはSwingスレッドで動作するため、そのまま画面を差し替えられる。
+		changeSelectionScreen(nowScreenDevice);
+	}
+
+	/**
+	 * 一つのモニター用に作成したダイアログとパネルをまとめて保持する。
+	 */
+	private record SelectionWindow(JDialog dialog, RangeSelectionPanel panel) {
 	}
 
 }
