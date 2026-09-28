@@ -397,6 +397,20 @@ public class MainWindowPanel extends JPanel implements ActionListener, FocusList
 		button.setMargin(new Insets(2, 2, 2, 2));
 		button.addFocusListener(this);
 		button.addActionListener(this);
+
+		// 小型アイコンはBasicButtonUIを使うため、フォーカス中のEnterを明示的に押下へ結び付ける。
+		String actionKey = "activateQuickButton";
+		button.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), actionKey);
+		button.getActionMap().put(actionKey, new AbstractAction() {
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public void actionPerformed(ActionEvent event) {
+				if (button.isEnabled()) {
+					button.doClick();
+				}
+			}
+		});
 	}
 
 	/**
