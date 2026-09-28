@@ -13,6 +13,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
@@ -58,6 +60,9 @@ public class RangeSelectionDialog {
 
 	/** 範囲選択の現在の表示モニター */
 	private GraphicsDevice screenDevice;
+
+	/** モード中に再利用する、モニターごとの範囲選択画面 */
+	private final Map<GraphicsDevice, SelectionWindow> selectionWindows = new HashMap<>();
 
 	/** 範囲選択モニターの切り替え監視タイマー */
 	private Timer screenMonitorTimer;
@@ -168,7 +173,7 @@ public class RangeSelectionDialog {
 	private void showRangeSelectionDialog(GraphicsDevice screenDevice) {
 		try {
 			// 画面作成はモニター切り替え時と共通化し、モード開始の通知はここだけで行う。
-			SelectionWindow createdWindow = createSelectionWindow(screenDevice);
+			SelectionWindow createdWindow = showSelectionWindow(screenDevice);
 			this.dialog = createdWindow.dialog();
 			this.selectionPanel = createdWindow.panel();
 			this.screenDevice = screenDevice;
@@ -178,9 +183,7 @@ public class RangeSelectionDialog {
 
 		} catch (Exception e) {
 			stopScreenMonitor();
-			if (dialog != null) {
-				dialog.dispose();
-			}
+			disposeSelectionWindows();
 			this.dialog = null;
 			this.selectionPanel = null;
 			this.screenDevice = null;
@@ -189,7 +192,7 @@ public class RangeSelectionDialog {
 	}
 
 	/**
-	 * 指定モニター用の範囲選択画面を作成して表示する。
+	 * 指定モニター用の範囲選択画面を作成する。表示は呼び出し元で行う。
 	 * モードの開始・終了通知と監視タイマーの操作は呼び出し元で行う。
 	 *
 	 * @param targetDevice 表示対象のモニター
@@ -236,13 +239,6 @@ public class RangeSelectionDialog {
 			createdDialog.setBounds(screenArea);
 			screenCaptureExclusionService.setExcluded(createdDialog, true);
 
-			createdDialog.setVisible(true);
-			createdDialog.toFront();
-			createdDialog.requestFocus();
-
-			// 新しいパネルの座標系でポインター位置を初期化し、十字ガイドを描き直す。
-			createdPanel.initializeCurrentPoint();
-			createdPanel.repaint();
 			return new SelectionWindow(createdDialog, createdPanel);
 
 		} catch (RuntimeException e) {
@@ -252,6 +248,50 @@ public class RangeSelectionDialog {
 			}
 			throw e;
 		}
+	}
+
+	/**
+	 * モニター用の画面を取得して表示する。
+	 * モード中は同じ画面を再利用し、全画面の描画領域を切り替えるたびに確保しない。
+	 *
+	 * @param targetDevice 表示対象のモニター
+	 * @return 表示したダイアログとパネル
+	 */
+	private SelectionWindow showSelectionWindow(GraphicsDevice targetDevice) {
+		SelectionWindow window = selectionWindows.get(targetDevice);
+		if (window == null) {
+			window = createSelectionWindow(targetDevice);
+		}
+
+		try {
+			// 再利用するパネルは前回の座標と選択状態を引き継がず、待機状態から表示する。
+			window.panel().prepareNextSelection();
+			window.dialog().setVisible(true);
+			window.dialog().toFront();
+			window.dialog().requestFocus();
+			window.panel().initializeCurrentPoint();
+			window.panel().repaint();
+
+			// 表示に成功した画面だけを保持する。作成数は使用したモニター数に収まる。
+			selectionWindows.put(targetDevice, window);
+			return window;
+
+		} catch (RuntimeException e) {
+			selectionWindows.remove(targetDevice);
+			window.dialog().dispose();
+			throw e;
+		}
+	}
+
+	/**
+	 * モード中に保持していた全モニターの画面を破棄する。
+	 * 非表示の画面も解放し、モード終了後に描画領域やパネルを保持しない。
+	 */
+	private void disposeSelectionWindows() {
+		for (SelectionWindow window : selectionWindows.values()) {
+			window.dialog().dispose();
+		}
+		selectionWindows.clear();
 	}
 
 	/**
@@ -269,7 +309,7 @@ public class RangeSelectionDialog {
 		SelectionWindow nextWindow;
 		try {
 			// 新しい画面の表示が成功するまで、現在の画面と参照を保持する。
-			nextWindow = createSelectionWindow(nextDevice);
+			nextWindow = showSelectionWindow(nextDevice);
 		} catch (RuntimeException e) {
 			log.warn("範囲選択画面のモニター切り替えに失敗しました", e);
 			return;
@@ -280,9 +320,9 @@ public class RangeSelectionDialog {
 		this.selectionPanel = nextWindow.panel();
 		this.screenDevice = nextDevice;
 
-		// モードと監視タイマーを継続したまま、古い画面だけを破棄する。
+		// モードと監視タイマーを継続したまま、元の画面は次回の切り替えに備えて非表示にする。
 		// onClosed/onShownやresetSelectionは呼ばず、通知先の撮影範囲を維持する。
-		previousDialog.dispose();
+		previousDialog.setVisible(false);
 	}
 
 	/**
@@ -374,22 +414,21 @@ public class RangeSelectionDialog {
 	private void closeRangeSelectionDialog() {
 		// 画面の有無にかかわらず停止し、閉じた後に監視処理を残さない。
 		stopScreenMonitor();
-		if (!isShowing()) {
-			return;
+		boolean wasShowing = isShowing();
+
+		if (selectionPanel != null) {
+			selectionPanel.resetSelection();
 		}
 
-		// 破棄前に選択状態を初期化する
-		selectionPanel.resetSelection();
-
-		// 破棄するダイアログを退避した後、保持している参照を初期化する
-		JDialog closingDialog = dialog;
+		// 表示中の画面に加え、別モニターで待機している非表示の画面も解放する。
 		this.dialog = null;
 		this.selectionPanel = null;
 		this.screenDevice = null;
+		disposeSelectionWindows();
 
-		closingDialog.setVisible(false); // 画面を非表示にする
-		closingDialog.dispose(); // Swingのダイアログリソースを破棄する
-		listener.onClosed(); // リスナー側の設定値を破棄させる
+		if (wasShowing) {
+			listener.onClosed();
+		}
 	}
 
 	/**
