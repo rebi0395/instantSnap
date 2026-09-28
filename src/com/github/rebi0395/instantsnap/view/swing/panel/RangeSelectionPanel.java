@@ -142,10 +142,8 @@ public class RangeSelectionPanel extends JPanel {
 	public void initializeCurrentPoint() {
 		Point point = getMousePosition();
 
-		if (point == null) {
-			return;
-		}
-		currentPoint = clampPoint(point);
+		// 再表示時にポインターが画面外なら、前回のモニター内座標を残さない。
+		currentPoint = point == null ? null : clampPoint(point);
 	}
 
 	/**
