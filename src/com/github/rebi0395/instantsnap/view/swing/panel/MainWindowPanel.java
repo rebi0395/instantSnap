@@ -1,8 +1,10 @@
 package com.github.rebi0395.instantsnap.view.swing.panel;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -27,6 +29,7 @@ import javax.swing.KeyStroke;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
+import javax.swing.border.AbstractBorder;
 import javax.swing.border.Border;
 import javax.swing.plaf.basic.BasicButtonUI;
 
@@ -394,6 +397,20 @@ public class MainWindowPanel extends JPanel implements ActionListener, FocusList
 		button.setMargin(new Insets(2, 2, 2, 2));
 		button.addFocusListener(this);
 		button.addActionListener(this);
+
+		// 小型アイコンはBasicButtonUIを使うため、フォーカス中のEnterを明示的に押下へ結び付ける。
+		String actionKey = "activateQuickButton";
+		button.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), actionKey);
+		button.getActionMap().put(actionKey, new AbstractAction() {
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public void actionPerformed(ActionEvent event) {
+				if (button.isEnabled()) {
+					button.doClick();
+				}
+			}
+		});
 	}
 
 	/**
@@ -467,7 +484,7 @@ public class MainWindowPanel extends JPanel implements ActionListener, FocusList
 	 */
 	@Override
 	public void focusGained(FocusEvent event) {
-		updateCustomThemeFocusBorder(event.getComponent());
+		updateFocusBorder(event.getComponent());
 	}
 
 	/**
@@ -477,17 +494,34 @@ public class MainWindowPanel extends JPanel implements ActionListener, FocusList
 	 */
 	@Override
 	public void focusLost(FocusEvent event) {
-		updateCustomThemeFocusBorder(event.getComponent());
+		updateFocusBorder(event.getComponent());
 	}
 
 	/**
-	 * ダーク・絵本テーマ中の操作部品へ、フォーカス状態に応じた枠線を設定します。
-	 * フォーカス中は濃淡の異なる2色を重ね、選択中のボタン上でも見える発光風の枠にします。
+	 * 全テーマの操作部品へ、フォーカス状態に応じた枠線を設定します。
+	 * 標準テーマでは外周に枠を重ね、カスタムテーマでは濃淡の異なる2色で表示します。
 	 *
 	 * @param component フォーカス状態が変わった部品
 	 */
-	private void updateCustomThemeFocusBorder(Component component) {
-		if (currentThemeType == ThemeType.DEFAULT || currentThemePalette == null) {
+	private void updateFocusBorder(Component component) {
+		if (currentThemePalette == null) {
+			return;
+		}
+
+		if (currentThemeType == ThemeType.DEFAULT) {
+			// OS標準の部品はフォーカスを受けても枠が見えないことがあるため、
+			// 標準の枠と余白を保ったまま、フォーカス位置を外周に重ねて描く。
+			Border baseBorder;
+			if (component instanceof JComboBox<?>) {
+				baseBorder = UIManager.getBorder("ComboBox.border");
+			} else if (component == openSaveDirectoryButton || component == notificationButton) {
+				baseBorder = BorderFactory.createLineBorder(currentThemePalette.getBorderColor());
+			} else {
+				baseBorder = UIManager.getBorder("Button.border");
+			}
+			if (component instanceof JComponent control) {
+				control.setBorder(new FocusIndicatorBorder(baseBorder, currentThemePalette.getFocusColor()));
+			}
 			return;
 		}
 
@@ -607,13 +641,13 @@ public class MainWindowPanel extends JPanel implements ActionListener, FocusList
 		languageComboBox.repaint();
 		snapAreaComboBox.repaint();
 		updateQuickSettingButtonColors();
-		updateCustomThemeFocusBorder(languageComboBox);
-		updateCustomThemeFocusBorder(snapAreaComboBox);
-		updateCustomThemeFocusBorder(settingsButton);
-		updateCustomThemeFocusBorder(captureButton);
-		updateCustomThemeFocusBorder(rangeSelectionButton);
-		updateCustomThemeFocusBorder(openSaveDirectoryButton);
-		updateCustomThemeFocusBorder(notificationButton);
+		updateFocusBorder(languageComboBox);
+		updateFocusBorder(snapAreaComboBox);
+		updateFocusBorder(settingsButton);
+		updateFocusBorder(captureButton);
+		updateFocusBorder(rangeSelectionButton);
+		updateFocusBorder(openSaveDirectoryButton);
+		updateFocusBorder(notificationButton);
 		revalidate();
 		repaint();
 	}
@@ -842,6 +876,57 @@ public class MainWindowPanel extends JPanel implements ActionListener, FocusList
 		captureButton.setEnabled(enabled);
 		rangeSelectionButton.setEnabled(enabled);
 		openSaveDirectoryButton.setEnabled(enabled && saveDirectoryAvailable);
+	}
+
+	/**
+	 * 標準テーマの枠にフォーカス表示を重ねる。
+	 * 枠の余白は元のままにし、フォーカス移動で文字やアイコンの位置を変えない。
+	 */
+	private static final class FocusIndicatorBorder extends AbstractBorder {
+
+		private static final long serialVersionUID = 1L;
+
+		/** OS標準または小型ボタンの通常の枠 */
+		private final Border baseBorder;
+
+		/** フォーカス中の外周に使う色 */
+		private final Color focusColor;
+
+		private FocusIndicatorBorder(Border baseBorder, Color focusColor) {
+			this.baseBorder = baseBorder;
+			this.focusColor = focusColor;
+		}
+
+		@Override
+		public Insets getBorderInsets(Component component) {
+			return getBorderInsets(component, new Insets(0, 0, 0, 0));
+		}
+
+		@Override
+		public Insets getBorderInsets(Component component, Insets insets) {
+			Insets baseInsets = baseBorder == null ? new Insets(0, 0, 0, 0) : baseBorder.getBorderInsets(component);
+			insets.set(baseInsets.top, baseInsets.left, baseInsets.bottom, baseInsets.right);
+			return insets;
+		}
+
+		@Override
+		public void paintBorder(Component component, Graphics graphics, int x, int y, int width, int height) {
+			if (baseBorder != null) {
+				baseBorder.paintBorder(component, graphics, x, y, width, height);
+			}
+			if (!component.hasFocus() || !component.isEnabled()) {
+				return;
+			}
+
+			Graphics focusGraphics = graphics.create();
+			try {
+				focusGraphics.setColor(focusColor);
+				focusGraphics.drawRect(x, y, width - 1, height - 1);
+				focusGraphics.drawRect(x + 1, y + 1, width - 3, height - 3);
+			} finally {
+				focusGraphics.dispose();
+			}
+		}
 	}
 
 	/**
